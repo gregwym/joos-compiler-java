@@ -56,6 +56,10 @@ public class DFA {
 		return inputMapNext.get(input);
 	}
 	
+	public void addTokenKindTranformation(String lexeme, String kind) {
+		this.tokenKindTransformations.put(lexeme, kind);
+	}
+	
 	private void parseDfaFile(File dfaFile) throws IOException, ArrayIndexOutOfBoundsException, NumberFormatException {
 		FileInputStream inputSteam = new FileInputStream(dfaFile);
 		BufferedReader reader = new BufferedReader(new InputStreamReader(inputSteam));
