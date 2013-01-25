@@ -75,7 +75,7 @@ public class Scanner {
 	 * @throws ScanException
 	 */
 	private int extractToken(final String inStr, int begin, List<Token> tokens) throws ScanException {
-		String state = this.dfa.startingState;
+		String state = this.dfa.getStartingState();
 		String lexeme = "";
 		for(; begin < inStr.length(); begin++) {
 			String inChar = inStr.substring(begin, begin + 1);
@@ -85,8 +85,8 @@ public class Scanner {
 
 			String next = this.dfa.nextStateFor(state, inChar);
 			if(next == null){
-				if(this.dfa.acceptingStates.contains(state)){
-					String transformedKind = this.dfa.tokenKindTransformations.get(lexeme);
+				if(this.dfa.isAcceptingState(state)){
+					String transformedKind = this.dfa.getTokenKindTransformation(lexeme);
 					Token token = new Token(transformedKind == null ? state : transformedKind, lexeme);
 					tokens.add(token);
 					break;

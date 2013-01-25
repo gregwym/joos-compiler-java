@@ -22,12 +22,12 @@ public class DFA {
 		EOF
 	}
 
-	public Set<String> alphabets;
-	public Set<String> states;
-	public String startingState;
-	public Set<String> acceptingStates;
-	public Map<String, Map<String, String>> transactions;
-	public Map<String, String> tokenKindTransformations = null;
+	private Set<String> alphabets;
+	private Set<String> states;
+	private String startingState;
+	private Set<String> acceptingStates;
+	private Map<String, Map<String, String>> transactions;
+	private Map<String, String> tokenKindTransformations;
 
 	/**
 	 * Construct a DFA logic representation from a DFA file
@@ -47,6 +47,10 @@ public class DFA {
 		parseDfaFile(dfaFile);
 	}
 
+	public String getStartingState() {
+		return startingState;
+	}
+
 	public String nextStateFor(String state, String input) {
 		Map<String, String> inputMapNext = this.transactions.get(state);
 		if(inputMapNext == null) {
@@ -56,7 +60,15 @@ public class DFA {
 		return inputMapNext.get(input);
 	}
 
-	public void addTokenKindTranformation(String lexeme, String kind) {
+	public boolean isAcceptingState(String state) {
+		return this.acceptingStates.contains(state);
+	}
+
+	public String getTokenKindTransformation(String lexeme) {
+		return this.tokenKindTransformations.get(lexeme);
+	}
+
+	public void addTokenKindTransformation(String lexeme, String kind) {
 		this.tokenKindTransformations.put(lexeme, kind);
 	}
 
