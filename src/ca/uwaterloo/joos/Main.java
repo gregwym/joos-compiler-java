@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package ca.uwaterloo.joos;
 
@@ -30,18 +30,18 @@ public class Main {
 		wlDFA.tokenKindTransformations.put("while", "WHILE");
 		wlDFA.tokenKindTransformations.put("println", "PRINTLN");
 		wlDFA.tokenKindTransformations.put("return", "RETURN");
-		
+
 		// Construct a Scanner which use the DFA
 		Scanner scanner = new Scanner(wlDFA);
 		List<Token> tokens = null;
-		
+
 		try {
 			tokens = scanner.fileToTokens(new File("resources/gcd.wl"));
 		} catch (Exception e) {
 			System.err.println("ERROR: " + e.getLocalizedMessage());
 			System.exit(-1);
 		}
-		
+
 		int i = 0;
 		for(i = 0; i < tokens.size(); i++) {
 			System.out.println(tokens.get(i).toString());

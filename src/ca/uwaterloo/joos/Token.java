@@ -10,7 +10,7 @@ public class Token {
 		this.kind = kind;
 		this.lexeme = lexeme;
 	}
-	
+
 	public String toString() {
 		return this.kind + " " + this.lexeme;
 	}
