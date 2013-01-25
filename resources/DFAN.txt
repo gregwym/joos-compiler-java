@@ -77,7 +77,7 @@ _
 *
 /
 &
-27
+28
 Start
 ID
 operation
@@ -105,8 +105,9 @@ lor
 commentEnd
 blockComment
 blockCommentS
+not
 Start
-23
+24
 ID
 operation
 string"
@@ -122,6 +123,7 @@ lt
 gt
 leq
 geq
+neq
 assign
 compare
 and
@@ -130,7 +132,7 @@ slash
 or
 lor
 commentEnd
-169
+172
 Start { lBrace
 Start } rBrace
 Start ( lBracket
@@ -211,7 +213,9 @@ Start | or
 Start " "string
 Start ; colon
 Start , comma
-Start ! 
+Start ! not
+Start % operation
+not = neq
 "string anything "string
 "string \ stringEscape
 or | lor

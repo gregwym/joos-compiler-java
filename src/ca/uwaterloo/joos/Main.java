@@ -19,7 +19,7 @@ public class Main {
 		// Construct a DFA from file
 		DFA wlDFA = null;
 		try {
-			wlDFA = new DFA(new File("resources/wl.dfa"));
+			wlDFA = new DFA(new File("resources/DFAN.txt"));
 		} catch (Exception e) {
 			System.err.println("ERROR: Invalid DFA File format: " + e.getLocalizedMessage());
 		}

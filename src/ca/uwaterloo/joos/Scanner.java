@@ -80,10 +80,10 @@ public class Scanner {
 		String lexeme = "";
 		for(; begin < inStr.length(); begin++) {
 			String inChar = inStr.substring(begin, begin + 1);
+			
 			if(lexeme.length() == 0 && this.isWhitespace(inChar)) {
 				continue;
 			}
-
 			String next = this.dfa.nextStateFor(state, inChar);
 			if(next == null){
 				if(this.dfa.isAcceptingState(state)){
