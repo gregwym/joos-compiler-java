@@ -22,11 +22,52 @@ public class DFA {
 		EOF
 	}
 
+	static private Map<String, String> symbolRegexTable = null;
+	static private String regexForKeyword(String keyword) {
+		if(DFA.symbolRegexTable == null){
+			DFA.symbolRegexTable = new HashMap<String, String>();
+			DFA.symbolRegexTable.put("any", ".");			// Anything
+			DFA.symbolRegexTable.put("space", "\\s");		// Whitespace, [' ', '\t', '\n', '\r']
+			DFA.symbolRegexTable.put("alpha", "[a-zA-Z]");	// Alphabets
+			DFA.symbolRegexTable.put("digit", "[0-9]");		// Digits
+			DFA.symbolRegexTable.put("punc", "[~!@#$%^&*()_+{}|:\"<>?`-=[]\\;',./]");		// Punctuation
+		}
+
+		return DFA.symbolRegexTable.get(keyword);
+	}
+
+	private class RegexTransaction {
+		private String regex;
+		private String next;
+
+		/**
+		 * Return the next state if input matches the regex, otherwise return null
+		 * @param inpub
+		 */
+		public String nextStateForInput(String input) {
+			return input.matches(this.regex) ? this.next : null;
+		}
+
+		public RegexTransaction(String regex, String next){
+			this.regex = regex;
+			this.next = next;
+		}
+
+	}
+
+	@SuppressWarnings("serial")
+	public class UnkownInputKeywordException extends Exception {
+		public UnkownInputKeywordException(String string) {
+			super(string);
+		}
+	}
+
 	private Set<String> alphabets;
 	private Set<String> states;
 	private String startingState;
 	private Set<String> acceptingStates;
 	private Map<String, Map<String, String>> transactions;
+	private Map<String, List<RegexTransaction>> regexTransactions;
 	private Map<String, String> tokenKindTransformations;
 
 	/**
@@ -36,12 +77,14 @@ public class DFA {
 	 * @throws IOException Fail to read the file
 	 * @throws ArrayIndexOutOfBoundsException DFA file in wrong format
 	 * @throws NumberFormatException DFA file in wrong format
+	 * @throws UnkownInputKeywordException Reach unknown keyword as an transaction rule input
 	 */
-	public DFA(File dfaFile) throws IOException, ArrayIndexOutOfBoundsException, NumberFormatException {
+	public DFA(File dfaFile) throws IOException, ArrayIndexOutOfBoundsException, NumberFormatException, UnkownInputKeywordException {
 		this.alphabets = new HashSet<String>();
 		this.states = new HashSet<String>();
 		this.acceptingStates = new HashSet<String>();
 		this.transactions = new HashMap<String, Map<String, String>>();
+		this.regexTransactions = new HashMap<String, List<RegexTransaction>>();
 		this.tokenKindTransformations = new HashMap<String, String>();
 
 		parseDfaFile(dfaFile);
@@ -52,12 +95,27 @@ public class DFA {
 	}
 
 	public String nextStateFor(String state, String input) {
+		String next = null;
+
+		// First, try find next state from normal transactions
 		Map<String, String> inputMapNext = this.transactions.get(state);
-		if(inputMapNext == null) {
-			return null;
+		if(inputMapNext != null) {
+			next = inputMapNext.get(input);
+		}
+		if(next != null) return next;
+
+		// Second, try find applicable regex transaction rules
+		List<RegexTransaction> regexTransactions = this.regexTransactions.get(state);
+		if(regexTransactions == null) return null;
+
+		// If there is any, try find next state from regex transactions
+		for(RegexTransaction regexTrans: regexTransactions) {
+			next = regexTrans.nextStateForInput(input);
+			if(next != null) return next;
 		}
 
-		return inputMapNext.get(input);
+		// If nothing found, no match
+		return null;
 	}
 
 	public boolean isAcceptingState(String state) {
@@ -72,7 +130,7 @@ public class DFA {
 		this.tokenKindTransformations.put(lexeme, kind);
 	}
 
-	private void parseDfaFile(File dfaFile) throws IOException, ArrayIndexOutOfBoundsException, NumberFormatException {
+	private void parseDfaFile(File dfaFile) throws IOException, ArrayIndexOutOfBoundsException, NumberFormatException, UnkownInputKeywordException {
 		FileInputStream inputSteam = new FileInputStream(dfaFile);
 		BufferedReader reader = new BufferedReader(new InputStreamReader(inputSteam));
 
@@ -105,12 +163,7 @@ public class DFA {
 				this.acceptingStates.add(split[0]);
 				break;
 			case Transactions:
-				Map<String, String> inputMapNext = this.transactions.get(split[0]);
-				if(inputMapNext == null){
-					inputMapNext = new HashMap<String, String>();
-					this.transactions.put(split[0], inputMapNext);
-				}
-				inputMapNext.put(split[1], split[2]);
+				this.parseTransaction(split[0], split[1], split[2]);
 				break;
 			case BOF:
 			case StartingState:
@@ -121,6 +174,31 @@ public class DFA {
 		}
 
 		reader.close();
+	}
+
+	private void parseTransaction(String state, String input, String next) throws UnkownInputKeywordException {
+		if(input.length() > 1) {
+			List<RegexTransaction> trans = this.regexTransactions.get(state);
+			if(trans == null){
+				trans = new ArrayList<RegexTransaction>();
+				this.regexTransactions.put(state, trans);
+			}
+			String regex = DFA.regexForKeyword(input);
+			if(regex != null) {
+				trans.add(new RegexTransaction(regex, next));
+			}
+			else {
+				throw new UnkownInputKeywordException("Reach unknown DFA transaction input keyword");
+			}
+		}
+		else {
+			Map<String, String> inputMapNext = this.transactions.get(state);
+			if(inputMapNext == null) {
+				inputMapNext = new HashMap<String, String>();
+				this.transactions.put(state, inputMapNext);
+			}
+			inputMapNext.put(input, next);
+		}
 	}
 }
 
