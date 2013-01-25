@@ -21,7 +21,8 @@ public class Main {
 		try {
 			wlDFA = new DFA(new File("resources/DFAN.txt"));
 		} catch (Exception e) {
-			System.err.println("ERROR: Invalid DFA File format: " + e.getLocalizedMessage());
+			System.err.println("ERROR: Invalid DFA File format: " + e.getLocalizedMessage() + " " + e.getClass().getName());
+			System.exit(-1);
 		}
 		wlDFA.addTokenKindTransformation("wain", "WAIN");
 		wlDFA.addTokenKindTransformation("int", "INT");
@@ -38,7 +39,7 @@ public class Main {
 		try {
 			tokens = scanner.fileToTokens(new File("resources/gcd.wl"));
 		} catch (Exception e) {
-			System.err.println("ERROR: " + e.getLocalizedMessage());
+			System.err.println("ERROR: " + e.getLocalizedMessage() + " " + e.getClass().getName());
 			System.exit(-1);
 		}
 
