@@ -1,0 +1,303 @@
+78
+A
+B
+C
+D
+E
+F
+G
+H
+I
+J
+K
+L
+M
+N
+O
+P
+Q
+R
+S
+T
+U
+V
+W
+X
+Y
+Z
+a
+b
+c
+d
+e
+f
+g
+h
+i
+j
+k
+l
+m
+n
+o
+p
+q
+r
+s
+t
+u
+v
+w
+x
+y
+z
+1
+2
+3
+4
+5
+6
+7
+8
+9
+0
+\w
+\EOF
+\t
+\n
+\r
+{
+}
+,
+.
+_
+-
+=
+\
+*
+/
+&
+27
+Start
+ID
+operation
+"string
+string"
+number
+rBracket
+lBracket
+rBrace
+lBrace
+comma
+colon
+eq
+lt
+gt
+leq
+geq
+assign
+compare
+and
+land
+slash
+or
+lor
+commentEnd
+blockComment
+blockCommentS
+Start
+23
+ID
+operation
+string"
+number
+rBracket
+lBracket
+rBrace
+lBrace
+comma
+colon
+eq
+lt
+gt
+leq
+geq
+assign
+compare
+and
+land
+slash
+or
+lor
+commentEnd
+169
+Start { lBrace
+Start } rBrace
+Start ( lBracket
+Start ) rBracket
+Start A ID
+Start B ID
+Start C ID
+Start D ID
+Start E ID
+Start F ID
+Start G ID
+Start H ID
+Start I ID
+Start J ID
+Start K ID
+Start L ID
+Start M ID
+Start N ID
+Start O ID
+Start P ID
+Start Q ID
+Start R ID
+Start S ID
+Start T ID
+Start U ID
+Start V ID
+Start W ID
+Start X ID
+Start Y ID
+Start Z ID
+Start a ID
+Start b ID
+Start c ID
+Start d ID
+Start e ID
+Start f ID
+Start g ID
+Start h ID
+Start i ID
+Start j ID
+Start k ID
+Start l ID
+Start m ID
+Start n ID
+Start o ID
+Start p ID
+Start q ID
+Start r ID
+Start s ID
+Start t ID
+Start u ID
+Start v ID
+Start w ID
+Start x ID
+Start y ID
+Start z ID
+Start _ ID
+Start 0 number
+Start 1 number
+Start 2 number
+Start 3 number
+Start 4 number
+Start 5 number
+Start 6 number
+Start 7 number
+Start 8 number
+Start 9 number
+Start * operation
+Start + operation
+Start - operation
+Start = eq
+Start . dot
+Start < lt
+Start > gt
+Start & and
+Start / slash
+Start | or
+Start " "string
+Start ; colon
+Start , comma
+Start ! 
+"string anything "string
+"string \ stringEscape
+or | lor
+and & land
+lt = leq
+gt = geq
+eq = comparison
+slash / comment
+slash * blockComment
+comment anything comment
+comment newline commentEnd
+blockComment anything blockComment
+blockComment * blockCommentS
+blockCommentS anything blockComment
+blockCommentS / commentEnd
+ID a ID
+ID b ID
+ID c ID
+ID d ID
+ID e ID
+ID f ID
+ID g ID
+ID h ID
+ID i ID
+ID j ID
+ID k ID
+ID l ID
+ID m ID
+ID n ID
+ID o ID
+ID p ID
+ID q ID
+ID r ID
+ID s ID
+ID t ID
+ID u ID
+ID v ID
+ID w ID
+ID x ID
+ID y ID
+ID z ID
+ID A ID
+ID B ID
+ID C ID
+ID D ID
+ID E ID
+ID F ID
+ID G ID
+ID H ID
+ID I ID
+ID J ID
+ID K ID
+ID L ID
+ID M ID
+ID N ID
+ID O ID
+ID P ID
+ID Q ID
+ID R ID
+ID S ID
+ID T ID
+ID U ID
+ID V ID
+ID W ID
+ID X ID
+ID Y ID
+ID Z ID
+ID _ ID
+ID - ID
+ID 0 ID
+ID 1 ID
+ID 2 ID
+ID 3 ID
+ID 4 ID
+ID 5 ID
+ID 6 ID
+ID 7 ID
+ID 8 ID
+ID 9 ID
+number 0 number
+number 1 number
+number 2 number
+number 3 number
+number 4 number
+number 5 number
+number 6 number
+number 7 number
+number 8 number
+number 9 number

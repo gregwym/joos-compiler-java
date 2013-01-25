@@ -46,6 +46,7 @@ public class Scanner {
 
 		while(reader.ready()) {
 			String line = reader.readLine();
+			line = line + "\n"; //Added newline char to input
 			int i = 0;
 			for(i = 0; i < line.length(); i = extractToken(line, i, tokens));
 		}
