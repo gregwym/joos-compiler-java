@@ -28,6 +28,7 @@ public class DFA {
 			DFA.symbolRegexTable = new HashMap<String, String>();
 			DFA.symbolRegexTable.put("any", ".");			// Anything
 			DFA.symbolRegexTable.put("space", "\\s");		// Whitespace, [' ', '\t', '\n', '\r']
+			DFA.symbolRegexTable.put("eol", "[\n\r]");		// End of line
 			DFA.symbolRegexTable.put("alpha", "[a-zA-Z]");	// Alphabets
 			DFA.symbolRegexTable.put("digit", "[0-9]");		// Digits
 			DFA.symbolRegexTable.put("punc", "[~!@#$%^&*()_+{}|:\"<>?`-=[]\\;',./]");		// Punctuation
