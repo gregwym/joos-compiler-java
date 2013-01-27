@@ -23,31 +23,35 @@ public class Main {
 	public static void main(String[] args) {
 		Main.getLogger().setLevel(Level.INFO);
 
+		Main.getLogger().fine("DFA constructing");
+
 		// Construct a DFA from file
-		DFA wlDFA = null;
+		DFA dfa = null;
 		try {
-			wlDFA = new DFA(new File("resources/joos.dfa"));
+			dfa = new DFA(new File("resources/joos.dfa"));
 		} catch (Exception e) {
 			System.err.println("ERROR: Invalid DFA File format: " + e.getLocalizedMessage() + " " + e.getClass().getName());
 			System.exit(-1);
 		}
-		
-		wlDFA.addTokenKindTransformation("wain", "WAIN");
-		wlDFA.addTokenKindTransformation("int", "INT");
-		wlDFA.addTokenKindTransformation("if", "IF");
-		wlDFA.addTokenKindTransformation("else", "ELSE");
-		wlDFA.addTokenKindTransformation("while", "WHILE");
-		wlDFA.addTokenKindTransformation("println", "PRINTLN");
-		wlDFA.addTokenKindTransformation("return", "RETURN");
+
+		dfa.addTokenKindTransformation("wain", "WAIN");
+		dfa.addTokenKindTransformation("int", "INT");
+		dfa.addTokenKindTransformation("if", "IF");
+		dfa.addTokenKindTransformation("else", "ELSE");
+		dfa.addTokenKindTransformation("while", "WHILE");
+		dfa.addTokenKindTransformation("println", "PRINTLN");
+		dfa.addTokenKindTransformation("return", "RETURN");
+
+		Main.getLogger().fine("DFA constructed: " + dfa);
 
 		// Construct a Scanner which use the DFA
-		Scanner scanner = new Scanner(wlDFA);
+		Scanner scanner = new Scanner(dfa);
 		List<Token> tokens = null;
 
 		try {
 			tokens = scanner.fileToTokens(new File("resources/gcd.wl"));
 		} catch (Exception e) {
-			
+
 			System.err.println("ERROR: " + e.getLocalizedMessage() + " " + e.getClass().getName());
 			e.printStackTrace();
 			System.exit(-1);
