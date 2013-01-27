@@ -5,6 +5,7 @@ package ca.uwaterloo.joos;
 
 import java.io.*;
 import java.util.*;
+import java.util.logging.*;
 
 /**
  * @author Greg Wang
@@ -12,10 +13,16 @@ import java.util.*;
  */
 public class Main {
 
+	public static Logger getLogger() {
+		return Logger.getLogger(Scanner.class.toString());
+	}
+
 	/**
 	 * @param args
 	 */
 	public static void main(String[] args) {
+		Main.getLogger().setLevel(Level.INFO);
+
 		// Construct a DFA from file
 		DFA wlDFA = null;
 		try {
