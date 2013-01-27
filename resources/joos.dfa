@@ -107,7 +107,7 @@ blockComment
 blockCommentS
 not
 Start
-25
+28
 ID
 operation
 string"
@@ -131,9 +131,12 @@ land
 slash
 or
 lor
-commentEnd
+comment
+blockComment
+javaDoc
 dot
-45
+not
+54
 Start { lBrace
 Start } rBrace
 Start ( lBracket
@@ -166,14 +169,23 @@ and & land
 lt = leq
 gt = geq
 eq = compare
-slash / comment
-slash * blockComment
-comment any comment
-comment space commentEnd
-blockComment any blockComment
-blockComment * blockCommentS
-blockCommentS any blockComment
-blockCommentS / commentEnd
+slash / commentB
+slash * blockCommentB
+commentB any commentB
+commentB eol comment
+blockCommentB any blockCommentB
+blockCommentB eol blockCommentB
+blockCommentB * blockCommentE
+blockCommentE any blockCommentB
+blockCommentE * blockCommentE
+blockCommentE / blockComment
+blockCommentB * javaDocB
+javaDocB any javaDocB
+javaDocB eol javaDocB
+javaDocB * javaDocE
+javaDocE any javaDocB
+javaDocE * javaDocE
+javaDocE / javaDoc
 ID alpha ID
 ID _ ID
 ID - ID
