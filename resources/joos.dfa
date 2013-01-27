@@ -1,0 +1,181 @@
+78
+A
+B
+C
+D
+E
+F
+G
+H
+I
+J
+K
+L
+M
+N
+O
+P
+Q
+R
+S
+T
+U
+V
+W
+X
+Y
+Z
+a
+b
+c
+d
+e
+f
+g
+h
+i
+j
+k
+l
+m
+n
+o
+p
+q
+r
+s
+t
+u
+v
+w
+x
+y
+z
+1
+2
+3
+4
+5
+6
+7
+8
+9
+0
+\w
+\EOF
+\t
+\n
+\r
+{
+}
+,
+.
+_
+-
+=
+\
+*
+/
+&
+28
+Start
+ID
+operation
+"string
+string"
+number
+rBracket
+lBracket
+rBrace
+lBrace
+comma
+colon
+eq
+lt
+gt
+leq
+geq
+assign
+compare
+and
+land
+slash
+or
+lor
+commentEnd
+blockComment
+blockCommentS
+not
+Start
+25
+ID
+operation
+string"
+number
+rBracket
+lBracket
+rBrace
+lBrace
+comma
+colon
+eq
+lt
+gt
+leq
+geq
+neq
+assign
+compare
+and
+land
+slash
+or
+lor
+commentEnd
+dot
+45
+Start { lBrace
+Start } rBrace
+Start ( lBracket
+Start ) rBracket
+Start alpha ID
+Start digit number
+Start _ ID
+Start * operation
+Start + operation
+Start - operation
+Start = eq
+Start . dot
+Start < lt
+Start > gt
+Start & and
+Start / slash
+Start | or
+Start " "string
+Start ; colon
+Start , comma
+Start ! not
+Start % operation
+not = neq
+"string any "string
+"string \ escape
+escape any "string
+"string " string"
+or | lor
+and & land
+lt = leq
+gt = geq
+eq = compare
+slash / comment
+slash * blockComment
+comment any comment
+comment space commentEnd
+blockComment any blockComment
+blockComment * blockCommentS
+blockCommentS any blockComment
+blockCommentS / commentEnd
+ID alpha ID
+ID _ ID
+ID - ID
+ID digit ID
+number digit number
