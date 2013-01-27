@@ -19,11 +19,12 @@ public class Main {
 		// Construct a DFA from file
 		DFA wlDFA = null;
 		try {
-			wlDFA = new DFA(new File("resources/wl.dfa"));
+			wlDFA = new DFA(new File("resources/joos.dfa"));
 		} catch (Exception e) {
 			System.err.println("ERROR: Invalid DFA File format: " + e.getLocalizedMessage() + " " + e.getClass().getName());
 			System.exit(-1);
 		}
+		
 		wlDFA.addTokenKindTransformation("wain", "WAIN");
 		wlDFA.addTokenKindTransformation("int", "INT");
 		wlDFA.addTokenKindTransformation("if", "IF");
@@ -39,7 +40,9 @@ public class Main {
 		try {
 			tokens = scanner.fileToTokens(new File("resources/gcd.wl"));
 		} catch (Exception e) {
+			
 			System.err.println("ERROR: " + e.getLocalizedMessage() + " " + e.getClass().getName());
+			e.printStackTrace();
 			System.exit(-1);
 		}
 
