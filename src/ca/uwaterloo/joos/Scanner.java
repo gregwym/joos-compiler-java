@@ -75,6 +75,7 @@ public class Scanner {
 
 			// Find next state
 			String next = this.dfa.nextStateFor(state, inChar);
+			Main.getLogger().fine("New char: " + inChar + (next == null ? "" : " next: " + next));
 
 			// If don't have next state, and
 			if(next == null){
