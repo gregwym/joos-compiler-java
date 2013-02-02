@@ -77,9 +77,11 @@ _
 *
 /
 &
-28
+30
 Start
 ID
+arrayl
+array
 operation
 "string
 string"
@@ -107,8 +109,9 @@ blockComment
 blockCommentS
 not
 Start
-28
+29
 ID
+array
 operation
 string"
 number
@@ -136,7 +139,7 @@ blockComment
 javaDoc
 dot
 not
-54
+56
 Start { lBrace
 Start } rBrace
 Start ( lBracket
@@ -190,4 +193,6 @@ ID alpha ID
 ID _ ID
 ID - ID
 ID digit ID
+ID [ arrayl
+arrayl ] array
 number digit number
