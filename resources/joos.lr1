@@ -1,0 +1,385 @@
+27
+ASN
+EMPTY
+BOF
+EOF
+EQ
+PLUS
+MINUS
+SLASH
+STAR
+LPARAM
+RPARAM
+COLON
+CLASS
+RBRACE
+LBRACE
+NUMBER
+ID
+RETURN
+WHILE
+TYPE
+COMMA
+IF
+ELSE
+FOR
+STRING
+DOT
+IMPORT
+33
+packagenew
+S
+assign
+assignvar
+class
+classes
+constr
+control
+decl
+field
+file
+imports
+import
+infor
+inif
+inmthd
+innerclass
+inwhile
+level
+method
+modifiers
+nparam
+number
+operation
+package
+packagename
+params
+preamble
+ret
+stmnt
+rstmnt
+type
+PACKAGE
+S
+51
+S BOF file EOF
+file preamble classes
+preamble package imports
+PACKAGE packagename
+packagename ID level COLON
+level DOT STAR
+level DOT ID level
+level
+imports
+imports import imports
+import IMPORT packagenew COLON
+classes
+classes class classes
+class CLASS ID LBRACE innerclass RBRACE
+innerclass
+innerclass method innerclass
+innerclass field innerclass
+innerclass constr innerclass
+field modifiers TYPE ID assign COLON
+assign
+assign EQ assignvar
+assignvar NUMBER
+assignvar STRING
+assignvar ID
+method modifiers TYPE ID LBRACE params RBRACE LBRACE inmthd RBRACE
+params
+params type ID nparam
+nparam
+nparam COMMA type ID nparam
+inmthd
+inmthd LBRACE inmthd RBRACE
+inmthd decl inmthd
+inmthd stmnt inmthd
+inmthd control inmthd
+decl modifiers type ID assign COLON
+control IF inif ELSE stmnt COLON
+control WHILE inwhile COLON
+control FOR infor COLON
+rstmnt RETURN ret COLON
+ret
+ret ID
+ret stmnt
+stmnt number operation number
+stmnt number operation ID
+stmnt ID operation ID
+stmnt ID operation number
+stmnt ID LPARAM params RPARAM
+operation PLUS
+operation MINUS
+operation SLASH
+operation STAR
+89
+268
+74 LBRACE reduce 43
+1 LBRACE shift 1
+13 operation shift 2
+13 MINUS shift 3
+73 WHILE reduce 45
+1 number shift 4
+39 classes shift 5
+74 COLON reduce 43
+38 assignvar shift 6
+49 COMMA shift 7
+8 RBRACE reduce 28
+49 nparam shift 8
+28 LBRACE reduce 34
+64 number shift 9
+1 inmthd shift 10
+74 FOR reduce 43
+11 field shift 11
+20 CLASS reduce 10
+44 RBRACE reduce 35
+80 ID shift 12
+42 ID shift 13
+1 control shift 14
+42 number shift 4
+77 CLASS reduce 8
+14 FOR shift 15
+39 EOF reduce 11
+0 BOF shift 16
+13 LPARAM shift 17
+70 COLON shift 18
+63 RBRACE reduce 26
+32 LBRACE reduce 46
+23 control shift 14
+73 IF reduce 45
+61 constr shift 19
+52 COLON shift 20
+14 ID shift 13
+73 ID reduce 45
+73 LBRACE reduce 45
+61 modifiers shift 21
+14 IF shift 22
+23 decl shift 23
+56 imports shift 24
+66 ID shift 13
+49 RPARAM reduce 27
+66 IF shift 22
+12 assign shift 25
+29 FOR reduce 37
+82 RBRACE reduce 15
+5 EOF reduce 12
+30 ID reduce 47
+41 EOF shift 26
+29 ID reduce 37
+38 STRING shift 27
+18 ID reduce 36
+29 IF reduce 37
+73 FOR reduce 45
+18 IF reduce 36
+66 decl shift 23
+25 COLON shift 28
+77 EOF reduce 8
+45 COLON shift 29
+13 PLUS shift 30
+61 method shift 31
+71 RPARAM shift 32
+66 WHILE shift 33
+20 EOF reduce 10
+1 modifiers shift 34
+72 EOF reduce 9
+47 WHILE shift 33
+1 WHILE shift 33
+28 RBRACE reduce 34
+19 modifiers shift 21
+6 COLON reduce 20
+9 ID reduce 42
+47 control shift 14
+9 IF reduce 42
+43 ID reduce 44
+28 WHILE reduce 34
+19 constr shift 19
+57 type shift 35
+32 WHILE reduce 46
+32 RBRACE reduce 46
+68 RBRACE shift 36
+43 IF reduce 44
+49 RBRACE reduce 27
+9 FOR reduce 42
+86 RBRACE reduce 30
+43 FOR reduce 44
+19 innerclass shift 37
+47 IF shift 22
+12 EQ shift 38
+39 class shift 39
+47 ID shift 13
+61 field shift 11
+38 ID shift 40
+23 ID shift 13
+58 RBRACE reduce 32
+47 RBRACE reduce 29
+23 IF shift 22
+29 RBRACE reduce 37
+16 file shift 41
+60 ELSE shift 42
+43 LBRACE reduce 44
+37 RBRACE reduce 17
+66 modifiers shift 34
+2 ID shift 43
+1 ID shift 13
+65 class shift 39
+29 WHILE reduce 37
+48 CLASS reduce 13
+1 IF shift 22
+75 COLON shift 44
+15 infor shift 45
+73 RBRACE reduce 45
+13 STAR shift 46
+1 stmnt shift 47
+47 modifiers shift 34
+4 STAR shift 46
+54 RBRACE shift 48
+81 ID shift 49
+28 FOR reduce 34
+66 RBRACE reduce 29
+61 RBRACE reduce 14
+4 MINUS shift 3
+67 RPARAM reduce 27
+66 inmthd shift 50
+79 COLON reduce 21
+40 COLON reduce 23
+73 COLON reduce 45
+47 decl shift 23
+32 COLON reduce 46
+14 decl shift 23
+44 IF reduce 35
+65 CLASS shift 51
+44 ID reduce 35
+31 method shift 31
+27 COLON reduce 22
+23 LBRACE shift 1
+18 RBRACE reduce 36
+18 WHILE reduce 36
+55 packagenew shift 52
+8 RPARAM reduce 28
+4 PLUS shift 30
+31 field shift 11
+85 EOF reduce 1
+78 RBRACE reduce 24
+11 method shift 31
+28 ID reduce 34
+51 ID shift 53
+28 IF reduce 34
+1 RBRACE reduce 29
+74 WHILE reduce 43
+61 innerclass shift 54
+11 constr shift 19
+66 control shift 14
+9 COLON reduce 42
+24 CLASS reduce 2
+77 IMPORT shift 55
+31 constr shift 19
+84 EQ shift 38
+16 package shift 56
+84 LBRACE shift 57
+43 COLON reduce 44
+74 ID reduce 43
+19 method shift 31
+47 inmthd shift 58
+4 SLASH shift 59
+57 RBRACE reduce 25
+22 inif shift 60
+47 LBRACE shift 1
+74 IF reduce 43
+53 LBRACE shift 61
+21 TYPE shift 62
+11 RBRACE reduce 14
+67 nparam shift 63
+14 modifiers shift 34
+46 ID reduce 50
+9 WHILE reduce 42
+23 modifiers shift 34
+4 operation shift 64
+16 preamble shift 65
+36 LBRACE shift 66
+88 RBRACE reduce 33
+20 IMPORT reduce 10
+14 WHILE shift 33
+35 ID shift 67
+44 LBRACE reduce 35
+39 CLASS shift 51
+57 params shift 68
+11 innerclass shift 69
+23 number shift 4
+33 inwhile shift 70
+23 stmnt shift 47
+66 FOR shift 15
+31 RBRACE reduce 14
+17 params shift 71
+32 IF reduce 46
+77 imports shift 72
+2 number shift 73
+32 ID reduce 46
+9 RBRACE reduce 42
+9 LBRACE reduce 42
+72 CLASS reduce 9
+47 number shift 4
+43 WHILE reduce 44
+67 RBRACE reduce 27
+64 ID shift 74
+1 decl shift 23
+42 stmnt shift 75
+65 EOF reduce 11
+87 COLON shift 76
+13 SLASH shift 59
+23 FOR shift 15
+77 import shift 77
+50 RBRACE shift 78
+56 IMPORT shift 55
+66 LBRACE shift 1
+14 RBRACE reduce 29
+1 FOR shift 15
+23 RBRACE reduce 29
+67 COMMA shift 7
+38 NUMBER shift 79
+31 modifiers shift 21
+26 ASN reduce 0
+43 RBRACE reduce 44
+66 number shift 4
+14 number shift 4
+56 import shift 77
+34 type shift 80
+14 LBRACE shift 1
+76 RBRACE reduce 18
+14 control shift 14
+7 type shift 81
+29 LBRACE reduce 37
+56 CLASS reduce 8
+44 FOR reduce 35
+83 RBRACE reduce 31
+31 innerclass shift 82
+63 RPARAM reduce 26
+32 FOR reduce 46
+66 stmnt shift 47
+18 LBRACE reduce 36
+56 EOF reduce 8
+23 inmthd shift 83
+17 RPARAM reduce 25
+59 ID reduce 49
+12 COLON reduce 19
+17 type shift 35
+19 RBRACE reduce 14
+74 RBRACE reduce 43
+3 ID reduce 48
+24 EOF reduce 2
+18 FOR reduce 36
+14 stmnt shift 47
+62 ID shift 84
+48 EOF reduce 13
+47 stmnt shift 47
+11 modifiers shift 21
+23 WHILE shift 33
+65 classes shift 85
+10 RBRACE shift 86
+84 assign shift 87
+44 WHILE reduce 35
+14 inmthd shift 88
+69 RBRACE reduce 16
+19 field shift 11
+47 FOR shift 15
+84 COLON reduce 19
