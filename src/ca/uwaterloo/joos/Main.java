@@ -34,14 +34,6 @@ public class Main {
 			System.exit(-1);
 		}
 
-		dfa.addTokenKindTransformation("wain", "WAIN");
-		dfa.addTokenKindTransformation("int", "INT");
-		dfa.addTokenKindTransformation("if", "IF");
-		dfa.addTokenKindTransformation("else", "ELSE");
-		dfa.addTokenKindTransformation("while", "WHILE");
-		dfa.addTokenKindTransformation("println", "PRINTLN");
-		dfa.addTokenKindTransformation("return", "RETURN");
-
 		Main.getLogger().fine("DFA constructed: " + dfa);
 
 		// Construct a Scanner which use the DFA
