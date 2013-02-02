@@ -1,193 +1,97 @@
-78
-A
-B
-C
-D
-E
-F
-G
-H
-I
-J
-K
-L
-M
-N
-O
-P
-Q
-R
-S
-T
-U
-V
-W
-X
-Y
-Z
-a
-b
-c
-d
-e
-f
-g
-h
-i
-j
-k
-l
-m
-n
-o
-p
-q
-r
-s
-t
-u
-v
-w
-x
-y
-z
-1
-2
-3
-4
-5
-6
-7
-8
-9
 0
-\w
-\EOF
-\t
-\n
-\r
-{
-}
-,
-.
-_
--
-=
-\
-*
-/
-&
-28
+0
 Start
+33
+LBRACE
+RBRACE
+LPAREN
+RPAREN
+LBRACK
+RBRACK
+ZERO
+NUM
 ID
-operation
-"string
-string"
-number
-rBracket
-lBracket
-rBrace
-lBrace
-comma
-colon
-eq
-lt
-gt
-leq
-geq
-assign
-compare
-and
-land
-slash
-or
-lor
-commentEnd
-blockComment
-blockCommentS
-not
-Start
-28
-ID
-operation
-string"
-number
-rBracket
-lBracket
-rBrace
-lBrace
-comma
-colon
-eq
-lt
-gt
-leq
-geq
-neq
-assign
-compare
-and
-land
-slash
-or
-lor
-comment
-blockComment
-javaDoc
-dot
-not
-54
-Start { lBrace
-Start } rBrace
-Start ( lBracket
-Start ) rBracket
-Start alpha ID
-Start digit number
+PLUS
+MINUS
+STAR
+SLASH
+PERCENT
+BECOME
+DOT
+LT
+GT
+BAND
+BOR
+SEMI
+COMMA
+NOT
+LEQ
+GEQ
+EQ
+OR
+AND
+NEQ
+STRING
+COMMENT
+BLOCKCOMMENT
+JAVADOC
+59
+Start { LBRACE
+Start } RBRACE
+Start ( LPAREN
+Start ) RPAREN
+Start [ LBRACK
+Start ] RBRACK
+Start 0 ZERO
+Start digit NUM
 Start _ ID
-Start * operation
-Start + operation
-Start - operation
-Start = eq
-Start . dot
-Start < lt
-Start > gt
-Start & and
-Start / slash
-Start | or
+Start alpha ID
+Start + PLUS
+Start - MINUS
+Start * STAR
+Start / SLASH
+Start % PERCENT
+Start = BECOME
+Start . DOT
+Start < LT
+Start > GT
+Start & BAND
+Start | BOR
+Start ; SEMI
+Start , COMMA
+Start ! NOT
 Start " "string
-Start ; colon
-Start , comma
-Start ! not
-Start % operation
-not = neq
-"string any "string
+NUM digit NUM
+ID alpha ID
+ID digit ID
+ID _ ID
+ID - ID
+LT = LEQ
+GT = GEQ
+BECOME = EQ
+BOR | OR
+BAND & AND
+NOT = NEQ
 "string \ escape
+"string any "string
 escape any "string
-"string " string"
-or | lor
-and & land
-lt = leq
-gt = geq
-eq = compare
-slash / commentB
-slash * blockCommentB
+"string " STRING
+SLASH / commentB
+SLASH * blockCommentS
 commentB any commentB
-commentB eol comment
+commentB eol COMMENT
+blockCommentS * javaDocB
+blockCommentS any blockCommentB
+blockCommentS eol blockCommentB
 blockCommentB any blockCommentB
 blockCommentB eol blockCommentB
 blockCommentB * blockCommentE
 blockCommentE any blockCommentB
 blockCommentE * blockCommentE
-blockCommentE / blockComment
-blockCommentB * javaDocB
+blockCommentE / BLOCKCOMMENT
 javaDocB any javaDocB
 javaDocB eol javaDocB
 javaDocB * javaDocE
 javaDocE any javaDocB
 javaDocE * javaDocE
-javaDocE / javaDoc
-ID alpha ID
-ID _ ID
-ID - ID
-ID digit ID
-number digit number
+javaDocE / JAVADOC
