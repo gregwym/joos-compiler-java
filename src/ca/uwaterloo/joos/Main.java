@@ -41,9 +41,8 @@ public class Main {
 		List<Token> tokens = null;
 
 		try {
-			tokens = scanner.fileToTokens(new File("resources/gcd.wl"));
+			tokens = scanner.fileToTokens(new File("resources/testcases/a1/Je_16_Throws_This.java"));
 		} catch (Exception e) {
-
 			System.err.println("ERROR: " + e.getLocalizedMessage() + " " + e.getClass().getName());
 			e.printStackTrace();
 			System.exit(-1);
