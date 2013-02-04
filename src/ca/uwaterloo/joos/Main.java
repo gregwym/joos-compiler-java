@@ -34,14 +34,6 @@ public class Main {
 			System.exit(-1);
 		}
 
-		dfa.addTokenKindTransformation("wain", "WAIN");
-		dfa.addTokenKindTransformation("int", "INT");
-		dfa.addTokenKindTransformation("if", "IF");
-		dfa.addTokenKindTransformation("else", "ELSE");
-		dfa.addTokenKindTransformation("while", "WHILE");
-		dfa.addTokenKindTransformation("println", "PRINTLN");
-		dfa.addTokenKindTransformation("return", "RETURN");
-
 		Main.getLogger().fine("DFA constructed: " + dfa);
 
 		// Construct a Scanner which use the DFA
@@ -49,9 +41,8 @@ public class Main {
 		List<Token> tokens = null;
 
 		try {
-			tokens = scanner.fileToTokens(new File("resources/gcd.wl"));
+			tokens = scanner.fileToTokens(new File("resources/testcases/a1/Je_16_Throws_This.java"));
 		} catch (Exception e) {
-
 			System.err.println("ERROR: " + e.getLocalizedMessage() + " " + e.getClass().getName());
 			e.printStackTrace();
 			System.exit(-1);
