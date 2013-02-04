@@ -19,6 +19,7 @@ public class DFA {
 		StartingState,
 		AcceptingStates,
 		Transactions,
+		Transformations,
 		EOF
 	}
 
@@ -144,8 +145,6 @@ public class DFA {
 			// If initializing or no more line to read
 			if(remainLines == 0) {
 				stage = DfaStruct.values()[stage.ordinal() + 1];
-//				System.out.println("At stage " + stage.toString());
-
 				if(stage == DfaStruct.StartingState) this.startingState = split[0];
 				else remainLines = Integer.parseInt(split[0]);
 				continue;
@@ -165,6 +164,9 @@ public class DFA {
 				break;
 			case Transactions:
 				this.parseTransaction(split[0], split[1], split[2]);
+				break;
+			case Transformations:
+				this.addTokenKindTransformation(split[0], split[1]);
 				break;
 			case BOF:
 			case StartingState:

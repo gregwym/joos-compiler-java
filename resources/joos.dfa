@@ -1,7 +1,7 @@
 0
 0
 Start
-33
+34
 LBRACE
 RBRACE
 LPAREN
@@ -32,10 +32,11 @@ OR
 AND
 NEQ
 STRING
+CHAR
 COMMENT
 BLOCKCOMMENT
 JAVADOC
-59
+64
 Start { LBRACE
 Start } RBRACE
 Start ( LPAREN
@@ -61,6 +62,7 @@ Start ; SEMI
 Start , COMMA
 Start ! NOT
 Start " "string
+Start ' 'char
 NUM digit NUM
 ID alpha ID
 ID digit ID
@@ -72,10 +74,14 @@ BECOME = EQ
 BOR | OR
 BAND & AND
 NOT = NEQ
-"string \ escape
+"string \ sEscape
 "string any "string
-escape any "string
+sEscape any "string
 "string " STRING
+'char any char'
+'char \ cEscape
+cEscape any char'
+char' ' CHAR
 SLASH / commentB
 SLASH * blockCommentS
 commentB any commentB
@@ -95,3 +101,53 @@ javaDocB * javaDocE
 javaDocE any javaDocB
 javaDocE * javaDocE
 javaDocE / JAVADOC
+49
+abstract	ABSTRACT
+default	DEFAULT
+if	IF
+private	PRIVATE
+this	THIS
+boolean	BOOLEAN
+do	DO
+implements	IMPLEMENTS
+protected	PROTECTED
+throw	THROW
+break	BREAK
+double	DOUBLE
+import	IMPORT
+public	PUBLIC
+throws	THROWS
+byte	BYTE
+else	ELSE
+instanceof	INSTANCEOF
+return	RETURN
+transient	TRANSIENT
+case	CASE
+extends	EXTENDS
+int	INT
+short	SHORT
+try	TRY
+catch	CATCH
+final	FINAL
+interface	INTERFACE
+static	STATIC
+void	VOID
+char	CHAR
+finally	FINALLY
+long	LONG
+strictfp	STRICTFP
+volatile	VOLATILE
+class	CLASS
+float	FLOAT
+native	NATIVE
+super	SUPER
+while	WHILE
+const	CONST
+for	FOR
+new	NEW
+switch	SWITCH
+contin	CONTIN
+ue	UE
+goto	GOTO
+package	PACKAGE
+synchronized	SYNCHRONIZED
