@@ -52,6 +52,12 @@ public class Main {
 		for(i = 0; i < tokens.size(); i++) {
 			System.out.println(tokens.get(i).toString());
 		}
+		
+		//MATT ADD
+		//Rudimentary transition table test. Once the parser is finished, the table can be declared and
+		//accessed there.
+		TransitionTable tt = new TransitionTable(new File("resources/joos.lr1"));
+		tt.getTransition("1", tokens.get(1).toString());
 	}
 
 }
