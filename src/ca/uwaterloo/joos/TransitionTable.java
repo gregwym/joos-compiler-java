@@ -54,7 +54,7 @@ public class TransitionTable {
 	//TODO Have inner map use tokenkind as key values
 	private Map <String, Map<String, String[]>> TransitionRules;
 	
-	public getLRTransitions(){
+	public String getLRTransitions(){
 		//TODO Temporary method for testing remove when finished
 		return LRTransitions.toString();
 	}
