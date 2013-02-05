@@ -36,7 +36,7 @@ CHAR
 COMMENT
 BLOCKCOMMENT
 JAVADOC
-64
+63
 Start { LBRACE
 Start } RBRACE
 Start ( LPAREN
@@ -67,7 +67,6 @@ NUM digit NUM
 ID alpha ID
 ID digit ID
 ID _ ID
-ID - ID
 LT = LEQ
 GT = GEQ
 BECOME = EQ
@@ -101,7 +100,7 @@ javaDocB * javaDocE
 javaDocE any javaDocB
 javaDocE * javaDocE
 javaDocE / JAVADOC
-48
+51
 abstract ABSTRACT
 default DEFAULT
 if IF
@@ -150,3 +149,6 @@ continue CONTINUE
 goto GOTO
 package PACKAGE
 synchronized SYNCHRONIZED
+null NULL
+true TRUE
+false FALSE
