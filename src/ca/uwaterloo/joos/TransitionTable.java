@@ -164,7 +164,7 @@ public class TransitionTable {
 	 * @return A string array containing the transition rule and the next state
 	 */
 	
-	public Action getTransition(String state, String Token){
+	public Action getTransition(int state, String Token){
 		//TODO replace second param with token type
 		Action ret = null;
 		Map<String, Action> gt = this.transitionRules.get(state);
