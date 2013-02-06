@@ -117,7 +117,6 @@ public class TransitionTable {
 				this.startState = (split[0]);
 				break;
 			case ProductionRules:
-
 				this.productionRules.add(split);
 				break;
 			case LRStates:
@@ -137,8 +136,10 @@ public class TransitionTable {
 	}
 
 	private void parseTransition(String[] split) {
+		//NOTE: split[0] was being passed as a key for transitionRules without parsing it first
+		System.err.println("PARSING LINE: " + split[0] + " " + split[1] + " " + split[2] + " " + split[3]);
 		//Adds to the parse hash 
-		Map<String, Action> transitionRule  = transitionRules.get(split[0]);
+		Map<String, Action> transitionRule  = transitionRules.get(Integer.parseInt(split[0]));
 		Action action = null;
 		if (transitionRule == null){
 			transitionRule = new HashMap<String, Action>();
@@ -169,10 +170,11 @@ public class TransitionTable {
 		Action ret = null;
 		Map<String, Action> gt = this.transitionRules.get(state);
 		if (gt == null){
-			logger.warning("TransitionTable.getTransition(): NULL Transition Rule map returned for state" + state);
+			logger.info("TransitionTable.getTransition(): NULL Transition Rule map returned for state: " + state);
 			return null;
-		}	
-		gt.get(Token);
+		}
+		ret = gt.get(Token);
+		if (ret == null) System.out.println("NULL!");
 		return ret;
 	}
 	
