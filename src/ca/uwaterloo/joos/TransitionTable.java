@@ -6,12 +6,12 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.Vector;
 import java.util.logging.Logger;
 
 /**
@@ -28,8 +28,6 @@ import java.util.logging.Logger;
  *
  */
 
-//TODO 	Clean the scanning process
-//		Remove unused declarations	
 public class TransitionTable {
 	Logger logger = Main.getLogger();
 	//Holds a table containing the LR(1) transition rules 
@@ -47,27 +45,28 @@ public class TransitionTable {
 		EOF
 	}
 
+	//TODO Clean
 	private String startState;
-	private String LRStates;
-	private String LRTransitions;
-	private Set<String> Terminals;
-	private Set<String> NonTerminals;
-	private Vector<String[]>ProductionRules;
+	private String lRStates;
+	private String lRTransitions;
+	private Set<String> terminals;
+	private Set<String> nonTerminals;
+	private List<String[]>productionRules;
 	
 	
-	//TODO Have inner map use tokenkind as key values
-	private Map <String, Map<String, Action>> TransitionRules;
+	
+	private Map <Integer, Map<String, Action>> transitionRules;
 	
 	public String getLRTransitions(){
 		//TODO Temporary method for testing remove when finished
-		return LRTransitions.toString();
+		return lRTransitions.toString();
 	}
 	public TransitionTable(File lr1){
 		//Init
-		this.Terminals = new HashSet<String>();
-		this.NonTerminals = new HashSet<String>();
-		this.ProductionRules = new Vector<String[]>();
-		this.TransitionRules = new HashMap<String, Map<String, Action>>();
+		this.terminals = new HashSet<String>();
+		this.nonTerminals = new HashSet<String>();
+		this.productionRules = new ArrayList<String[]>();
+		this.transitionRules = new HashMap<Integer, Map<String, Action>>();
 		try {
 			parseFile(lr1);
 		} catch (IOException e) {
@@ -76,7 +75,7 @@ public class TransitionTable {
 		}
 	}
 	
-	private void parseFile(File lr1) throws IOException{//TODO May want to merge this with DFA scanner...
+	private void parseFile(File lr1) throws IOException{
 		System.out.print("PARSING LR1");
 		FileInputStream inputSteam;
 		BufferedReader	reader = null;
@@ -101,7 +100,7 @@ public class TransitionTable {
 				stage = LRStruct.values()[stage.ordinal() + 1];
 				logger.fine("TransitionTable.parseFile(): STATECHANGE " + stage.toString());
 				if(stage == LRStruct.StartState) this.startState = split[0];
-				else if(stage == LRStruct.LRStates)this.LRStates = split[0];
+				else if(stage == LRStruct.LRStates)this.lRStates = split[0];
 				else remainLines = Integer.parseInt(split[0]);
 				continue;
 			}
@@ -110,7 +109,7 @@ public class TransitionTable {
 			// Parse the line
 			switch(stage) {
 			case Terminals:
-				this.Terminals.add(split[0]);
+				this.terminals.add(split[0]);
 				break;
 			case NonTerminals:
 				break;
@@ -119,10 +118,10 @@ public class TransitionTable {
 				break;
 			case ProductionRules:
 
-				this.ProductionRules.add(split);
+				this.productionRules.add(split);
 				break;
 			case LRStates:
-				this.LRStates = split[0];
+				this.lRStates = split[0];
 				break;
 			case LRTransitions:
 				this.parseTransition(split);
@@ -139,18 +138,18 @@ public class TransitionTable {
 
 	private void parseTransition(String[] split) {
 		//Adds to the parse hash 
-		Map<String, Action> transitionRule  = TransitionRules.get(split[0]);
+		Map<String, Action> transitionRule  = transitionRules.get(split[0]);
 		Action action = null;
 		if (transitionRule == null){
 			transitionRule = new HashMap<String, Action>();
-			this.TransitionRules.put(split[0], transitionRule);
+			this.transitionRules.put(Integer.parseInt(split[0]), transitionRule);
 		}
 		if (split[2].equals("reduce")){
-			Rule nrule = new Rule(this.ProductionRules.get(Integer.parseInt(split[3]))); //TODO no parseInt...?
-			action = new Reduce(nrule);
+			ProductionRule nrule = new ProductionRule(this.productionRules.get(Integer.parseInt(split[3]))); //TODO no parseInt...
+			action = new ActionReduce(nrule);
 		}
 		else{
-			action = new Shift(Integer.parseInt(split[3]));
+			action = new ActionShift(Integer.parseInt(split[3]));
 		}
 		String[] rule = {split[2], split[3]}; 
 		transitionRule.put(split[1], action);
@@ -168,7 +167,7 @@ public class TransitionTable {
 	public Action getTransition(String state, String Token){
 		//TODO replace second param with token type
 		Action ret = null;
-		Map<String, Action> gt = this.TransitionRules.get(state);
+		Map<String, Action> gt = this.transitionRules.get(state);
 		if (gt == null){
 			logger.warning("TransitionTable.getTransition(): NULL Transition Rule map returned for state" + state);
 			return null;
@@ -183,18 +182,18 @@ public class TransitionTable {
 		abstract void printRule(); 	//Test Method. REMOVE
 	}
 	
-	class Reduce extends Action{//TODO change print to log
-		Rule rule;
+	class ActionReduce extends Action{//TODO change print to log
+		ProductionRule rule;
 		public int getState(){
 			logger.warning("Action<Reduce>: ERROR: getState called on a reduce action");
 			System.exit(-2);
 			return 0;
 		}
 		
-		public Reduce(Rule inrule){
+		public ActionReduce(ProductionRule inrule){
 			rule = inrule;
 		}
-		public Rule getRule(){
+		public ProductionRule getRule(){
 			return rule;
 		}
 		
@@ -211,9 +210,9 @@ public class TransitionTable {
 		}
 	}
 
-	class Shift extends Action{
+	class ActionShift extends Action{
 		int nstate;
-		public Shift(int nextstate){
+		public ActionShift(int nextstate){
 			this.nstate = nextstate;
 		}
 		public int getState(){
@@ -230,11 +229,11 @@ public class TransitionTable {
 	}
 
 
-	class Rule{
+	class ProductionRule{
 		String lefthand;
 		String[] righthand;
 		
-		public Rule(String[] inrule){
+		public ProductionRule(String[] inrule){
 			lefthand = inrule[0];
 			righthand = new String[inrule.length - 1];
 			
@@ -251,16 +250,5 @@ public class TransitionTable {
 			return righthand;
 		}
 		
-	}
-
-	class State{
-		private int state;
-		State(int instate) {
-			state = instate;
-		}
-		
-		public int getNextState() {
-			return state;
-		}
 	}
 }
