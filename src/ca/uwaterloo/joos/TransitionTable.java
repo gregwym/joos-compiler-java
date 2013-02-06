@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.Vector;
+import java.util.logging.Logger;
 
 /**
  * 
@@ -30,6 +31,7 @@ import java.util.Vector;
 //TODO 	Clean the scanning process
 //		Remove unused declarations	
 public class TransitionTable {
+	Logger logger = Main.getLogger();
 	//Holds a table containing the LR(1) transition rules 
 	//for a given CFG.
 	
@@ -85,22 +87,21 @@ public class TransitionTable {
 			reader = new BufferedReader(new InputStreamReader(inputSteam));
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
-			System.err.println("TransitionTable.parseFile(): COULD NOT FIND lr1 FILE: " + lr1.toString());
+			logger.warning("TransitionTable.parseFile(): COULD NOT FIND lr1 FILE: " + lr1.toString());
 		}
 		
 		LRStruct stage = LRStruct.BOF;
 		while(reader.ready() && stage != LRStruct.EOF){
 			String line = reader.readLine();
 			String[] split = line.split("\\s");
-//			System.out.println(line);
+			logger.fine(line);
 			
 			
 			if(remainLines == 0) {
 				stage = LRStruct.values()[stage.ordinal() + 1];
-//				System.out.println("TransitionTable.parseFile(): STATECHANGE " + stage.toString());
+				logger.fine("TransitionTable.parseFile(): STATECHANGE " + stage.toString());
 				if(stage == LRStruct.StartState) this.startState = split[0];
 				else if(stage == LRStruct.LRStates)this.LRStates = split[0];
-				//else if(stage == LRStruct.LRTransitions)this.LRTransitions = split[0];
 				else remainLines = Integer.parseInt(split[0]);
 				continue;
 			}
@@ -133,14 +134,6 @@ public class TransitionTable {
 			}
 			
 			
-		}
-		for (int i = 0; i < ProductionRules.size(); i++){
-			String[] rule = ProductionRules.get(i);
-			System.out.print("PRODUCTION RULE: " + i + ": ");
-			for (int j = 0; j < rule.length; j++){
-				System.out.print(rule[j] + " ");
-			}
-			System.out.println();
 		}
 	}
 
@@ -175,7 +168,12 @@ public class TransitionTable {
 	public Action getTransition(String state, String Token){
 		//TODO replace second param with token type
 		Action ret = null;
-		ret = this.TransitionRules.get(state).get(Token);
+		Map<String, Action> gt = this.TransitionRules.get(state);
+		if (gt == null){
+			logger.warning("TransitionTable.getTransition(): NULL Transition Rule map returned for state" + state);
+			return null;
+		}	
+		gt.get(Token);
 		return ret;
 	}
 	
@@ -188,7 +186,7 @@ public class TransitionTable {
 	class Reduce extends Action{//TODO change print to log
 		Rule rule;
 		public int getState(){
-			System.err.println("Action<Reduce>: ERROR: getState called on a reduce action");
+			logger.warning("Action<Reduce>: ERROR: getState called on a reduce action");
 			System.exit(-2);
 			return 0;
 		}
@@ -226,7 +224,7 @@ public class TransitionTable {
 			return nstate;
 		}
 		public void printRule(){
-			System.err.println("Action<Shift>: printRule called on a SHIFT action");
+			logger.warning("Action<Shift>: printRule called on a SHIFT action");
 			System.exit(-2);
 		}
 	}
