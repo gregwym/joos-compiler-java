@@ -8,8 +8,10 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.Vector;
 
 /**
  * 
@@ -48,11 +50,11 @@ public class TransitionTable {
 	private String LRTransitions;
 	private Set<String> Terminals;
 	private Set<String> NonTerminals;
-	private Set<String> ProductionRules; //Probably not
+	private Vector<String[]>ProductionRules;
 	
 	
 	//TODO Have inner map use tokenkind as key values
-	private Map <String, Map<String, String[]>> TransitionRules;
+	private Map <String, Map<String, Action>> TransitionRules;
 	
 	public String getLRTransitions(){
 		//TODO Temporary method for testing remove when finished
@@ -62,8 +64,8 @@ public class TransitionTable {
 		//Init
 		this.Terminals = new HashSet<String>();
 		this.NonTerminals = new HashSet<String>();
-		this.ProductionRules = new HashSet<String>();
-		this.TransitionRules = new HashMap<String, Map<String, String[]>>();
+		this.ProductionRules = new Vector<String[]>();
+		this.TransitionRules = new HashMap<String, Map<String, Action>>();
 		try {
 			parseFile(lr1);
 		} catch (IOException e) {
@@ -73,6 +75,7 @@ public class TransitionTable {
 	}
 	
 	private void parseFile(File lr1) throws IOException{//TODO May want to merge this with DFA scanner...
+		System.out.print("PARSING LR1");
 		FileInputStream inputSteam;
 		BufferedReader	reader = null;
 		int				remainLines = 0;
@@ -114,6 +117,8 @@ public class TransitionTable {
 				this.startState = (split[0]);
 				break;
 			case ProductionRules:
+
+				this.ProductionRules.add(split);
 				break;
 			case LRStates:
 				this.LRStates = split[0];
@@ -126,20 +131,36 @@ public class TransitionTable {
 			default:
 				break;
 			}
+			
+			
 		}
-		
+		for (int i = 0; i < ProductionRules.size(); i++){
+			String[] rule = ProductionRules.get(i);
+			System.out.print("PRODUCTION RULE: " + i + ": ");
+			for (int j = 0; j < rule.length; j++){
+				System.out.print(rule[j] + " ");
+			}
+			System.out.println();
+		}
 	}
 
 	private void parseTransition(String[] split) {
 		//Adds to the parse hash 
-		Map<String,String[]> transitionRule  = TransitionRules.get(split[0]);
-		
+		Map<String, Action> transitionRule  = TransitionRules.get(split[0]);
+		Action action = null;
 		if (transitionRule == null){
-			transitionRule = new HashMap<String, String[]>();
+			transitionRule = new HashMap<String, Action>();
 			this.TransitionRules.put(split[0], transitionRule);
 		}
+		if (split[2].equals("reduce")){
+			Rule nrule = new Rule(this.ProductionRules.get(Integer.parseInt(split[3]))); //TODO no parseInt...?
+			action = new Reduce(nrule);
+		}
+		else{
+			action = new Shift(Integer.parseInt(split[3]));
+		}
 		String[] rule = {split[2], split[3]}; 
-		transitionRule.put(split[1], rule);
+		transitionRule.put(split[1], action);
 		
 		
 	}
@@ -151,10 +172,97 @@ public class TransitionTable {
 	 * @return A string array containing the transition rule and the next state
 	 */
 	
-	public String[] getTransition(String state, String Token){
+	public Action getTransition(String state, String Token){
 		//TODO replace second param with token type
-		String[] ret = null;
+		Action ret = null;
 		ret = this.TransitionRules.get(state).get(Token);
 		return ret;
+	}
+	
+	abstract class Action{
+		abstract int getInt();
+		abstract int getState();		//Test Method. REMOVE
+		abstract void printRule(); 	//Test Method. REMOVE
+	}
+	
+	class Reduce extends Action{//TODO change print to log
+		Rule rule;
+		public int getState(){
+			System.err.println("Action<Reduce>: ERROR: getState called on a reduce action");
+			System.exit(-2);
+			return 0;
+		}
+		
+		public Reduce(Rule inrule){
+			rule = inrule;
+		}
+		public Rule getRule(){
+			return rule;
+		}
+		
+		public int getInt(){
+			//Returns the number of symbols to pop off the stack.
+			return rule.righthand.length;
+		}
+		
+		public void printRule(){
+			System.out.print("Action<Reduce>: Rule: " + rule.getLefthand() + " ");
+			for (int i = 0; i < rule.righthand.length; i++){
+				System.out.print(rule.getRighthand()[i] + " ");
+			}
+		}
+	}
+
+	class Shift extends Action{
+		int nstate;
+		public Shift(int nextstate){
+			this.nstate = nextstate;
+		}
+		public int getState(){
+			return nstate;
+		}
+		public int getInt(){
+			//Returns the state to transition to.
+			return nstate;
+		}
+		public void printRule(){
+			System.err.println("Action<Shift>: printRule called on a SHIFT action");
+			System.exit(-2);
+		}
+	}
+
+
+	class Rule{
+		String lefthand;
+		String[] righthand;
+		
+		public Rule(String[] inrule){
+			lefthand = inrule[0];
+			righthand = new String[inrule.length - 1];
+			
+			for (int i = 1; i < inrule.length; i++){
+				righthand[i - 1] = inrule[i];
+			}
+		}
+		
+		public String getLefthand(){
+			return lefthand;
+		}
+		
+		public String[] getRighthand(){
+			return righthand;
+		}
+		
+	}
+
+	class State{
+		private int state;
+		State(int instate) {
+			state = instate;
+		}
+		
+		public int getNextState() {
+			return state;
+		}
 	}
 }
