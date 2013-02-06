@@ -36,7 +36,7 @@ CHAR
 COMMENT
 BLOCKCOMMENT
 JAVADOC
-64
+63
 Start { LBRACE
 Start } RBRACE
 Start ( LPAREN
@@ -67,7 +67,6 @@ NUM digit NUM
 ID alpha ID
 ID digit ID
 ID _ ID
-ID - ID
 LT = LEQ
 GT = GEQ
 BECOME = EQ
@@ -101,53 +100,55 @@ javaDocB * javaDocE
 javaDocE any javaDocB
 javaDocE * javaDocE
 javaDocE / JAVADOC
-49
-abstract	ABSTRACT
-default	DEFAULT
-if	IF
-private	PRIVATE
-this	THIS
-boolean	BOOLEAN
-do	DO
-implements	IMPLEMENTS
-protected	PROTECTED
-throw	THROW
-break	BREAK
-double	DOUBLE
-import	IMPORT
-public	PUBLIC
-throws	THROWS
-byte	BYTE
-else	ELSE
-instanceof	INSTANCEOF
-return	RETURN
-transient	TRANSIENT
-case	CASE
-extends	EXTENDS
-int	INT
-short	SHORT
-try	TRY
-catch	CATCH
-final	FINAL
-interface	INTERFACE
-static	STATIC
-void	VOID
-char	CHAR
-finally	FINALLY
-long	LONG
-strictfp	STRICTFP
-volatile	VOLATILE
-class	CLASS
-float	FLOAT
-native	NATIVE
-super	SUPER
-while	WHILE
-const	CONST
-for	FOR
-new	NEW
-switch	SWITCH
-contin	CONTIN
-ue	UE
-goto	GOTO
-package	PACKAGE
-synchronized	SYNCHRONIZED
+51
+abstract ABSTRACT
+default DEFAULT
+if IF
+private PRIVATE
+this THIS
+boolean BOOLEAN
+do DO
+implements IMPLEMENTS
+protected PROTECTED
+throw THROW
+break BREAK
+double DOUBLE
+import IMPORT
+public PUBLIC
+throws THROWS
+byte BYTE
+else ELSE
+instanceof INSTANCEOF
+return RETURN
+transient TRANSIENT
+case CASE
+extends EXTENDS
+int INT
+short SHORT
+try TRY
+catch CATCH
+final FINAL
+interface INTERFACE
+static STATIC
+void VOID
+char CHAR
+finally FINALLY
+long LONG
+strictfp STRICTFP
+volatile VOLATILE
+class CLASS
+float FLOAT
+native NATIVE
+super SUPER
+while WHILE
+const CONST
+for FOR
+new NEW
+switch SWITCH
+continue CONTINUE
+goto GOTO
+package PACKAGE
+synchronized SYNCHRONIZED
+null NULL
+true TRUE
+false FALSE
