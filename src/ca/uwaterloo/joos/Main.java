@@ -31,7 +31,7 @@ public class Main {
 		// Construct a DFA from file
 		DFA dfa = null;
 		try {
-			dfa = new DFA(new File("joos-compiler-java/resources/joos.dfa"));
+			dfa = new DFA(new File("resources/joos.dfa"));
 		} catch (Exception e) {
 			System.err.println("ERROR: Invalid DFA File format: " + e.getLocalizedMessage() + " " + e.getClass().getName());
 			System.exit(-1);
@@ -44,7 +44,7 @@ public class Main {
 		List<Token> tokens = null;
 
 		try {
-			tokens = scanner.fileToTokens(new File("joos-compiler-java/resources/testcases/a1/Je_16_Throws_This.java"));
+			tokens = scanner.fileToTokens(new File("resources/testcases/a1/Je_16_Throws_This.java"));
 		} catch (Exception e) {
 			System.err.println("ERROR: " + e.getLocalizedMessage() + " " + e.getClass().getName());
 			e.printStackTrace();
@@ -59,7 +59,7 @@ public class Main {
 		//MATT ADD
 		//Rudimentary transition table test. Once the parser is finished, the table can be declared and
 		//accessed there.
-		TransitionTable tt = new TransitionTable(new File("joos-compiler-java/resources/joos.lr1"));
+		TransitionTable tt = new TransitionTable(new File("resources/joos.lr1"));
 		Action tst = tt.getTransition("78", "CLASS");
 		System.out.println("Action Int: " + tst.getInt());
 		tst = tt.getTransition("88", "RBRACE");
