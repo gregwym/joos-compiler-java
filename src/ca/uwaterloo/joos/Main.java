@@ -62,6 +62,6 @@ public class Main {
 		LR1 lr1 = new LR1(new File("resources/sample.lr1"));
 
 		LR1Parser lr1Parser = new LR1Parser(lr1);
-    	lr1Parser.checkGrammer(tokens);
+		lr1Parser.checkGrammer(tokens);
 	}
 }
