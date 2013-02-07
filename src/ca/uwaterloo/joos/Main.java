@@ -7,8 +7,7 @@ import java.io.*;
 import java.util.*;
 import java.util.logging.*;
 
-import ca.uwaterloo.joos.TransitionTable.Action;
-
+import ca.uwaterloo.joos.TransitionTable.*;
 
 /**
  * @author Greg Wang
@@ -60,11 +59,10 @@ public class Main {
 		//Rudimentary transition table test. Once the parser is finished, the table can be declared and
 		//accessed there.
 		TransitionTable tt = new TransitionTable(new File("resources/joos.lr1"));
-		Action tst = tt.getTransition(78, "RBRACE");
-		System.out.println("Action Int: " + tst.getInt());
-		tst = tt.getTransition(88, "RBRACE");
-		System.out.println("Action Int: " + tst.getInt());
-		tst.printRule();
+		Action tst = tt.actionFor(78, "RBRACE");
+		System.out.println(tst.toString());
+		tst = tt.actionFor(88, "RBRACE");
+		System.out.println(tst.toString());
 	}
 
 }
