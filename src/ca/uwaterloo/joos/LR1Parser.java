@@ -1,9 +1,9 @@
 package ca.uwaterloo.joos;
 
-import java.util.List;
-import java.util.Stack;
+import java.util.*;
+import java.util.logging.*;
 
-import ca.uwaterloo.joos.LR1.Action;
+import ca.uwaterloo.joos.LR1.*;
 
 /**
  *
@@ -13,15 +13,10 @@ import ca.uwaterloo.joos.LR1.Action;
  */
 
 public class LR1Parser {
+	private static final Logger logger = Main.getLogger();
+	private final LR1 lr1;
 
-	private Stack<TransitionState> parseStack = new Stack<TransitionState>();
-	private List<Token> tokenList;
-	private int currentState = 0;
-//	private Token currentToken = null;
-	private int currentIndex = 0;
-	private LR1 lr1;
-
-	class TransitionState {
+	private class TransitionState {
 		private Token token;
 		private int state;
 
@@ -34,8 +29,8 @@ public class LR1Parser {
 			return state;
 		}
 
-		public Token getToken() {
-			return token;
+		public String toString() {
+			return "<TransitionState> " + String.valueOf(this.state) + " | " + this.token;
 		}
 	}
 
@@ -44,72 +39,48 @@ public class LR1Parser {
 	}
 
 	public boolean checkGrammer(List<Token> tokens) {
+		String startSymbol = lr1.getStartSymbol();
+		ListIterator<Token> tokensIterator = tokens.listIterator();
+		Stack<TransitionState> parseStack = new Stack<TransitionState>();
+		parseStack.push(new TransitionState(null, 0));
 
-		tokenList = tokens;
-		parseStack.push(new TransitionState(new Token("DollarSign", "$"), 0));
-		Token nextToken = nextToken();
-
-		while (true) {
+		int currentState = 0;
+		Token nextToken = tokensIterator.next();
+		Action nextAction = null;
+		while (!nextToken.getKind().equals(startSymbol)) {
 			currentState = parseStack.peek().getState();
-//			currentToken = parseStack.peek().getToken();
-			System.out.println("@@@nexttoken" + nextToken.getKind()
-					+ "currentState" + currentState);
-			Action nextAction = lr1.actionFor(currentState, nextToken.getKind());
+			nextAction = lr1.actionFor(currentState, nextToken.getKind());
+			LR1Parser.logger.fine("Next:\tState " + currentState + " + " + nextToken + " => " + nextAction);
 
 			if (nextAction instanceof LR1.ActionShift) {
-				parseStack.push(new TransitionState(nextToken, nextAction
-						.getInt()));
-				System.out.println("shift push " + nextToken.toString()
-						+ "currentState" + nextAction.getInt());
-				nextToken = nextToken();
-				if (nextToken == null) {
-					continue;
-				}
+				ActionShift shift = (ActionShift) nextAction;
+				LR1Parser.logger.info("Shift:\t" + shift);
+
+				TransitionState transitionState = new TransitionState(nextToken, shift.getToState());
+				parseStack.push(transitionState);
+				LR1Parser.logger.info("├─ Push:\t" + transitionState);
+
+				if(!tokensIterator.hasNext()) tokensIterator = tokens.listIterator();
+				nextToken = tokensIterator.next();
 			}
 			else if (nextAction instanceof LR1.ActionReduce){
-				for (int i = 0; i < nextAction.getInt(); i++) {
-					System.out.println("pop");
-					parseStack.pop();
+				ActionReduce reduce = (ActionReduce) nextAction;
+				LR1Parser.logger.info("Redue:\t" + reduce);
+
+				for (int i = 0; i < reduce.getInt(); i++) {
+					TransitionState poppedState = parseStack.pop();
+					LR1Parser.logger.info("├─ Pop:\t" + poppedState);
 				}
-				currentIndex--;
-
-				// currentState = parseStack.peek().getState();
-				String leftHand = ((LR1.ActionReduce) nextAction)
-						.getProductionRule().getLefthand();
-				// parseStack.push(new TransitionState(new
-				// Token(leftHand,"NT"),currentState));
-				System.out.println("reduce to" + leftHand);
-				System.out.println(nextAction.toString());
-				nextToken = new Token(leftHand, "NonTerminal");
-				if (nextToken.getKind().equals("S")) {
-					System.out.println("@@@accept");
-					return true;
-				}
-				// nextToken = parseStack.peek().getToken();
-
-				/*
-				 * currentToken = parseStack.peek().getToken();
-				 * System.out.println
-				 * ("currentState"+currentState+"currentToken"+
-				 * currentToken+"nextToken"+nextToken);
-				 */
-
-				// break;
+				tokensIterator.previous();
+				nextToken = new Token(reduce.getProductionRule().getLefthand(), Arrays.toString(reduce.getProductionRule().getRighthand()));
 			}
 			else {
-				System.out.println("Internal error: unknown action");
-				break;
+				LR1Parser.logger.severe("ERROR: No valid action for State " + currentState + " + " + nextToken);
+				return false;
 			}
 		}
-		return true;
-	}
 
-	private Token nextToken() {
-		if (currentIndex == tokenList.size()) {
-			currentIndex = 0;
-		}
-		Token nextToken = tokenList.get(currentIndex);
-		currentIndex++;
-		return nextToken;
+		LR1Parser.logger.info("Tokens has been validated against LR1");
+		return true;
 	}
 }
