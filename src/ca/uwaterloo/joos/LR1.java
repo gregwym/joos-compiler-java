@@ -16,7 +16,7 @@ import java.util.logging.*;
  *
  */
 
-public class TransitionTable {
+public class LR1 {
 	Logger logger = Main.getLogger();
 
 	enum LR1Struct {
@@ -37,7 +37,7 @@ public class TransitionTable {
 	private int numOfStates;
 	private Map <Integer, Map<String, Action>> transitionRules;
 
-	public TransitionTable(File lr1File){
+	public LR1(File lr1File){
 		this.terminalSymbols = new HashSet<String>();
 		this.nonTerminalSymbols = new HashSet<String>();
 		this.startSymbol = null;
