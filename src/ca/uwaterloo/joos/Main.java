@@ -43,12 +43,15 @@ public class Main {
 		List<Token> tokens = null;
 
 		try {
-			tokens = scanner.fileToTokens(new File("resources/testcases/a1/Je_16_Throws_This.java"));
+			tokens = scanner.fileToTokens(new File("resources/sample.in"));
 		} catch (Exception e) {
 			System.err.println("ERROR: " + e.getLocalizedMessage() + " " + e.getClass().getName());
 			e.printStackTrace();
 			System.exit(-1);
 		}
+		
+		Preprocessor preprocessor = new Preprocessor();
+		tokens = preprocessor.processTokens(tokens);
 
 		int i = 0;
 		for(i = 0; i < tokens.size(); i++) {
@@ -58,11 +61,9 @@ public class Main {
 		//MATT ADD
 		//Rudimentary transition table test. Once the parser is finished, the table can be declared and
 		//accessed there.
-		LR1 tt = new LR1(new File("resources/joos.lr1"));
-		Action tst = tt.actionFor(78, "RBRACE");
-		System.out.println(tst.toString());
-		tst = tt.actionFor(88, "RBRACE");
-		System.out.println(tst.toString());
+		LR1 lr1 = new LR1(new File("resources/sample.lr1"));
+		
+		LR1Parser lr1Parser = new LR1Parser(lr1);
+    	lr1Parser.checkGrammer(tokens);
 	}
-
 }
