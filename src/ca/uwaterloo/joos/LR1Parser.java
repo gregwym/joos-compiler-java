@@ -6,12 +6,13 @@ import java.util.logging.*;
 import ca.uwaterloo.joos.LR1.*;
 
 /**
+ * LR1 Parser
+ *
+ * which use the given LR1 table to parse a list of tokens
  *
  * @author Wenzhu Man
  *
- *
  */
-
 public class LR1Parser {
 	private static final Logger logger = Main.getLogger();
 	private final LR1 lr1;
@@ -38,6 +39,12 @@ public class LR1Parser {
 		this.lr1 = lr1;
 	}
 
+	/**
+	 * Validate a list of tokens against the LR1
+	 * 
+	 * @param tokens the list of tokens to be validated
+	 * @return whether the list of tokens is valid 
+	 */
 	public boolean checkGrammer(List<Token> tokens) {
 		// Initialize startSymbol, tokens iterator and parsing stack
 		String startSymbol = lr1.getStartSymbol();
@@ -48,10 +55,10 @@ public class LR1Parser {
 		// Initialize parsing state variables
 		Token nextToken = tokensIterator.next();
 		Action nextAction = null;
-		
+
 		// Execute lr1 parsing until the tokens has been reduced to the startSymbol
 		while (!nextToken.getKind().equals(startSymbol)) {
-			
+
 			// Acquire next action, according to the current state and the next token kind
 			nextAction = lr1.actionFor(parseStack.peek().getState(), nextToken.getKind());
 			LR1Parser.logger.fine("Next:\tState " + parseStack.peek().getState() + " + " + nextToken + " => " + nextAction);
@@ -81,10 +88,10 @@ public class LR1Parser {
 					TransitionState poppedState = parseStack.pop();
 					LR1Parser.logger.info("├─ Pop:\t" + poppedState);
 				}
-				
+
 				// Iterate back one token, since it has not been pushed to the stack
 				tokensIterator.previous();
-				
+
 				// Next token is the production rule's LHS
 				nextToken = new Token(reduce.getProductionRule().getLefthand(), Arrays.toString(reduce.getProductionRule().getRighthand()));
 			}
