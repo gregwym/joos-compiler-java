@@ -6,10 +6,10 @@ import java.util.Stack;
 import ca.uwaterloo.joos.LR1.Action;
 
 /**
- * 
+ *
  * @author Wenzhu Man
- * 
- * 
+ *
+ *
  */
 
 public class LR1Parser {
@@ -17,89 +17,60 @@ public class LR1Parser {
 	private Stack<TransitionState> parseStack = new Stack<TransitionState>();
 	private List<Token> tokenList;
 	private int currentState = 0;
-	private Token currentToken = null;
-	private static int currentIndex = 0;
-	private static LR1 tt;
-
-	// private static Grammar grammar;
-
-	// private static Generator jlr;
+//	private Token currentToken = null;
+	private int currentIndex = 0;
+	private LR1 lr1;
 
 	class TransitionState {
-		private Token currentToken = null;
-		private int currentState;
+		private Token token;
+		private int state;
 
-		public TransitionState(Token currentToken, int currentState) {
-			this.currentState = currentState;
-			this.currentToken = currentToken;
+		public TransitionState(Token token, int state) {
+			this.state = state;
+			this.token = token;
 		}
 
 		public int getState() {
-			return currentState;
+			return state;
 		}
 
 		public Token getToken() {
-			return currentToken;
+			return token;
 		}
 	}
 
-	public LR1Parser(LR1 inputTt)
-
-	{
-
-		tt = inputTt;
-
+	public LR1Parser(LR1 lr1) {
+		this.lr1 = lr1;
 	}
 
-	public boolean checkGrammer(List<Token> tokens)
-
-	{
+	public boolean checkGrammer(List<Token> tokens) {
 
 		tokenList = tokens;
-
 		parseStack.push(new TransitionState(new Token("DollarSign", "$"), 0));
+		Token nextToken = nextToken();
 
-		Token nextToken = NextToken();
-
-		while (true)
-
-		{
-
+		while (true) {
 			currentState = parseStack.peek().getState();
-
-			currentToken = parseStack.peek().getToken();
-
+//			currentToken = parseStack.peek().getToken();
 			System.out.println("@@@nexttoken" + nextToken.getKind()
 					+ "currentState" + currentState);
-
-			Action nextAction = tt.actionFor(currentState, nextToken.getKind());
+			Action nextAction = lr1.actionFor(currentState, nextToken.getKind());
 
 			if (nextAction instanceof LR1.ActionShift) {
-
 				parseStack.push(new TransitionState(nextToken, nextAction
 						.getInt()));
 				System.out.println("shift push " + nextToken.toString()
 						+ "currentState" + nextAction.getInt());
-
-				nextToken = NextToken();
+				nextToken = nextToken();
 				if (nextToken == null) {
 					continue;
 				}
-
-				// System.out.println(" "+((ShiftAction) nextAction).);
-
 			}
-
-			else if (nextAction instanceof LR1.ActionReduce)
-
-			{
-
+			else if (nextAction instanceof LR1.ActionReduce){
 				for (int i = 0; i < nextAction.getInt(); i++) {
 					System.out.println("pop");
 					parseStack.pop();
-
 				}
-
 				currentIndex--;
 
 				// currentState = parseStack.peek().getState();
@@ -113,7 +84,6 @@ public class LR1Parser {
 				if (nextToken.getKind().equals("S")) {
 					System.out.println("@@@accept");
 					return true;
-
 				}
 				// nextToken = parseStack.peek().getToken();
 
@@ -125,30 +95,21 @@ public class LR1Parser {
 				 */
 
 				// break;
-
 			}
-
 			else {
 				System.out.println("Internal error: unknown action");
 				break;
-
 			}
-
 		}
 		return true;
-
 	}
 
-	private Token NextToken()
-
-	{
+	private Token nextToken() {
 		if (currentIndex == tokenList.size()) {
 			currentIndex = 0;
 		}
 		Token nextToken = tokenList.get(currentIndex);
 		currentIndex++;
 		return nextToken;
-
 	}
-
 }
