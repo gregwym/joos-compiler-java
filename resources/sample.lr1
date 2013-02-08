@@ -1,0 +1,49 @@
+6
+BOF
+EOF
+ID
+MINUS
+LPAREN
+RPAREN
+3
+S
+expr
+term
+S
+5
+S BOF expr EOF
+expr term
+expr expr MINUS term
+term ID
+term LPAREN expr RPAREN
+11
+29
+2 RPAREN reduce 3
+2 MINUS reduce 3
+6 expr shift 1
+6 ID shift 2
+3 EOF reduce 1
+6 term shift 3
+10 EOF reduce 2
+1 MINUS shift 4
+1 EOF shift 5
+0 BOF shift 6
+6 LPAREN shift 7
+2 EOF reduce 3
+3 MINUS reduce 1
+9 MINUS reduce 4
+9 RPAREN reduce 4
+7 ID shift 2
+5 BOF reduce 0
+7 term shift 3
+4 ID shift 2
+7 expr shift 8
+8 RPAREN shift 9
+8 MINUS shift 4
+10 MINUS reduce 2
+9 EOF reduce 4
+7 LPAREN shift 7
+4 term shift 10
+4 LPAREN shift 7
+3 RPAREN reduce 1
+10 RPAREN reduce 2
