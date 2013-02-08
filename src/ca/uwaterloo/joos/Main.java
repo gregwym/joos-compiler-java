@@ -7,8 +7,6 @@ import java.io.*;
 import java.util.*;
 import java.util.logging.*;
 
-import ca.uwaterloo.joos.LR1.*;
-
 /**
  * @author Greg Wang
  *
@@ -49,7 +47,7 @@ public class Main {
 			e.printStackTrace();
 			System.exit(-1);
 		}
-		
+
 		Preprocessor preprocessor = new Preprocessor();
 		tokens = preprocessor.processTokens(tokens);
 
@@ -57,13 +55,13 @@ public class Main {
 		for(i = 0; i < tokens.size(); i++) {
 			System.out.println(tokens.get(i).toString());
 		}
-		
+
 		//MATT ADD
 		//Rudimentary transition table test. Once the parser is finished, the table can be declared and
 		//accessed there.
 		LR1 lr1 = new LR1(new File("resources/sample.lr1"));
-		
+
 		LR1Parser lr1Parser = new LR1Parser(lr1);
-    	lr1Parser.checkGrammer(tokens);
+		lr1Parser.checkGrammer(tokens);
 	}
 }
