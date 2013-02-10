@@ -1,7 +1,7 @@
 0
 0
 Start
-34
+35
 LBRACE
 RBRACE
 LPAREN
@@ -23,6 +23,7 @@ GT
 BAND
 BOR
 SEMI
+COLON
 COMMA
 NOT
 LEQ
@@ -36,7 +37,7 @@ CHAR
 COMMENT
 BLOCKCOMMENT
 JAVADOC
-63
+64
 Start { LBRACE
 Start } RBRACE
 Start ( LPAREN
@@ -59,6 +60,7 @@ Start > GT
 Start & BAND
 Start | BOR
 Start ; SEMI
+Start : COLON
 Start , COMMA
 Start ! NOT
 Start " "string
