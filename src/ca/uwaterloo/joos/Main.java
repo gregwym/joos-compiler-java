@@ -10,6 +10,7 @@ import java.util.logging.Logger;
 
 import ca.uwaterloo.joos.parser.LR1;
 import ca.uwaterloo.joos.parser.LR1Parser;
+import ca.uwaterloo.joos.parser.ParseTree;
 import ca.uwaterloo.joos.scanner.DFA;
 import ca.uwaterloo.joos.scanner.Scanner;
 import ca.uwaterloo.joos.scanner.Token;
@@ -60,11 +61,11 @@ public class Main {
 		// Preprocess the tokens
 		Preprocessor preprocessor = new Preprocessor();
 		tokens = preprocessor.processTokens(tokens);
-		
+
 		/* Parsing */
 		// Construct a LR1 from file
 		LR1 lr1 = null;
-		
+
 		try {
 			lr1 = new LR1(new File("resources/sample.lr1"));
 		} catch (Exception e) {
@@ -74,6 +75,15 @@ public class Main {
 		}
 
 		LR1Parser lr1Parser = new LR1Parser(lr1);
-		lr1Parser.checkGrammer(tokens);
+		ParseTree parseTree = null;
+		try {
+			parseTree = lr1Parser.parseTokens(tokens);
+		} catch (Exception e) {
+			System.err.println("ERROR: " + e.getLocalizedMessage() + " " + e.getClass().getName());
+			e.printStackTrace();
+			System.exit(42);
+		}
+
+		System.out.println(parseTree);
 	}
 }
