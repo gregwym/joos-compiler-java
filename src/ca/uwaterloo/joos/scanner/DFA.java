@@ -1,7 +1,7 @@
 /**
  *
  */
-package ca.uwaterloo.joos;
+package ca.uwaterloo.joos.scanner;
 
 import java.io.*;
 import java.util.*;

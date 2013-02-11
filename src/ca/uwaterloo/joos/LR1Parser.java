@@ -4,6 +4,7 @@ import java.util.*;
 import java.util.logging.*;
 
 import ca.uwaterloo.joos.LR1.*;
+import ca.uwaterloo.joos.scanner.Token;
 
 /**
  * LR1 Parser

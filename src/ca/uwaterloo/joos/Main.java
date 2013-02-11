@@ -3,9 +3,14 @@
  */
 package ca.uwaterloo.joos;
 
-import java.io.*;
-import java.util.*;
-import java.util.logging.*;
+import java.io.File;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import ca.uwaterloo.joos.scanner.DFA;
+import ca.uwaterloo.joos.scanner.Scanner;
+import ca.uwaterloo.joos.scanner.Token;
 
 /**
  * @author Greg Wang
@@ -41,7 +46,7 @@ public class Main {
 		List<Token> tokens = null;
 
 		try {
-			tokens = scanner.fileToTokens(new File("resources/testcases/a1/Je_1_NonJoosConstructs_Switch.java"));
+			tokens = scanner.fileToTokens(new File("resources/sample.in"));
 		} catch (Exception e) {
 			System.err.println("ERROR: " + e.getLocalizedMessage() + " " + e.getClass().getName());
 			e.printStackTrace();

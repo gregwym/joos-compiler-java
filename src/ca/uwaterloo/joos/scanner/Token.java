@@ -1,6 +1,4 @@
-package ca.uwaterloo.joos;
-
-//import java.util.*;
+package ca.uwaterloo.joos.scanner;
 
 public class Token {
 	private String kind;
@@ -10,7 +8,7 @@ public class Token {
 		this.kind = kind;
 		this.lexeme = lexeme;
 	}
-	
+
 	/**
 	 * @return the kind
 	 */
