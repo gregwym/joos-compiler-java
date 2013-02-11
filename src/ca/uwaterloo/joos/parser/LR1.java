@@ -154,6 +154,14 @@ public class LR1 {
 		return numOfStates;
 	}
 
+	public boolean isTerminalSymbol(String symbol) {
+		return this.terminalSymbols.contains(symbol);
+	}
+
+	public boolean isNonTerminalSymbol(String symbol) {
+		return this.nonTerminalSymbols.contains(symbol);
+	}
+
 	public abstract class Action{
 
 		/**
