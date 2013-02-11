@@ -41,7 +41,7 @@ public class Main {
 		List<Token> tokens = null;
 
 		try {
-			tokens = scanner.fileToTokens(new File("resources/sample.in"));
+			tokens = scanner.fileToTokens(new File("resources/testcases/a1/Je_1_NonJoosConstructs_Switch.java"));
 		} catch (Exception e) {
 			System.err.println("ERROR: " + e.getLocalizedMessage() + " " + e.getClass().getName());
 			e.printStackTrace();
