@@ -1,8 +1,10 @@
-package ca.uwaterloo.joos;
+package ca.uwaterloo.joos.parser;
 
 import java.io.*;
 import java.util.*;
 import java.util.logging.*;
+
+import ca.uwaterloo.joos.Main;
 
 /**
  *

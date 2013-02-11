@@ -1,9 +1,10 @@
-package ca.uwaterloo.joos;
+package ca.uwaterloo.joos.parser;
 
 import java.util.*;
 import java.util.logging.*;
 
-import ca.uwaterloo.joos.LR1.*;
+import ca.uwaterloo.joos.Main;
+import ca.uwaterloo.joos.parser.LR1.*;
 import ca.uwaterloo.joos.scanner.Token;
 
 /**
@@ -42,9 +43,9 @@ public class LR1Parser {
 
 	/**
 	 * Validate a list of tokens against the LR1
-	 * 
+	 *
 	 * @param tokens the list of tokens to be validated
-	 * @return whether the list of tokens is valid 
+	 * @return whether the list of tokens is valid
 	 */
 	public boolean checkGrammer(List<Token> tokens) {
 		// Initialize startSymbol, tokens iterator and parsing stack
