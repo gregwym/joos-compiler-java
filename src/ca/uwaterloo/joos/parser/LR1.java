@@ -1,8 +1,10 @@
-package ca.uwaterloo.joos;
+package ca.uwaterloo.joos.parser;
 
 import java.io.*;
 import java.util.*;
 import java.util.logging.*;
+
+import ca.uwaterloo.joos.Main;
 
 /**
  *
@@ -37,32 +39,20 @@ public class LR1 {
 	private int numOfStates;
 	private Map <Integer, Map<String, Action>> transitionRules;
 
-	public LR1(File lr1File){
+	public LR1(File lr1File) throws Exception {
 		this.terminalSymbols = new HashSet<String>();
 		this.nonTerminalSymbols = new HashSet<String>();
 		this.startSymbol = null;
 		this.productionRules = new ArrayList<ProductionRule>();
 		this.numOfStates = 0;
 		this.transitionRules = new HashMap<Integer, Map<String, Action>>();
-		try {
-			parseFile(lr1File);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+
+		parseFile(lr1File);
 	}
 
-	private void parseFile(File lr1File) throws IOException{
-		FileInputStream inputSteam = null;
-		BufferedReader	reader = null;
-
-		try {
-			inputSteam = new FileInputStream(lr1File);
-			reader = new BufferedReader(new InputStreamReader(inputSteam));
-		} catch (FileNotFoundException e) {
-			logger.severe("Could not open lr1 file: " + lr1File.toString());
-			e.printStackTrace();
-			return;
-		}
+	private void parseFile(File lr1File) throws Exception {
+		FileInputStream inputSteam = new FileInputStream(lr1File);
+		BufferedReader	reader = new BufferedReader(new InputStreamReader(inputSteam));
 
 		int	remainLines = 0;
 		LR1Struct stage = LR1Struct.BOF;

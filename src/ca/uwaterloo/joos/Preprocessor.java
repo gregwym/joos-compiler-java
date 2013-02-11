@@ -2,6 +2,8 @@ package ca.uwaterloo.joos;
 
 import java.util.*;
 
+import ca.uwaterloo.joos.scanner.Token;
+
 public class Preprocessor {
 	
 	private final Set<String> undesiredTokenKinds = new HashSet<String>();

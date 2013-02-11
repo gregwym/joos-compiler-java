@@ -3,9 +3,16 @@
  */
 package ca.uwaterloo.joos;
 
-import java.io.*;
-import java.util.*;
-import java.util.logging.*;
+import java.io.File;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import ca.uwaterloo.joos.parser.LR1;
+import ca.uwaterloo.joos.parser.LR1Parser;
+import ca.uwaterloo.joos.scanner.DFA;
+import ca.uwaterloo.joos.scanner.Scanner;
+import ca.uwaterloo.joos.scanner.Token;
 
 /**
  * @author Greg Wang
@@ -25,6 +32,7 @@ public class Main {
 
 		Main.getLogger().fine("DFA constructing");
 
+		/* Scanning */
 		// Construct a DFA from file
 		DFA dfa = null;
 		try {
@@ -40,26 +48,30 @@ public class Main {
 		Scanner scanner = new Scanner(dfa);
 		List<Token> tokens = null;
 
+		// Scan the source codes into tokens
 		try {
-			tokens = scanner.fileToTokens(new File("resources/testcases/a1/Je_1_NonJoosConstructs_Switch.java"));
+			tokens = scanner.fileToTokens(new File("resources/sample.in"));
 		} catch (Exception e) {
 			System.err.println("ERROR: " + e.getLocalizedMessage() + " " + e.getClass().getName());
 			e.printStackTrace();
-			System.exit(-1);
+			System.exit(42);
 		}
 
+		// Preprocess the tokens
 		Preprocessor preprocessor = new Preprocessor();
 		tokens = preprocessor.processTokens(tokens);
-
-		int i = 0;
-		for(i = 0; i < tokens.size(); i++) {
-			System.out.println(tokens.get(i).toString());
+		
+		/* Parsing */
+		// Construct a LR1 from file
+		LR1 lr1 = null;
+		
+		try {
+			lr1 = new LR1(new File("resources/sample.lr1"));
+		} catch (Exception e) {
+			System.err.println("ERROR: Invalid LR1 File format: " + e.getLocalizedMessage() + " " + e.getClass().getName());
+			e.printStackTrace();
+			System.exit(-2);
 		}
-
-		//MATT ADD
-		//Rudimentary transition table test. Once the parser is finished, the table can be declared and
-		//accessed there.
-		LR1 lr1 = new LR1(new File("resources/sample.lr1"));
 
 		LR1Parser lr1Parser = new LR1Parser(lr1);
 		lr1Parser.checkGrammer(tokens);

@@ -1,7 +1,9 @@
-package ca.uwaterloo.joos;
+package ca.uwaterloo.joos.scanner;
 
 import java.util.*;
 import java.io.*;
+
+import ca.uwaterloo.joos.Main;
 
 public class Scanner {
 	private DFA dfa = null;

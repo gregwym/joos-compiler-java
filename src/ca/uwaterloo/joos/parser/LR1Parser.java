@@ -1,9 +1,11 @@
-package ca.uwaterloo.joos;
+package ca.uwaterloo.joos.parser;
 
 import java.util.*;
 import java.util.logging.*;
 
-import ca.uwaterloo.joos.LR1.*;
+import ca.uwaterloo.joos.Main;
+import ca.uwaterloo.joos.parser.LR1.*;
+import ca.uwaterloo.joos.scanner.Token;
 
 /**
  * LR1 Parser
@@ -41,9 +43,9 @@ public class LR1Parser {
 
 	/**
 	 * Validate a list of tokens against the LR1
-	 * 
+	 *
 	 * @param tokens the list of tokens to be validated
-	 * @return whether the list of tokens is valid 
+	 * @return whether the list of tokens is valid
 	 */
 	public boolean checkGrammer(List<Token> tokens) {
 		// Initialize startSymbol, tokens iterator and parsing stack
@@ -66,12 +68,12 @@ public class LR1Parser {
 			// If is a shift
 			if (nextAction instanceof LR1.ActionShift) {
 				ActionShift shift = (ActionShift) nextAction;
-				LR1Parser.logger.info("Shift:\t" + shift);
+				LR1Parser.logger.info("" + shift);
 
 				// Push the transitionState to the stack
 				TransitionState transitionState = new TransitionState(nextToken, shift.getToState());
 				parseStack.push(transitionState);
-				LR1Parser.logger.info("├─ Push:\t" + transitionState);
+				LR1Parser.logger.fine("├─ Push:\t" + transitionState);
 
 				// Iterate to next token
 				// Note: if there is no next, move cursor back to front first
@@ -81,12 +83,12 @@ public class LR1Parser {
 			// If is a reduction
 			else if (nextAction instanceof LR1.ActionReduce){
 				ActionReduce reduce = (ActionReduce) nextAction;
-				LR1Parser.logger.info("Redue:\t" + reduce);
+				LR1Parser.logger.info("" + reduce);
 
 				// Pop the stack according to the length of the production rule's RHS
 				for (int i = 0; i < reduce.getInt(); i++) {
 					TransitionState poppedState = parseStack.pop();
-					LR1Parser.logger.info("├─ Pop:\t" + poppedState);
+					LR1Parser.logger.fine("├─ Pop:\t" + poppedState);
 				}
 
 				// Iterate back one token, since it has not been pushed to the stack
