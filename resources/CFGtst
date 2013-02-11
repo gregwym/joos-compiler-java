@@ -1,0 +1,180 @@
+50
+BOF
+EOF
+EQ
+PLUS
+MINUS
+SLASH
+STAR
+LPAREN
+RPAREN
+LBRACK
+RBRACK
+PERCENT
+BECOME
+LT
+GT
+BAND
+BOR
+SEMI
+NOT
+PACKAGE
+LEQ
+GEQ
+OR
+AND
+NEQ
+COMMENT
+COLON
+CLASS
+RBRACE
+PUBLIC
+LPARAM
+RPARAM
+LBRACE
+NUM
+NULL
+ZERO
+ID
+RETURN
+WHILE
+TYPE
+COMMA
+IF
+ELSE
+FOR
+STRING
+DOT
+IMPORT
+IMPLEMENTS
+STATIC
+INT
+51
+packagenew
+S
+args
+assign
+assignvar
+abs
+call
+classes
+comp
+cond
+constr
+control
+decl
+else
+extraop
+field
+file
+for
+imports
+import
+infor
+inif
+inmethod
+innerclass
+interface
+inwhile
+if
+level
+method
+modifier
+modifiers
+nparam
+number
+op
+ops
+operator
+ovar
+package
+packagename
+param
+params
+path
+preamble
+relation
+ret
+static
+stmnt
+rstmnt
+type
+val
+while
+S
+75
+S BOF file EOF
+abs
+abs DOT ID abs
+abs DOT STAR
+assign
+assign BECOME NUM
+assign BECOME STRING
+assign BECOME op
+call ID LPAREN RPAREN
+classes
+classes CLASS ID LBRACE innerclass RBRACE classes
+classes modifier CLASS ID LBRACE innerclass RBRACE classes
+comp EQ
+comp LT
+comp GT
+cond val comp val
+control for
+control if
+control while
+else
+else ELSE stmnt
+else ELSE LBRACE inmethod RBRACE
+field modifiers type ID assign SEMI
+file preamble classes
+for FOR LPAREN type ID BECOME val SEMI cond SEMI ID BECOME op RPAREN stmnt 
+for FOR LPAREN type ID BECOME val SEMI cond SEMI ID BECOME op RPAREN LBRACE inmethod RBRACE
+if IF LPAREN cond RPAREN stmnt else
+if IF LPAREN cond RPAREN LBRACE inmethod RBRACE else
+imports
+imports IMPORT path SEMI imports
+inmethod
+inmethod LBRACE inmethod RBRACE
+inmethod field inmethod
+inmethod stmnt inmethod
+inmethod control inmethod
+innerclass
+innerclass SEMI innerclass
+innerclass field innerclass
+innerclass method innerclass
+innerclass interface innerclass
+innerclass LBRACE innerclass RBRACE innerclass
+modifiers modifier modifiers
+modifiers
+modifier PUBLIC
+modifier STATIC
+method modifiers type ID LPAREN param RPAREN LBRACE inmethod RBRACE 
+op val operator val ops
+ops
+ops operator val
+operator PLUS
+operator MINUS
+operator STAR
+operator SLASH
+package 
+package PACKAGE path SEMI
+param
+param type ID params
+params
+params COMMA type ID params
+path ID abs
+preamble package imports
+stmnt ID LPAREN RPAREN SEMI
+stmnt ID assign SEMI
+stmnt RETURN val SEMI
+stmnt RETURN op SEMI
+stmnt RETURN NULL SEMI
+stmnt RETURN SEMI
+stmnt op SEMI
+type INT
+type STRING
+val ID
+val call
+val NUM
+while WHILE LPAREN cond RPAREN stmnt
+while WHILE LPAREN cond RPAREN LBRACE inmethod RBRACE
