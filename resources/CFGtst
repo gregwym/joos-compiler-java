@@ -1,13 +1,15 @@
-50
+57
 BOF
 EOF
 EQ
 PLUS
 MINUS
 SLASH
+BYTE
 STAR
 LPAREN
 RPAREN
+PRIVATE
 LBRACK
 RBRACK
 PERCENT
@@ -18,7 +20,10 @@ BAND
 BOR
 SEMI
 NOT
+BOOLEAN
+CHAR
 PACKAGE
+SHORT
 LEQ
 GEQ
 OR
@@ -28,8 +33,10 @@ COMMENT
 COLON
 CLASS
 RBRACE
+PROTECTED
 PUBLIC
 LPARAM
+INTERFACE
 RPARAM
 LBRACE
 NUM
@@ -49,132 +56,197 @@ IMPORT
 IMPLEMENTS
 STATIC
 INT
-51
-packagenew
+68
 S
-args
+arglist
+arrayaccess
+arrayinit
+arraytype
 assign
-assignvar
-abs
-call
-classes
-comp
-cond
-constr
-control
-decl
-else
-extraop
-field
+assignexpr
+assignop
+block
+blockstmnt
+blockstmnts
+classbody
+classbodydecl
+classbodydecls
+classdecl
+classmemberdecl
+condexpr
+emptystmnt
+expr
+exprstmnt
+stmntexpr
+stmntexprlst
+stmntnotrail
+extendsinterfaces
+fieldaccess
+fielddecl
 file
 for
-imports
-import
-infor
-inif
-inmethod
-innerclass
-interface
-inwhile
-if
-level
-method
-modifier
+forinit
+forupdate
+ifthen
+ifthenelse
+importdecl
+interfaces
+interfacedecl
+lefthand
+localvardecl
+localvardeclstmnt
+methodbody
+methoddecl
+methoddeclr
+methodhead
+methodinvoke
 modifiers
-nparam
-number
-op
-ops
-operator
-ovar
-package
-packagename
+modifier
+name
+numerictype
+ondemandimport
+packagedecl
 param
 params
-path
-preamble
-relation
-ret
-static
+primary
+primitivetype
+qualifiedname
+retstmnt
+referencetype
+simplename
+singletypeimport
+staticinit
 stmnt
-rstmnt
+super
 type
-val
+typedecl
+variabledecl
+variabledeclid
+variabledecls
+variableinit
 while
 S
-75
+116
 S BOF file EOF
-abs
-abs DOT ID abs
-abs DOT STAR
-assign
-assign BECOME NUM
-assign BECOME STRING
-assign BECOME op
-call ID LPAREN RPAREN
-classes
-classes CLASS ID LBRACE innerclass RBRACE classes
-classes modifier CLASS ID LBRACE innerclass RBRACE classes
-comp EQ
-comp LT
-comp GT
-cond val comp val
-control for
-control if
-control while
-else
-else ELSE stmnt
-else ELSE LBRACE inmethod RBRACE
-field modifiers type ID assign SEMI
-file preamble classes
-for FOR LPAREN type ID BECOME val SEMI cond SEMI ID BECOME op RPAREN stmnt 
-for FOR LPAREN type ID BECOME val SEMI cond SEMI ID BECOME op RPAREN LBRACE inmethod RBRACE
-if IF LPAREN cond RPAREN stmnt else
-if IF LPAREN cond RPAREN LBRACE inmethod RBRACE else
-imports
-imports IMPORT path SEMI imports
-inmethod
-inmethod LBRACE inmethod RBRACE
-inmethod field inmethod
-inmethod stmnt inmethod
-inmethod control inmethod
-innerclass
-innerclass SEMI innerclass
-innerclass field innerclass
-innerclass method innerclass
-innerclass interface innerclass
-innerclass LBRACE innerclass RBRACE innerclass
-modifiers modifier modifiers
-modifiers
-modifier PUBLIC
+arglist expr
+arglist arglist COMMA expr
+arrayaccess name LBRACK expr RBRACK
+arrayinit
+assign lefthand assignop assignexpr 
+assignexpr condexpr
+assignexpr assign
+assignop BECOME
+block LBRACE blockstmnts RBRACE
+block LBRACE RBRACE
+blockstmnt localvardeclstmnt
+blockstmnt stmnt
+blockstmnts blockstmnt
+blockstmnts blockstmnts blockstmnt
+classbody LBRACE RBRACE
+classbody LBRACE classbodydecls RBRACE
+classbodydecl classmemberdecl
+classbodydecl staticinit
+classbodydecls classbodydecl
+classbodydecls classbodydecls classbodydecl
+classdecl modifiers CLASS ID interfaces classbody
+classdecl CLASS ID interfaces classbody
+classdecl modifiers CLASS ID classbody
+classdecl CLASS ID classbody
+classmemberdecl fielddecl
+classmemberdecl methoddecl
+emptystmnt SEMI
+expr assignexpr
+stmntexpr SEMI
+fieldaccess
+fielddecl modifiers type variabledecls SEMI
+fielddecl type variabledecls SEMI
+file packagedecl importdecl typedecl
+for FOR LBRACE forinit SEMI expr SEMI forupdate RBRACE stmnt
+forinit localvardecl
+forupdate stmntexprlst
+ifthen IF LPAREN expr RPAREN stmnt
+ifthenelse IF LPAREN expr RPAREN stmntnotrail ELSE stmnt
+importdecl
+importdecl singletypeimport
+importdecl ondemandimport
+interfacedecl INTERFACE ID LBRACE RBRACE
+interfacedecl INTERFACE ID extendsinterfaces LBRACE RBRACE
+interfacedecl modifiers INTERFACE ID LBRACE RBRACE
+interfacedecl modifiers INTERFACE ID extendsinterfaces LBRACE RBRACE
+lefthand name
+lefthand fieldaccess
+lefthand arrayaccess
+localvardecl type variabledecls
+localvardeclstmnt localvardecl SEMI
+methodbody block
+methodbody SEMI
+methoddecl methodhead methodbody
+methoddeclr ID LPAREN RPAREN
+methoddeclr ID LPAREN params RPAREN
+methodhead type methoddeclr
+methodhead modifiers type methoddeclr
+methodinvoke name LPAREN arglist RPAREN
+methodinvoke name LPAREN RPAREN
+methodinvoke primary DOT ID LPAREN RPAREN
+methodinvoke primary DOT ID LPAREN arglist RPAREN
+methodinvoke super DOT ID LPAREN arglist RPAREN
+methodinvoke super DOT ID LPAREN RPAREN
+modifier PUBLIC 
+modifier PROTECTED
+modifier PRIVATE
 modifier STATIC
-method modifiers type ID LPAREN param RPAREN LBRACE inmethod RBRACE 
-op val operator val ops
-ops
-ops operator val
-operator PLUS
-operator MINUS
-operator STAR
-operator SLASH
-package 
-package PACKAGE path SEMI
-param
-param type ID params
-params
-params COMMA type ID params
-path ID abs
-preamble package imports
-stmnt ID LPAREN RPAREN SEMI
-stmnt ID assign SEMI
-stmnt RETURN val SEMI
-stmnt RETURN op SEMI
-stmnt RETURN NULL SEMI
-stmnt RETURN SEMI
-stmnt op SEMI
-type INT
-type STRING
-val ID
-val call
-val NUM
-while WHILE LPAREN cond RPAREN stmnt
-while WHILE LPAREN cond RPAREN LBRACE inmethod RBRACE
+modifiers modifier
+modifiers modifiers modifier
+name simplename
+name qualifiedname
+numerictype BYTE
+numerictype SHORT
+numerictype INT
+numerictype CHAR
+ondemandimport IMPORT name DOT STAR SEMI
+packagedecl
+packagedecl PACKAGE name SEMI
+param type variabledeclid
+params param
+params params COMMA param
+primary primnoarr
+primary arraycreate
+primitivetype numerictype
+primitivetype arraytype
+primitivetype BOOLEAN
+primnoarr LPAREN expr RPAREN
+primnoarr fieldaccess
+primnoarr methodinvoke
+primnoarr arrayaccess
+qualifiedname name DOT ID
+retstmnt RETURN SEMI
+retstmnt RETURN expr SEMI
+singletypeimport IMPORT name SEMI
+stmnt stmntnotrail
+stmnt ifthen
+stmnt ifthenelse
+stmnt while
+stmnt for
+stmntexpr assign
+stmntexpr methodinvoke
+stmntexprlst stmntexpr
+stmntexprlst stmntexprlst COMMA stmntexpr
+stmntnotrail block
+stmntnotrail emptystmnt
+stmntnotrail exprstmnt
+stmntnotrail retstmnt
+type primitivetype
+type referencetype
+typedecl
+typedecl classdecl
+typedecl interfacedecl
+typedecl SEMI
+variabledecl variabledeclid
+variabledecl variabledeclid BECOME variableinit
+variabledeclid ID
+variabledeclid variabledeclid LBRACK RBRACK
+variabledecls variabledecl
+variabledecls variabledecls COMMA variabledecl
+variableinit expr
+variableinit arrayinit
+while WHILE LPAREN expr RPAREN stmnt
