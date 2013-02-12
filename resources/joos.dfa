@@ -9,7 +9,7 @@ RPAREN
 LBRACK
 RBRACK
 ZERO
-NUM
+INTLIT
 ID
 PLUS
 MINUS
@@ -32,8 +32,8 @@ EQ
 OR
 AND
 NEQ
-STRING
-CHAR
+STRINGLIT
+CHARLIT
 COMMENT
 BLOCKCOMMENT
 JAVADOC
@@ -45,7 +45,7 @@ Start ) RPAREN
 Start [ LBRACK
 Start ] RBRACK
 Start 0 ZERO
-Start digit NUM
+Start digit INTLIT
 Start _ ID
 Start alpha ID
 Start + PLUS
@@ -65,7 +65,7 @@ Start , COMMA
 Start ! NOT
 Start " "string
 Start ' 'char
-NUM digit NUM
+INTLIT digit INTLIT
 ID alpha ID
 ID digit ID
 ID _ ID
@@ -78,11 +78,11 @@ NOT = NEQ
 "string \ sEscape
 "string any "string
 sEscape any "string
-"string " STRING
+"string " STRINGLIT
 'char any char'
 'char \ cEscape
 cEscape any char'
-char' ' CHAR
+char' ' CHARLIT
 SLASH / commentB
 SLASH * blockCommentS
 commentB any commentB
@@ -152,5 +152,5 @@ goto GOTO
 package PACKAGE
 synchronized SYNCHRONIZED
 null NULL
-true TRUE
-false FALSE
+true BOOLLIT
+false BOOLLIT
