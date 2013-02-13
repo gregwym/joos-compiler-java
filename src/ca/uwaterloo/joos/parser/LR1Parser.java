@@ -25,7 +25,7 @@ import ca.uwaterloo.joos.scanner.Token;
  *
  */
 public class LR1Parser {
-	private static final Logger logger = Main.getLogger();
+	private static final Logger logger = Main.getLogger(LR1Parser.class);
 	private final LR1 lr1;
 
 	@SuppressWarnings("serial")
@@ -81,19 +81,22 @@ public class LR1Parser {
 
 			// Acquire next action, according to the current state and the next token kind
 			nextAction = lr1.actionFor(parseStack.peek().getState(), nextToken.getKind());
-			LR1Parser.logger.fine("Next:\tState " + parseStack.peek().getState() + " + " + nextToken + " => " + nextAction);
+			logger.finer("Next:\tState " + parseStack.peek().getState() + " + " + nextToken + " => " + nextAction);
 
 			// If is a shift
 			if (nextAction instanceof LR1.ActionShift) {
 				ActionShift shift = (ActionShift) nextAction;
-				LR1Parser.logger.info("" + shift);
+				logger.fine("" + shift);
 
 				// Push the transitionState to the stack
 				TransitionState transitionState = new TransitionState(nextToken, shift.getToState());
 				parseStack.push(transitionState);
-				LR1Parser.logger.fine("├─ Push:\t" + transitionState);
+				logger.finer("├─ Push:\t" + transitionState);
 
-				if(lr1.isTerminalSymbol(nextToken.getKind())) nodeStack.push(new LeafNode(nextToken));
+				// Push token as leaf node if it is a terminal symbol
+				if(lr1.isTerminalSymbol(nextToken.getKind())) {
+					nodeStack.push(new LeafNode(nextToken));
+				}
 
 				// Iterate to next token
 				// Note: if there is no next, move cursor back to front first
@@ -103,18 +106,20 @@ public class LR1Parser {
 			// If is a reduction
 			else if (nextAction instanceof LR1.ActionReduce){
 				ActionReduce reduce = (ActionReduce) nextAction;
-				LR1Parser.logger.info("" + reduce);
+				logger.fine("" + reduce);
 
 				List<Node> poppedNodes = new LinkedList<Node>();
 
 				// Pop the stack according to the length of the production rule's RHS
 				for (int i = 0; i < reduce.getInt(); i++) {
 					TransitionState poppedState = parseStack.pop();
-					LR1Parser.logger.fine("├─ Pop:\t" + poppedState);
+					logger.finer("├─ Pop:\t" + poppedState);
 					poppedNodes.add(0, nodeStack.pop());
 				}
 
-				nodeStack.push(new TreeNode(reduce.getProductionRule(), poppedNodes));
+				// Push the production rule as a tree node
+				Node treeNode = new TreeNode(reduce.getProductionRule(), poppedNodes);
+				nodeStack.push(treeNode);
 
 				// Iterate back one token, since it has not been pushed to the stack
 				tokensIterator.previous();
@@ -124,13 +129,15 @@ public class LR1Parser {
 			}
 			// No action found, validation failed
 			else {
-				LR1Parser.logger.severe("ERROR: No valid action for State " + parseStack.peek().getState() + " + " + nextToken);
+				String nodeStackTrace = "";
+				for(Node root: nodeStack) nodeStackTrace += root;
+				logger.severe("ERROR: No valid action for State " + parseStack.peek().getState() + " + " + nextToken + "\n" + nodeStackTrace);
 				throw new ParseException("ERROR: No valid action found during parsing");
 			}
 		}
 
 		// The tokens has been reduced to startSymbol, validation succeed
-		LR1Parser.logger.info("Tokens has been validated against LR1");
+		logger.info("Tokens has been validated against LR1");
 
 		assert nodeStack.size() == 1 : "Node stack has more than one node";
 		ParseTree parseTree = new ParseTree(nodeStack.pop());

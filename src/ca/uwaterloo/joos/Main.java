@@ -20,18 +20,19 @@ import ca.uwaterloo.joos.scanner.Token;
  *
  */
 public class Main {
+	private static final Logger logger = Main.getLogger(Main.class);
 
-	public static Logger getLogger() {
-		return Logger.getLogger(Scanner.class.toString());
+	public static Logger getLogger(Class<?> cls) {
+		return Logger.getLogger(Main.class.getName());
 	}
 
 	/**
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		Main.getLogger().setLevel(Level.INFO);
+		logger.setLevel(Level.INFO);
 
-		Main.getLogger().fine("DFA constructing");
+		logger.fine("DFA constructing");
 
 		/* Scanning */
 		// Construct a DFA from file
@@ -43,7 +44,7 @@ public class Main {
 			System.exit(-1);
 		}
 
-		Main.getLogger().fine("DFA constructed: " + dfa);
+		logger.fine("DFA constructed: " + dfa);
 
 		// Construct a Scanner which use the DFA
 		Scanner scanner = new Scanner(dfa);
@@ -83,7 +84,5 @@ public class Main {
 			e.printStackTrace();
 			System.exit(42);
 		}
-
-		System.out.println(parseTree);
 	}
 }
