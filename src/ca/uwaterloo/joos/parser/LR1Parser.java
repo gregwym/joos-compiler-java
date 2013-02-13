@@ -130,7 +130,7 @@ public class LR1Parser {
 			// No action found, validation failed
 			else {
 				String nodeStackTrace = "";
-				for(Node root: nodeStack) nodeStackTrace += root;
+				for(Node root: nodeStack) nodeStackTrace += root.toString(0);
 				logger.severe("ERROR: No valid action for State " + parseStack.peek().getState() + " + " + nextToken + "\n" + nodeStackTrace);
 				throw new ParseException("ERROR: No valid action found during parsing");
 			}
