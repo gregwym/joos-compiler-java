@@ -20,21 +20,23 @@ import ca.uwaterloo.joos.scanner.Token;
  *
  */
 public class Main {
+	private static final Logger logger = Main.getLogger(Main.class);
 
-	public static Logger getLogger() {
-		return Logger.getLogger(Scanner.class.toString());
+	public static Logger getLogger(Class<?> cls) {
+		return Logger.getLogger(Main.class.getName());
 	}
-
-	/**
-	 * @param args
-	 */
-	public static void main(String[] args) {
-		Main.getLogger().setLevel(Level.INFO);
-
-		Main.getLogger().fine("DFA constructing");
-
-		/* Scanning */
-		// Construct a DFA from file
+	
+	private final Scanner scanner;
+	private final LR1Parser parser;
+	private final Preprocessor preprocessor;
+	
+	public Main() {
+		logger.setLevel(Level.INFO);
+		
+		// Construct Preprocessor
+		this.preprocessor = new Preprocessor();
+		
+		// Read a DFA from file
 		DFA dfa = null;
 		try {
 			dfa = new DFA(new File("resources/joos.dfa"));
@@ -42,30 +44,11 @@ public class Main {
 			System.err.println("ERROR: Invalid DFA File format: " + e.getLocalizedMessage() + " " + e.getClass().getName());
 			System.exit(-1);
 		}
-
-		Main.getLogger().fine("DFA constructed: " + dfa);
-
-		// Construct a Scanner which use the DFA
-		Scanner scanner = new Scanner(dfa);
-		List<Token> tokens = null;
-
-		// Scan the source codes into tokens
-		try {
-			tokens = scanner.fileToTokens(new File("resources/testcases/a1/J1_01.java"));
-		} catch (Exception e) {
-			System.err.println("ERROR: " + e.getLocalizedMessage() + " " + e.getClass().getName());
-			e.printStackTrace();
-			System.exit(42);
-		}
-
-		// Preprocess the tokens
-		Preprocessor preprocessor = new Preprocessor();
-		tokens = preprocessor.processTokens(tokens);
-
-		/* Parsing */
-		// Construct a LR1 from file
+		// Construct Scanner
+		this.scanner = new Scanner(dfa);
+		
+		// Read a LR1 from file
 		LR1 lr1 = null;
-
 		try {
 			lr1 = new LR1(new File("resources/joos.lr1"));
 		} catch (Exception e) {
@@ -73,17 +56,42 @@ public class Main {
 			e.printStackTrace();
 			System.exit(-2);
 		}
+		// Construct Parser
+		this.parser = new LR1Parser(lr1);
+	}
+	
+	public Object execute(File source) throws Exception {
+		logger.info("Processing: " + source.getName());
+		
+		/* Scanning */
+		// Construct a Scanner which use the DFA
+		List<Token> tokens = null;
 
-		LR1Parser lr1Parser = new LR1Parser(lr1);
+		// Scan the source codes into tokens
+		tokens = this.scanner.fileToTokens(source);
+
+		// Preprocess the tokens
+		tokens = preprocessor.processTokens(tokens);
+
+		/* Parsing */
 		ParseTree parseTree = null;
+		parseTree = this.parser.parseTokens(tokens);
+		
+		return parseTree;
+	}
+
+	/**
+	 * @param args
+	 */
+	public static void main(String[] args) {
+		Main instance = new Main();
+		
 		try {
-			parseTree = lr1Parser.parseTokens(tokens);
+			instance.execute(new File("resources/testcases/a1/J1_01.java"));
 		} catch (Exception e) {
 			System.err.println("ERROR: " + e.getLocalizedMessage() + " " + e.getClass().getName());
 			e.printStackTrace();
 			System.exit(42);
 		}
-
-		System.out.println(parseTree);
 	}
 }

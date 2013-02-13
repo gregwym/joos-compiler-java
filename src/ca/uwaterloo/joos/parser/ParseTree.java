@@ -28,6 +28,11 @@ public class ParseTree {
 		}
 
 		@Override
+		public String toString() {
+			return this.productionRule.toString();
+		}
+
+		@Override
 		public String toString(int level) {
 			String str = "";
 			for(int i = 0; i < level; i++) {
@@ -45,6 +50,11 @@ public class ParseTree {
 
 		public LeafNode(Token token) {
 			this.token = token;
+		}
+
+		@Override
+		public String toString() {
+			return this.token.toString();
 		}
 
 		@Override

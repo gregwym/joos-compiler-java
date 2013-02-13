@@ -1,8 +1,17 @@
 package ca.uwaterloo.joos.parser;
 
-import java.io.*;
-import java.util.*;
-import java.util.logging.*;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.InputStreamReader;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.logging.Logger;
 
 import ca.uwaterloo.joos.Main;
 
@@ -19,7 +28,7 @@ import ca.uwaterloo.joos.Main;
  */
 
 public class LR1 {
-	Logger logger = Main.getLogger();
+	private static final Logger logger = Main.getLogger(LR1.class);
 
 	enum LR1Struct {
 		BOF,
@@ -59,11 +68,11 @@ public class LR1 {
 		while(reader.ready() && stage != LR1Struct.EOF){
 			String line = reader.readLine();
 			String[] split = line.split("\\s");
-			logger.fine("Read in line: " + line);
+			logger.finer("Read in line: " + line);
 
 			if(remainLines == 0) {
 				stage = LR1Struct.values()[stage.ordinal() + 1];
-				logger.fine("Stage changes: " + stage.toString());
+				logger.fine("Stage changes to " + stage.toString());
 
 				// Deal with special cases, or read new remainLines
 				if(stage == LR1Struct.StartSymbol) this.startSymbol = split[0];
@@ -95,6 +104,13 @@ public class LR1 {
 				break;
 			}
 		}
+		logger.info("LR1 Table constructed with:\n" +
+					this.terminalSymbols.size() + " terminal symbols\n" +
+					this.nonTerminalSymbols.size() + " non terminal symbols\n" +
+					this.startSymbol + " as the start symbol\n" +
+					this.productionRules.size() + " production rules\n" +
+					this.numOfStates + " number of states\n" +
+					this.transitionRules.size() + " transition rules");
 
 		reader.close();
 	}
@@ -103,7 +119,7 @@ public class LR1 {
 		assert split.length == 4: "A LR1 transition must have 4 components";
 
 		//NOTE: split[0] was being passed as a key for transitionRules without parsing it first
-		logger.fine("Parsing: " + split[0] + " " + split[1] + " " + split[2] + " " + split[3]);
+		logger.finer("Parsing: " + split[0] + " " + split[1] + " " + split[2] + " " + split[3]);
 
 		// Find all rules for the given state, if nothing, create and add a new Map
 		int state = Integer.parseInt(split[0]);
@@ -126,7 +142,7 @@ public class LR1 {
 			logger.severe("Reach unknown action type");
 		}
 		rulesForState.put(split[1], action);
-		logger.info("TransitionRule added: " + state + " " + split[1] + " -> " + action.toString());
+		logger.fine("TransitionRule added: " + state + " " + split[1] + " -> " + action.toString());
 	}
 
 	/**

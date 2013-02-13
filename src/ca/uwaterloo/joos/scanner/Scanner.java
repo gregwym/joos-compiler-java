@@ -1,11 +1,16 @@
 package ca.uwaterloo.joos.scanner;
 
-import java.util.*;
-import java.io.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.logging.Logger;
 
 import ca.uwaterloo.joos.Main;
 
 public class Scanner {
+	private static final Logger logger = Main.getLogger(Scanner.class);
 	private DFA dfa = null;
 
 	@SuppressWarnings("serial")
@@ -29,6 +34,8 @@ public class Scanner {
 		List<Token> tokens = new ArrayList<Token>();
 		char[] inChars = inStr.toCharArray();
 		for(int i = 0, n = inStr.length(); i < n; i = extractToken(inChars, i, n, tokens));
+
+		logger.info("In total, scanned " + tokens.size() + " tokens");
 
 		return tokens;
 	}
@@ -77,7 +84,7 @@ public class Scanner {
 
 			// Find next state
 			String next = this.dfa.nextStateFor(state, inChar);
-			Main.getLogger().fine("New char: " + inChar + (next == null ? "" : " next: " + next));
+			logger.finer("New char: " + inChar + (next == null ? "" : " next: " + next));
 
 			// If don't have next state, and
 			if(next == null){
@@ -86,12 +93,12 @@ public class Scanner {
 					String transformedKind = this.dfa.getTokenKindTransformation(lexeme);
 					Token token = new Token(transformedKind == null ? state : transformedKind, lexeme);
 					tokens.add(token);
-					Main.getLogger().info("Token added: " + token);
+					logger.fine("Token added: " + token);
 					break;
 				}
 				// not on an accepting state, throw exception (using simplified max munch)
 				else {
-					Main.getLogger().severe("Token ended at non-accepting state: " + lexeme);
+					logger.severe("Token ended at non-accepting state: " + lexeme);
 					throw new ScanException("Token ended at non-accepting state");
 				}
 			}
