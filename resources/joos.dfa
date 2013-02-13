@@ -37,7 +37,7 @@ CHARLIT
 COMMENT
 BLOCKCOMMENT
 JAVADOC
-65
+67
 Start { LBRACE
 Start } RBRACE
 Start ( LPAREN
@@ -87,7 +87,7 @@ SLASH / commentB
 SLASH * blockCommentS
 commentB any commentB
 commentB eol COMMENT
-blockCommentS * javaDocB
+blockCommentS * javaDocS
 blockCommentS any blockCommentB
 blockCommentS eol blockCommentB
 blockCommentB any blockCommentB
@@ -96,9 +96,11 @@ blockCommentB * blockCommentE
 blockCommentE any blockCommentB
 blockCommentE * blockCommentE
 blockCommentE / BLOCKCOMMENT
+javaDocS any javaDocB
+javaDocS eol javaDocB
+javaDocS / BLOCKCOMMENT
 javaDocB any javaDocB
 javaDocB eol javaDocB
-javaDocB / BLOCKCOMMENT
 javaDocB * javaDocE
 javaDocE any javaDocB
 javaDocE * javaDocE
