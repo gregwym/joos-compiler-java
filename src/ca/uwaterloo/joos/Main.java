@@ -51,7 +51,7 @@ public class Main {
 
 		// Scan the source codes into tokens
 		try {
-			tokens = scanner.fileToTokens(new File("resources/sample.in"));
+			tokens = scanner.fileToTokens(new File("resources/testcases/a1/J1_01.java"));
 		} catch (Exception e) {
 			System.err.println("ERROR: " + e.getLocalizedMessage() + " " + e.getClass().getName());
 			e.printStackTrace();
@@ -67,7 +67,7 @@ public class Main {
 		LR1 lr1 = null;
 
 		try {
-			lr1 = new LR1(new File("resources/sample.lr1"));
+			lr1 = new LR1(new File("resources/joos.lr1"));
 		} catch (Exception e) {
 			System.err.println("ERROR: Invalid LR1 File format: " + e.getLocalizedMessage() + " " + e.getClass().getName());
 			e.printStackTrace();
