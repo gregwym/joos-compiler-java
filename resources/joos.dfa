@@ -102,7 +102,7 @@ javaDocB * javaDocE
 javaDocE any javaDocB
 javaDocE * javaDocE
 javaDocE / JAVADOC
-51
+52
 abstract ABSTRACT
 default DEFAULT
 if IF
@@ -154,3 +154,4 @@ synchronized SYNCHRONIZED
 null NULL
 true BOOLLIT
 false BOOLLIT
+0 INTLIT
