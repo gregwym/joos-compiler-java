@@ -40,10 +40,14 @@ public class DFA {
 			DFA.symbolRegexTable = new HashMap<String, String>();
 			DFA.symbolRegexTable.put("any", ".");			// Anything
 			DFA.symbolRegexTable.put("space", "\\s");		// Whitespace, [' ', '\t', '\n', '\r']
-			DFA.symbolRegexTable.put("eol", "[\n\r]");		// End of line
+			DFA.symbolRegexTable.put("eol", "[\\n\\r]");		// End of line
 			DFA.symbolRegexTable.put("alpha", "[a-zA-Z]");	// Alphabets
 			DFA.symbolRegexTable.put("digit", "[0-9]");		// Digits
-			DFA.symbolRegexTable.put("punc", "[~!@#$%^&*()_+{}|:\"<>?`-=[]\\;',./]");		// Punctuation
+			DFA.symbolRegexTable.put("punc", "[~!@#$%^&*()_+{}|:\"<>?`-=[]\\\\;',./]");		// Punctuation
+			DFA.symbolRegexTable.put("escape", "[btnfr\"'\\\\]");
+			DFA.symbolRegexTable.put("octal", "[0-7]");
+			DFA.symbolRegexTable.put("not-octal", "[^0-7]");
+			DFA.symbolRegexTable.put("0-3", "[0-3]");
 		}
 
 		return DFA.symbolRegexTable.get(keyword);
