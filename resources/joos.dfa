@@ -1,7 +1,7 @@
 0
 0
 Start
-35
+37
 LBRACE
 RBRACE
 LPAREN
@@ -22,6 +22,8 @@ LT
 GT
 BAND
 BOR
+XOR
+NEG
 SEMI
 COLON
 COMMA
@@ -59,14 +61,14 @@ Start < LT
 Start > GT
 Start & BAND
 Start | BOR
+Start ^ XOR
+Start ~ NEG
 Start ; SEMI
 Start : COLON
 Start , COMMA
 Start ! NOT
 Start " "string
 Start ' 'char
-Start ^ xor
-Start ~ negation
 INTLIT digit INTLIT
 ID alpha ID
 ID digit ID
