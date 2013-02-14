@@ -1,7 +1,7 @@
 0
 0
 Start
-35
+37
 LBRACE
 RBRACE
 LPAREN
@@ -22,6 +22,8 @@ LT
 GT
 BAND
 BOR
+XOR
+NEG
 SEMI
 COLON
 COMMA
@@ -37,7 +39,7 @@ CHARLIT
 COMMENT
 BLOCKCOMMENT
 JAVADOC
-74
+77
 Start { LBRACE
 Start } RBRACE
 Start ( LPAREN
@@ -59,6 +61,8 @@ Start < LT
 Start > GT
 Start & BAND
 Start | BOR
+Start ^ XOR
+Start ~ NEG
 Start ; SEMI
 Start : COLON
 Start , COMMA
@@ -69,6 +73,7 @@ INTLIT digit INTLIT
 ID alpha ID
 ID digit ID
 ID _ ID
+ID : label
 LT = LEQ
 GT = GEQ
 BECOME = EQ
