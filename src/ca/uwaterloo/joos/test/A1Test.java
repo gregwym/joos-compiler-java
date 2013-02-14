@@ -1,101 +1,119 @@
 package ca.uwaterloo.joos.test;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertSame;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.PrintStream;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameters;
 
 import ca.uwaterloo.joos.Main;
+import ca.uwaterloo.joos.parser.LR1Parser;
+import ca.uwaterloo.joos.scanner.Scanner;
 
 @SuppressWarnings("serial")
+@RunWith(value = Parameterized.class)
 public class A1Test {
 
 	private static Main instance;
+	private static class A1Exception extends Exception {}
 
-	class A1Exception extends Exception {
-	}
-
-	class ScannerException extends A1Exception {
-	}
-
-	class ParserException extends A1Exception {
-	}
-
-	class NoException extends Exception {
-	}
-
-	// private enum ExceptionType {General, ScannerException, ParserException,
-	// NoException};
 	@BeforeClass
 	public static void setUp() {
 		instance = new Main();
-	}
 
-	@Test
-	public void Test() {
 		try {
 			File outFile = new File("tmp/a1test.out");
 			if (outFile.exists()) {
 				outFile.delete();
-				outFile = new File("tmp/a1test.out");
 			}
 			System.setOut(new PrintStream(outFile));
 		} catch (FileNotFoundException e1) {
 			e1.printStackTrace();
 		}
+	}
 
-		File directory = new File("resources/testcases/a1");
-		File[] testFileList = directory.listFiles();
-		for (File testFile : testFileList) {
+	@Parameters(name = "{0}")
+	public static Collection<Object[]> data() {
+		List<Object[]> data = new ArrayList<Object[]>();
 
-			try {
-				instance.execute(testFile);
-				Exception fileExpetion = extractFileError(testFile);
-				if (!(fileExpetion instanceof NoException)) {
-					System.out.println("ERROR: " + testFile.getName()
-							+ "\nrealExpetion: NoException" + " fileExpetion: "
-							+ fileExpetion.getClass().getSimpleName() + "\n");
-					// e.printStackTrace();
-				}
-			} catch (Exception e) {
-				Exception realExpetion = extractError(e.getClass().getName());
-				Exception fileExpetion = extractFileError(testFile);
-				if (!realExpetion.getClass().equals(fileExpetion.getClass())) {
-					if (!realExpetion.getClass().getSuperclass()
-							.equals(fileExpetion.getClass())) {
-						System.out.println("ERROR: " + testFile.getName()
-								+ "\nrealExpetion: "
-								+ realExpetion.getClass().getSimpleName()
-								+ " fileExpetion: "
-								+ fileExpetion.getClass().getSimpleName()
-								+ "\n");
-					}
-				}
+		try {
+			File directory = new File("resources/testcases/a1");
+			File[] testFileList = directory.listFiles();
+			for (File testFile: testFileList) {
+				data.add( new Object[] { testFile });
 			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
+		return data;
+	}
+
+	private File testFile;
+
+	public A1Test(File testFile) {
+		this.testFile = testFile;
+	}
+
+	@Test
+	public void Test() {
+		Exception fileException = extractFileError(testFile);
+		Exception realException = null;
+
+		try {
+			instance.execute(testFile);
+			if (fileException != null) {
+				System.out.println("Expecting: " + fileException.getClass().getSimpleName() + "\t"
+						+ "but got: NoException" + "\t\t"
+						+ "[" + testFile.getName() + "]");
+			}
+		} catch (Exception e) {
+			realException = e;
+			if (fileException == null) {
+				System.out.println("Expecting: NoException" + "\t"
+						+ "but got: " + realException.getClass().getSimpleName() + "\t\t"
+						+ "[" + testFile.getName() + "]");
+			}
+			else if (!realException.getClass().getSimpleName().equals(fileException.getClass().getSimpleName())) {
+				System.out.println("Expecting: " + fileException.getClass().getSimpleName() + "\t"
+						+ "but got: " + realException.getClass().getSimpleName() + "\t\t"
+						+ "[" + testFile.getName() + "]");
+			}
+		}
+
+		if(fileException != null && realException != null) {
+			assertEquals(fileException.getClass().getSimpleName(), realException.getClass().getSimpleName());
+		}
+		else {
+			assertSame(fileException, realException);
 		}
 	}
 
 	private Exception extractFileError(File testFile) {
-		Exception fileExcpetion = new NoException();
+		Exception fileExcpetion = null;
 		try {
 			BufferedReader br = new BufferedReader(new FileReader(testFile));
-			String errorMessage = br.readLine();
+			String errorMessage = new String();
 
-			if (errorMessage.contains("JOOS1:")) {
-				fileExcpetion = extractError(errorMessage);
-			} else {
+			while (errorMessage != null && !errorMessage.contains("JOOS1:")) {
 				errorMessage = br.readLine();
-				fileExcpetion = extractError(errorMessage);
-				if (fileExcpetion instanceof NoException) {
-					if (testFile.getName().contains("Je")) {
-						br.close();
-						return new A1Exception();
-					}
-				}
+			}
+
+			if(errorMessage != null) fileExcpetion = extractError(errorMessage);
+			if (fileExcpetion == null && testFile.getName().contains("Je")) {
+				fileExcpetion = new A1Exception();
 			}
 			br.close();
 
@@ -106,14 +124,12 @@ public class A1Test {
 	}
 
 	public Exception extractError(String errorMessage) {
-		if (errorMessage.contains("LEXER_EXCEPTION")
-				| errorMessage.contains("ScanException")) {
-			return new ScannerException();
-		} else if (errorMessage.contains("PARSER_EXCEPTION")
-				| errorMessage.contains("ParseException")) {
-			return new ParserException();
+		if (errorMessage.contains("LEXER_EXCEPTION")) {
+			return new Scanner.ScanException("");
+		} else if (errorMessage.contains("PARSER_EXCEPTION") || errorMessage.contains("SYNTAX_ERROR")) {
+			return new LR1Parser.ParseException("");
 		}
 
-		return new NoException();
+		return null;
 	}
 }
