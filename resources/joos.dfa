@@ -1,0 +1,172 @@
+0
+0
+Start
+37
+LBRACE
+RBRACE
+LPAREN
+RPAREN
+LBRACK
+RBRACK
+ZERO
+INTLIT
+ID
+PLUS
+MINUS
+STAR
+SLASH
+PERCENT
+BECOME
+DOT
+LT
+GT
+BAND
+BOR
+XOR
+NEG
+SEMI
+COLON
+COMMA
+NOT
+LEQ
+GEQ
+EQ
+OR
+AND
+NEQ
+STRINGLIT
+CHARLIT
+COMMENT
+BLOCKCOMMENT
+JAVADOC
+77
+Start { LBRACE
+Start } RBRACE
+Start ( LPAREN
+Start ) RPAREN
+Start [ LBRACK
+Start ] RBRACK
+Start 0 ZERO
+Start digit INTLIT
+Start _ ID
+Start alpha ID
+Start + PLUS
+Start - MINUS
+Start * STAR
+Start / SLASH
+Start % PERCENT
+Start = BECOME
+Start . DOT
+Start < LT
+Start > GT
+Start & BAND
+Start | BOR
+Start ^ XOR
+Start ~ NEG
+Start ; SEMI
+Start : COLON
+Start , COMMA
+Start ! NOT
+Start " "string
+Start ' 'char
+INTLIT digit INTLIT
+ID alpha ID
+ID digit ID
+ID _ ID
+ID : label
+LT = LEQ
+GT = GEQ
+BECOME = EQ
+BOR | OR
+BAND & AND
+NOT = NEQ
+"string \ eString
+"string any "string
+eString escape "string
+eString octal "string
+"string " STRINGLIT
+'char \ eChar
+'char any char'
+eChar escape char'
+eChar 0-3 o2Char
+eChar octal o1Char
+o2Char octal o1Char
+o1Char octal char'
+o2Char ' CHARLIT
+o1Char ' CHARLIT
+char' ' CHARLIT
+SLASH / commentB
+SLASH * blockCommentS
+commentB any commentB
+commentB eol COMMENT
+blockCommentS * javaDocS
+blockCommentS any blockCommentB
+blockCommentS eol blockCommentB
+blockCommentB any blockCommentB
+blockCommentB eol blockCommentB
+blockCommentB * blockCommentE
+blockCommentE any blockCommentB
+blockCommentE * blockCommentE
+blockCommentE / BLOCKCOMMENT
+javaDocS any javaDocB
+javaDocS eol javaDocB
+javaDocS / BLOCKCOMMENT
+javaDocB any javaDocB
+javaDocB eol javaDocB
+javaDocB * javaDocE
+javaDocE any javaDocB
+javaDocE * javaDocE
+javaDocE / JAVADOC
+52
+abstract ABSTRACT
+default DEFAULT
+if IF
+private PRIVATE
+this THIS
+boolean BOOLEAN
+do DO
+implements IMPLEMENTS
+protected PROTECTED
+throw THROW
+break BREAK
+double DOUBLE
+import IMPORT
+public PUBLIC
+throws THROWS
+byte BYTE
+else ELSE
+instanceof INSTANCEOF
+return RETURN
+transient TRANSIENT
+case CASE
+extends EXTENDS
+int INT
+short SHORT
+try TRY
+catch CATCH
+final FINAL
+interface INTERFACE
+static STATIC
+void VOID
+char CHAR
+finally FINALLY
+long LONG
+strictfp STRICTFP
+volatile VOLATILE
+class CLASS
+float FLOAT
+native NATIVE
+super SUPER
+while WHILE
+const CONST
+for FOR
+new NEW
+switch SWITCH
+continue CONTINUE
+goto GOTO
+package PACKAGE
+synchronized SYNCHRONIZED
+null NULL
+true BOOLLIT
+false BOOLLIT
+0 INTLIT

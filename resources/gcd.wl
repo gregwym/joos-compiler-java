@@ -8,7 +8,7 @@ int wain(int a, int b){
 	while(b != 0){
 		temp = a%b;
 		a = b;
-		b = temp;
+		b = a;
 	}
 	return a;
 }
