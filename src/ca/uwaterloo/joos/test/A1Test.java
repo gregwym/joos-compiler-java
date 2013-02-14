@@ -21,17 +21,6 @@ public class A1Test {
 	class A1Exception extends Exception {
 	}
 
-//	class ScannerException extends A1Exception {
-//	}
-//
-//	class ParserException extends A1Exception {
-//	}
-//
-//	class NoException extends Exception {
-//	}
-
-	// private enum ExceptionType {General, ScannerException, ParserException,
-	// NoException};
 	@BeforeClass
 	public static void setUp() {
 		instance = new Main();
