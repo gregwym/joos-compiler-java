@@ -46,23 +46,20 @@ public class A1Test {
 			try {
 				instance.execute(testFile);
 				if (fileException != null) {
-					System.out.println("ERROR: " + testFile.getName()
-							+ "\nrealException: NoException" + " fileException: "
-							+ fileException.getClass().getSimpleName() + "\n");
+					System.out.println("Expecting: " + fileException.getClass().getSimpleName() + "\t" 
+							+ "but got: NoException" + "\t\t"
+							+ "[" + testFile.getName() + "]");
 				}
 			} catch (Exception realException) {
 				if (fileException == null) {
-					System.out.println("ERROR: " + testFile.getName()
-							+ "\nrealException: " + realException.getClass().getSimpleName()
-							+ " fileException: NoException\n");
+					System.out.println("Expecting: NoException" + "\t" 
+							+ "but got: " + realException.getClass().getSimpleName() + "\t\t"
+							+ "[" + testFile.getName() + "]");
 				}
 //				else if (!realException.getClass().getSimpleName().equals(fileException.getClass().getSimpleName())) {
-//					System.out.println("WARNING: " + testFile.getName()
-//							+ "\nrealException: "
-//							+ realException.getClass().getSimpleName()
-//							+ " fileException: "
-//							+ fileException.getClass().getSimpleName()
-//							+ "\n");
+//					System.out.println("Expecting: " + fileException.getClass().getSimpleName() + "\t" 
+//							+ "but got: " + realException.getClass().getSimpleName() + "\t\t"
+//							+ "[" + testFile.getName() + "]");
 //				}
 			}
 		}
