@@ -38,10 +38,10 @@ public class A1Test {
 	@Test
 	public void Test() {
 		try {
-			File outFile = new File("tmp/output.txt");
+			File outFile = new File("tmp/a1test.out");
 			if (outFile.exists()) {
 				outFile.delete();
-				outFile = new File("tmp/output.txt");
+				outFile = new File("tmp/a1test.out");
 			}
 			System.setOut(new PrintStream(outFile));
 		} catch (FileNotFoundException e1) {

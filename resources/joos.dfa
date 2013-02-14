@@ -37,7 +37,7 @@ CHARLIT
 COMMENT
 BLOCKCOMMENT
 JAVADOC
-67
+74
 Start { LBRACE
 Start } RBRACE
 Start ( LPAREN
@@ -75,13 +75,20 @@ BECOME = EQ
 BOR | OR
 BAND & AND
 NOT = NEQ
-"string \ sEscape
+"string \ eString
 "string any "string
-sEscape any "string
+eString escape "string
+eString octal "string
 "string " STRINGLIT
+'char \ eChar
 'char any char'
-'char \ cEscape
-cEscape any char'
+eChar escape char'
+eChar 0-3 o2Char
+eChar octal o1Char
+o2Char octal o1Char
+o1Char octal char'
+o2Char ' CHARLIT
+o1Char ' CHARLIT
 char' ' CHARLIT
 SLASH / commentB
 SLASH * blockCommentS
