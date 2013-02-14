@@ -25,17 +25,17 @@ public class Main {
 	public static Logger getLogger(Class<?> cls) {
 		return Logger.getLogger(Main.class.getName());
 	}
-	
+
 	private final Scanner scanner;
 	private final LR1Parser parser;
 	private final Preprocessor preprocessor;
-	
+
 	public Main() {
 		logger.setLevel(Level.INFO);
-		
+
 		// Construct Preprocessor
 		this.preprocessor = new Preprocessor();
-		
+
 		// Read a DFA from file
 		DFA dfa = null;
 		try {
@@ -46,7 +46,7 @@ public class Main {
 		}
 		// Construct Scanner
 		this.scanner = new Scanner(dfa);
-		
+
 		// Read a LR1 from file
 		LR1 lr1 = null;
 		try {
@@ -59,10 +59,10 @@ public class Main {
 		// Construct Parser
 		this.parser = new LR1Parser(lr1);
 	}
-	
+
 	public Object execute(File source) throws Exception {
 		logger.info("Processing: " + source.getName());
-		
+
 		/* Scanning */
 		// Construct a Scanner which use the DFA
 		List<Token> tokens = null;
@@ -76,7 +76,7 @@ public class Main {
 		/* Parsing */
 		ParseTree parseTree = null;
 		parseTree = this.parser.parseTokens(tokens);
-		
+
 		return parseTree;
 	}
 
@@ -85,9 +85,10 @@ public class Main {
 	 */
 	public static void main(String[] args) {
 		Main instance = new Main();
-		
+
 		try {
-			instance.execute(new File("resources/testcases/a1/J1_01.java"));
+			Object parseTree = instance.execute(new File("resources/testcases/a1/Je_1_NonJoosConstructs_AssignmentOperations_BitwiseXOR.java"));
+			System.out.println(parseTree.toString());
 		} catch (Exception e) {
 			System.err.println("ERROR: " + e.getLocalizedMessage() + " " + e.getClass().getName());
 			e.printStackTrace();
