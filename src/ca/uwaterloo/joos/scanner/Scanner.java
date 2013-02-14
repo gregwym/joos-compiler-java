@@ -14,7 +14,7 @@ public class Scanner {
 	private DFA dfa = null;
 
 	@SuppressWarnings("serial")
-	public class ScanException extends Exception {
+	public static class ScanException extends Exception {
 		public ScanException(String string) {
 			super(string);
 		}

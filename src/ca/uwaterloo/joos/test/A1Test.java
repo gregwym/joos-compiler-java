@@ -10,6 +10,8 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import ca.uwaterloo.joos.Main;
+import ca.uwaterloo.joos.parser.LR1Parser;
+import ca.uwaterloo.joos.scanner.Scanner;
 
 @SuppressWarnings("serial")
 public class A1Test {
@@ -19,14 +21,14 @@ public class A1Test {
 	class A1Exception extends Exception {
 	}
 
-	class ScannerException extends A1Exception {
-	}
-
-	class ParserException extends A1Exception {
-	}
-
-	class NoException extends Exception {
-	}
+//	class ScannerException extends A1Exception {
+//	}
+//
+//	class ParserException extends A1Exception {
+//	}
+//
+//	class NoException extends Exception {
+//	}
 
 	// private enum ExceptionType {General, ScannerException, ParserException,
 	// NoException};
@@ -41,7 +43,6 @@ public class A1Test {
 			File outFile = new File("tmp/a1test.out");
 			if (outFile.exists()) {
 				outFile.delete();
-				outFile = new File("tmp/a1test.out");
 			}
 			System.setOut(new PrintStream(outFile));
 		} catch (FileNotFoundException e1) {
@@ -51,51 +52,46 @@ public class A1Test {
 		File directory = new File("resources/testcases/a1");
 		File[] testFileList = directory.listFiles();
 		for (File testFile : testFileList) {
+			Exception fileException = extractFileError(testFile);
 
 			try {
 				instance.execute(testFile);
-				Exception fileExpetion = extractFileError(testFile);
-				if (!(fileExpetion instanceof NoException)) {
+				if (fileException != null) {
 					System.out.println("ERROR: " + testFile.getName()
-							+ "\nrealExpetion: NoException" + " fileExpetion: "
-							+ fileExpetion.getClass().getSimpleName() + "\n");
-					// e.printStackTrace();
+							+ "\nrealException: NoException" + " fileException: "
+							+ fileException.getClass().getSimpleName() + "\n");
 				}
-			} catch (Exception e) {
-				Exception realExpetion = extractError(e.getClass().getName());
-				Exception fileExpetion = extractFileError(testFile);
-				if (!realExpetion.getClass().equals(fileExpetion.getClass())) {
-					if (!realExpetion.getClass().getSuperclass()
-							.equals(fileExpetion.getClass())) {
-						System.out.println("ERROR: " + testFile.getName()
-								+ "\nrealExpetion: "
-								+ realExpetion.getClass().getSimpleName()
-								+ " fileExpetion: "
-								+ fileExpetion.getClass().getSimpleName()
-								+ "\n");
-					}
+			} catch (Exception realException) {
+				if (fileException == null) {
+					System.out.println("ERROR: " + testFile.getName()
+							+ "\nrealException: " + realException.getClass().getSimpleName()
+							+ " fileException: NoException\n");
 				}
+//				else if (!realException.getClass().getSimpleName().equals(fileException.getClass().getSimpleName())) {
+//					System.out.println("WARNING: " + testFile.getName()
+//							+ "\nrealException: "
+//							+ realException.getClass().getSimpleName()
+//							+ " fileException: "
+//							+ fileException.getClass().getSimpleName()
+//							+ "\n");
+//				}
 			}
 		}
 	}
 
 	private Exception extractFileError(File testFile) {
-		Exception fileExcpetion = new NoException();
+		Exception fileExcpetion = null;
 		try {
 			BufferedReader br = new BufferedReader(new FileReader(testFile));
-			String errorMessage = br.readLine();
+			String errorMessage = new String();
 
-			if (errorMessage.contains("JOOS1:")) {
-				fileExcpetion = extractError(errorMessage);
-			} else {
+			while (errorMessage != null && !errorMessage.contains("JOOS1:")) {
 				errorMessage = br.readLine();
-				fileExcpetion = extractError(errorMessage);
-				if (fileExcpetion instanceof NoException) {
-					if (testFile.getName().contains("Je")) {
-						br.close();
-						return new A1Exception();
-					}
-				}
+			} 
+			
+			if(errorMessage != null) fileExcpetion = extractError(errorMessage);
+			if (fileExcpetion == null && testFile.getName().contains("Je")) {
+				fileExcpetion = new A1Exception();
 			}
 			br.close();
 
@@ -106,14 +102,12 @@ public class A1Test {
 	}
 
 	public Exception extractError(String errorMessage) {
-		if (errorMessage.contains("LEXER_EXCEPTION")
-				| errorMessage.contains("ScanException")) {
-			return new ScannerException();
-		} else if (errorMessage.contains("PARSER_EXCEPTION")
-				| errorMessage.contains("ParseException")) {
-			return new ParserException();
+		if (errorMessage.contains("LEXER_EXCEPTION")) {
+			return new Scanner.ScanException("");
+		} else if (errorMessage.contains("PARSER_EXCEPTION") || errorMessage.contains("SYNTAX_ERROR")) {
+			return new LR1Parser.ParseException("");
 		}
 
-		return new NoException();
+		return null;
 	}
 }
