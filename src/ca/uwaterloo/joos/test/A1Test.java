@@ -1,7 +1,7 @@
 package ca.uwaterloo.joos.test;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertSame;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -86,18 +86,18 @@ public class A1Test {
 						+ "but got: " + realException.getClass().getSimpleName() + "\t\t"
 						+ "[" + testFile.getName() + "]");
 			}
-//			else if (!realException.getClass().getSimpleName().equals(fileException.getClass().getSimpleName())) {
-//				System.out.println("Expecting: " + fileException.getClass().getSimpleName() + "\t"
-//						+ "but got: " + realException.getClass().getSimpleName() + "\t\t"
-//						+ "[" + testFile.getName() + "]");
-//			}
+			else if (!realException.getClass().getSimpleName().equals(fileException.getClass().getSimpleName())) {
+				System.out.println("Expecting: " + fileException.getClass().getSimpleName() + "\t"
+						+ "but got: " + realException.getClass().getSimpleName() + "\t\t"
+						+ "[" + testFile.getName() + "]");
+			}
 		}
 
 		if(fileException != null && realException != null) {
 			assertEquals(fileException.getClass().getSimpleName(), realException.getClass().getSimpleName());
 		}
 		else {
-			assertTrue(fileException == realException);
+			assertSame(fileException, realException);
 		}
 	}
 
