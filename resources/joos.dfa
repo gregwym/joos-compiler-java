@@ -37,7 +37,7 @@ CHARLIT
 COMMENT
 BLOCKCOMMENT
 JAVADOC
-74
+77
 Start { LBRACE
 Start } RBRACE
 Start ( LPAREN
@@ -65,10 +65,13 @@ Start , COMMA
 Start ! NOT
 Start " "string
 Start ' 'char
+Start ^ xor
+Start ~ negation
 INTLIT digit INTLIT
 ID alpha ID
 ID digit ID
 ID _ ID
+ID : label
 LT = LEQ
 GT = GEQ
 BECOME = EQ
