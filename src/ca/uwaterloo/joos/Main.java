@@ -87,7 +87,7 @@ public class Main {
 		Main instance = new Main();
 
 		try {
-			Object parseTree = instance.execute(new File("resources/testcases/a1/Je_1_NonJoosConstructs_AssignmentOperations_BitwiseXOR.java"));
+			Object parseTree = instance.execute(new File("resources/testcases/a1/Je_1_AbstractClass_Final.java"));
 			System.out.println(parseTree.toString());
 		} catch (Exception e) {
 			System.err.println("ERROR: " + e.getLocalizedMessage() + " " + e.getClass().getName());
