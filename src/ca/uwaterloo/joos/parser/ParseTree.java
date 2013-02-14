@@ -32,7 +32,6 @@ public class ParseTree {
 			return this.productionRule.toString();
 		}
 
-		@Override
 		public String toString(int level) {
 			String str = "";
 			for(int i = 0; i < level; i++) {
@@ -57,7 +56,6 @@ public class ParseTree {
 			return this.token.toString();
 		}
 
-		@Override
 		public String toString(int level) {
 			String str = "";
 			for(int i = 0; i < level; i++) {

@@ -3,7 +3,10 @@
  */
 package ca.uwaterloo.joos;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -42,7 +45,7 @@ public class Main {
 			dfa = new DFA(new File("resources/joos.dfa"));
 		} catch (Exception e) {
 			System.err.println("ERROR: Invalid DFA File format: " + e.getLocalizedMessage() + " " + e.getClass().getName());
-			System.exit(-1);
+			System.exit(-11);
 		}
 		// Construct Scanner
 		this.scanner = new Scanner(dfa);
@@ -54,7 +57,7 @@ public class Main {
 		} catch (Exception e) {
 			System.err.println("ERROR: Invalid LR1 File format: " + e.getLocalizedMessage() + " " + e.getClass().getName());
 			e.printStackTrace();
-			System.exit(-2);
+			System.exit(-12);
 		}
 		// Construct Parser
 		this.parser = new LR1Parser(lr1);
@@ -82,12 +85,24 @@ public class Main {
 
 	/**
 	 * @param args
+	 * @throws IOException
 	 */
-	public static void main(String[] args) {
+	public static void main(String[] args) throws IOException {
+		if(args.length < 1) {
+			BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
+			String line = reader.readLine();
+			if(line == null) System.exit(-1);
+			args = line.split("\\s");
+		}
+
+		if(args.length < 1) {
+			System.exit(-1);
+		}
+
 		Main instance = new Main();
 
 		try {
-			Object parseTree = instance.execute(new File("resources/testcases/a1/Je_1_NonJoosConstructs_AssignmentOperations_BitwiseXOR.java"));
+			Object parseTree = instance.execute(new File(args[0]));
 			System.out.println(parseTree.toString());
 		} catch (Exception e) {
 			System.err.println("ERROR: " + e.getLocalizedMessage() + " " + e.getClass().getName());
