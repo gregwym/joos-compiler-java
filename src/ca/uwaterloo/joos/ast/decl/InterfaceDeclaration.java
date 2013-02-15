@@ -5,12 +5,13 @@ import java.util.Set;
 
 import ca.uwaterloo.joos.ast.AST.ASTConstructException;
 import ca.uwaterloo.joos.ast.ASTNode;
+import ca.uwaterloo.joos.ast.body.InterfaceBody;
 import ca.uwaterloo.joos.ast.type.Modifiers;
 import ca.uwaterloo.joos.ast.visitor.ASTVisitor;
-import ca.uwaterloo.joos.parser.ParseTreeTraverse;
 import ca.uwaterloo.joos.parser.ParseTree.LeafNode;
 import ca.uwaterloo.joos.parser.ParseTree.Node;
 import ca.uwaterloo.joos.parser.ParseTree.TreeNode;
+import ca.uwaterloo.joos.parser.ParseTreeTraverse;
 import ca.uwaterloo.joos.parser.ParseTreeTraverse.Traverser;
 
 public class InterfaceDeclaration extends TypeDeclaration {
@@ -30,7 +31,7 @@ public class InterfaceDeclaration extends TypeDeclaration {
 //					interface = 
 				}
 				else if (treeNode.productionRule.getLefthand().equals("interfacebody")) {
-//					body = new InterfaceBody(treeNode);
+					body = new InterfaceBody(treeNode, parent);
 				}
 				else {
 					for (Node n : treeNode.children) 
