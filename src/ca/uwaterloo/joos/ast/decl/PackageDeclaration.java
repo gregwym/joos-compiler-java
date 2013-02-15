@@ -5,8 +5,8 @@ import ca.uwaterloo.joos.ast.ASTVisitor;
 import ca.uwaterloo.joos.parser.ParseTree.Node;
 
 public class PackageDeclaration extends ASTNode {
-	public PackageDeclaration(Node TypeRoot) {
-
+	public PackageDeclaration(Node TypeRoot, ASTNode parent) {
+		super(parent);
 	}
 	
 	/* (non-Javadoc)

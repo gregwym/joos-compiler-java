@@ -29,27 +29,29 @@ public abstract class BodyDeclaration extends ASTNode {
 	/**
 	 * 
 	 */
-	public BodyDeclaration() {}
+	public BodyDeclaration(ASTNode parent) {
+		super(parent);
+	}
 	
 	private static BodyDeclaration newBodyDecl = null;
-	public static BodyDeclaration newBodyDeclaration(Node declNode) throws ASTConstructException {
+	public static BodyDeclaration newBodyDeclaration(Node declNode, ASTNode parent) throws ASTConstructException {
 		assert declNode instanceof TreeNode : "BodyDecl is expecting a TreeNode";
 	
-		ParseTreeTraverse traverse = new ParseTreeTraverse(new Traverser() {
+		ParseTreeTraverse traverse = new ParseTreeTraverse(new Traverser(parent) {
 	
 			public Set<Node> processTreeNode(TreeNode treeNode) throws ASTConstructException {
 				Set<Node> offers = new HashSet<Node>();
 				if(treeNode.productionRule.getLefthand().equals("constructordecl")){
-					newBodyDecl = new ConstructorDeclaration(treeNode);
+					newBodyDecl = new ConstructorDeclaration(treeNode, parent);
 				}
 				else if(treeNode.productionRule.getLefthand().equals("absmethoddecl")){
-					newBodyDecl = new MethodDeclaration(treeNode);
+					newBodyDecl = new MethodDeclaration(treeNode, parent);
 				}
 				else if(treeNode.productionRule.getLefthand().equals("methoddecl")){
-					newBodyDecl = new MethodDeclaration(treeNode);
+					newBodyDecl = new MethodDeclaration(treeNode, parent);
 				}
 				else if(treeNode.productionRule.getLefthand().equals("fielddecl")){
-					newBodyDecl = new FieldDeclaration(treeNode);
+					newBodyDecl = new FieldDeclaration(treeNode, parent);
 				}
 				else {
 					for (Node n : treeNode.children) {

@@ -8,10 +8,18 @@ import ca.uwaterloo.joos.Main;
 public abstract class ASTNode {
 	protected static final Logger logger = Main.getLogger(ASTNode.class);
 	
+	protected ASTNode parent = null;
 	protected String identifier = new String();
 
-	public ASTNode() {
-
+	public ASTNode(ASTNode parent) {
+		this.parent = parent;
+	}
+	
+	/**
+	 * @return the parent
+	 */
+	public ASTNode getParent() {
+		return parent;
 	}
 	
 	/**
@@ -35,6 +43,7 @@ public abstract class ASTNode {
 		}
 		str += "<" + this.getClass().getSimpleName() + "> ";
 		str += this.identifier + " ";
+		if(this.parent != null) str += "parent: " + this.parent.getClass().getSimpleName() + " ";
 		return str;
 	}
 }

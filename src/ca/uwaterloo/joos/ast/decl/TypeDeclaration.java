@@ -14,7 +14,8 @@ public abstract class TypeDeclaration extends ASTNode {
 	protected TypeBody body;
 	protected List<String> interfaces;
 	
-	public TypeDeclaration() {
+	public TypeDeclaration(ASTNode parent) {
+		super(parent);
 		this.interfaces = new ArrayList<String>();
 	}
 	

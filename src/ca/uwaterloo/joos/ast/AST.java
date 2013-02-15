@@ -33,7 +33,7 @@ public class AST {
 		assert productionRule.getLefthand().equals("S") : "Parse tree does not start with symbol S";
 
 		// Construct FileUnit with the `file` in `S -> BOF file EOF`
-		this.root = new FileUnit(parseTreeRoot.children.get(1), fileName);
+		this.root = new FileUnit(parseTreeRoot.children.get(1), fileName, null);
 	}
 
 	@Override

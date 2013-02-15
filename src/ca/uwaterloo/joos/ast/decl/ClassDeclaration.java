@@ -4,6 +4,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import ca.uwaterloo.joos.ast.AST.ASTConstructException;
+import ca.uwaterloo.joos.ast.ASTNode;
 import ca.uwaterloo.joos.ast.ASTVisitor;
 import ca.uwaterloo.joos.ast.ParseTreeTraverse;
 import ca.uwaterloo.joos.ast.ParseTreeTraverse.Traverser;
@@ -16,18 +17,20 @@ import ca.uwaterloo.joos.parser.ParseTree.TreeNode;
 public class ClassDeclaration extends TypeDeclaration {
 	private String superClass;
 
-	public ClassDeclaration(Node node) throws ASTConstructException {
+	public ClassDeclaration(Node node, ASTNode parent) throws ASTConstructException {	
+		super(parent);
+		
 		assert node instanceof TreeNode : "ClassDeclaration is expecting a TreeNode";
 			
-		ParseTreeTraverse traverse = new ParseTreeTraverse(new Traverser() {
+		ParseTreeTraverse traverse = new ParseTreeTraverse(new Traverser(this) {
 	
 			public Set<Node> processTreeNode(TreeNode treeNode) throws ASTConstructException {
 				Set<Node> offers = new HashSet<Node>();
 				if (treeNode.productionRule.getLefthand().equals("modifiers")) {
-					modifiers = new Modifiers(treeNode);
+					modifiers = new Modifiers(treeNode, parent);
 				}
 				else if (treeNode.productionRule.getLefthand().equals("classbody")) {
-					body = new ClassBody(treeNode);
+					body = new ClassBody(treeNode, parent);
 				}
 				else {
 					for (Node n : treeNode.children) 

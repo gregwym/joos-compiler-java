@@ -29,12 +29,14 @@ public class Modifiers extends ASTNode {
 		return modifiers;
 	}
 
-	public Modifiers(Node modifiersNode) throws ASTConstructException {
+	public Modifiers(Node modifiersNode, ASTNode parent) throws ASTConstructException {
+		super(parent);
+		
 		assert modifiersNode instanceof TreeNode : "Modifiers is expecting a TreeNode";
 		
 		this.modifiers = new ArrayList<Modifier>();
 		
-		ParseTreeTraverse traverse = new ParseTreeTraverse(new Traverser() {
+		ParseTreeTraverse traverse = new ParseTreeTraverse(new Traverser(this) {
 
 			public Set<Node> processTreeNode(TreeNode treeNode) {
 				Set<Node> offers = new HashSet<Node>();

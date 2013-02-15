@@ -4,6 +4,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import ca.uwaterloo.joos.ast.AST.ASTConstructException;
+import ca.uwaterloo.joos.ast.ASTNode;
 import ca.uwaterloo.joos.ast.ASTVisitor;
 import ca.uwaterloo.joos.ast.ParseTreeTraverse;
 import ca.uwaterloo.joos.ast.ParseTreeTraverse.Traverser;
@@ -18,10 +19,11 @@ public class MethodDeclaration extends BodyDeclaration {
 //	protected Parameters parameters;
 //	protected Block body;
 	
-	public MethodDeclaration(Node declNode) throws ASTConstructException {
+	public MethodDeclaration(Node declNode, ASTNode parent) throws ASTConstructException {
+		super(parent);
 		assert declNode instanceof TreeNode : "MethodDeclaration is expecting a TreeNode";
 				
-		ParseTreeTraverse traverse = new ParseTreeTraverse(new Traverser() {
+		ParseTreeTraverse traverse = new ParseTreeTraverse(new Traverser(this) {
 
 			public Set<Node> processTreeNode(TreeNode treeNode) throws ASTConstructException {
 				Set<Node> offers = new HashSet<Node>();
@@ -29,7 +31,7 @@ public class MethodDeclaration extends BodyDeclaration {
 //					returnType = new Type("VOID");
 				}
 				if(treeNode.productionRule.getLefthand().equals("modifiers")) {
-					modifiers = new Modifiers(treeNode);
+					modifiers = new Modifiers(treeNode, parent);
 				}
 				else if(treeNode.productionRule.getLefthand().equals("type")) {
 //					returnType = new Type();

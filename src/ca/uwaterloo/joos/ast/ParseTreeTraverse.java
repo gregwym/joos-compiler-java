@@ -1,3 +1,4 @@
+
 /**
  * 
  */
@@ -19,9 +20,15 @@ import ca.uwaterloo.joos.parser.ParseTree.TreeNode;
  */
 public class ParseTreeTraverse {
 	
-	public static interface Traverser {
-		public Set<Node> processTreeNode(TreeNode treeNode) throws ASTConstructException;
-		public void processLeafNode(LeafNode treeNode) throws ASTConstructException;
+	public static abstract class Traverser {
+		protected ASTNode parent;
+		
+		public Traverser(ASTNode parent) {
+			this.parent = parent;
+		}
+		
+		public abstract Set<Node> processTreeNode(TreeNode treeNode) throws ASTConstructException;
+		public abstract void processLeafNode(LeafNode treeNode) throws ASTConstructException;
 	}
 	
 	private Traverser traverser;

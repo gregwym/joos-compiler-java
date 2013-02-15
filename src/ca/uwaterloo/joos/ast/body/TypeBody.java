@@ -23,7 +23,8 @@ public abstract class TypeBody extends ASTNode {
 	/**
 	 *
 	 */
-	public TypeBody() {
+	public TypeBody(ASTNode parent) {
+		super(parent);
 		this.members = new HashSet<BodyDeclaration>();
 	}
 

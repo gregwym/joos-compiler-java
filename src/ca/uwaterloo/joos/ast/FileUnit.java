@@ -18,8 +18,11 @@ public class FileUnit extends ASTNode {
 	private PackageDeclaration packageDeclaration;
 	private TypeDeclaration typeDeclaration;
 
-	public FileUnit(Node node, String fileName) throws ASTConstructException {
+	public FileUnit(Node node, String fileName, ASTNode parent) throws ASTConstructException {
+		super(parent);
+		
 		assert node instanceof TreeNode : "FileUnit is expecting a TreeNode";
+		
 		TreeNode treeNode = (TreeNode) node;
 		this.identifier = fileName;
 
@@ -35,10 +38,10 @@ public class FileUnit extends ASTNode {
 				List<String> members = Arrays.asList(child.productionRule.getRighthand());
 				
 				if(members.contains("classdecl")) {
-					this.typeDeclaration = new ClassDeclaration(child.children.get(0));
+					this.typeDeclaration = new ClassDeclaration(child.children.get(0), this);
 				}
 				else if(members.contains("interfacedecl")) {
-					this.typeDeclaration = new InterfaceDeclaration(child.children.get(0));
+					this.typeDeclaration = new InterfaceDeclaration(child.children.get(0), this);
 				}
 			}
 		}
