@@ -1,5 +1,5 @@
 package ca.uwaterloo.joos.ast.type;
 
-public class ClassName {
+public class ClassType extends Type{
 
 }
