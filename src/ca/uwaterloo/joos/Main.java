@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import ca.uwaterloo.joos.ast.ASTTreeGenerator;
 import ca.uwaterloo.joos.parser.LR1;
 import ca.uwaterloo.joos.parser.LR1Parser;
 import ca.uwaterloo.joos.parser.ParseTree;
@@ -104,6 +105,10 @@ public class Main {
 		try {
 			Object parseTree = instance.execute(new File(args[0]));
 			System.out.println(parseTree.toString());
+			ASTTreeGenerator astTreeGenerator = new ASTTreeGenerator();
+			if(parseTree!=null){
+				astTreeGenerator.GenerateASTTree((ParseTree) parseTree);
+			}
 		} catch (Exception e) {
 			System.err.println("ERROR: " + e.getLocalizedMessage() + " " + e.getClass().getName());
 			e.printStackTrace();
