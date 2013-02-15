@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package ca.uwaterloo.joos.weeder;
 
@@ -29,70 +29,70 @@ public class ModifiersChecker extends ModifiersVisitor {
 	@Override
 	protected void visitModifiers(Modifiers modifiers) throws Exception {
 		Set<Modifier> modifierSet = new HashSet<Modifier>();
-		
+
 		for(Modifier modifier: modifiers.getModifiers()) {
 			if(modifierSet.contains(modifier)) throw new WeedException("Duplicated modifer" + modifier.name());
 			modifierSet.add(modifier);
 		}
-		
-		if(modifierSet.contains(Modifier.PUBLIC) && modifierSet.contains(Modifier.PROTECTED)) 
+
+		if(modifierSet.contains(Modifier.PUBLIC) && modifierSet.contains(Modifier.PROTECTED))
 			throw new WeedException("Cannot be public and protected at the same time");
-		if(!modifierSet.contains(Modifier.PUBLIC) && !modifierSet.contains(Modifier.PROTECTED)) 
+		if(!modifierSet.contains(Modifier.PUBLIC) && !modifierSet.contains(Modifier.PROTECTED))
 			throw new WeedException("Must have one access modifier");
-		
-		Class<?> parentClass = modifiers.getParent().getClass();
-		if(parentClass.equals(ClassDeclaration.class)) {
-			
-			if(modifierSet.contains(Modifier.ABSTRACT) && modifierSet.contains(Modifier.FINAL)) 
+
+		ASTNode parent = modifiers.getParent();
+		if(parent instanceof ClassDeclaration) {
+
+			if(modifierSet.contains(Modifier.ABSTRACT) && modifierSet.contains(Modifier.FINAL))
 				throw new WeedException("Class cannot be both abstract and final");
-			
+
 		}
-		else if(parentClass.equals(InterfaceDeclaration.class)) {
-			if(modifierSet.contains(Modifier.ABSTRACT) && modifierSet.contains(Modifier.FINAL)) 
+		else if(parent instanceof InterfaceDeclaration) {
+			if(modifierSet.contains(Modifier.ABSTRACT) && modifierSet.contains(Modifier.FINAL))
 				throw new WeedException("Class cannot be both abstract and final");
 		}
-		else if(parentClass.equals(MethodDeclaration.class)) {
-			
+		else if(parent instanceof MethodDeclaration) {
+
 			if(modifierSet.contains(Modifier.ABSTRACT))
 				if(modifierSet.contains(Modifier.STATIC) || modifierSet.contains(Modifier.FINAL))
 					throw new WeedException("Abstract method cannot be static or final");
-			
-			if(modifierSet.contains(Modifier.STATIC) && modifierSet.contains(Modifier.FINAL)) 
+
+			if(modifierSet.contains(Modifier.STATIC) && modifierSet.contains(Modifier.FINAL))
 				throw new WeedException("Method cannot be both static and final");
-			
-			if(modifierSet.contains(Modifier.NATIVE) && !modifierSet.contains(Modifier.STATIC)) 
+
+			if(modifierSet.contains(Modifier.NATIVE) && !modifierSet.contains(Modifier.STATIC))
 				throw new WeedException("Method must be native and static at the same time");
-			
+
 			if(modifierSet.contains(Modifier.ABSTRACT) || modifierSet.contains(Modifier.NATIVE)) {
 				MethodDeclaration methodDecl = (MethodDeclaration) modifiers.getParent();
 				if(methodDecl.getBody() != null) {
 					throw new WeedException("Abstract or Native method cannot have body");
 				}
 			}
-			
-			if(modifiers.getParent().getParent().getClass().equals(InterfaceBody.class)) {
-				
-				if(modifierSet.contains(Modifier.STATIC) || modifierSet.contains(Modifier.FINAL) || modifierSet.contains(Modifier.NATIVE)) 
+
+			if(parent.getParent() instanceof InterfaceBody) {
+
+				if(modifierSet.contains(Modifier.STATIC) || modifierSet.contains(Modifier.FINAL) || modifierSet.contains(Modifier.NATIVE))
 					throw new WeedException("Interface method cannot be static, final, or native");
-				
+
 			}
 		}
-		else if(parentClass.equals(FieldDeclaration.class)) {
-			if(modifierSet.contains(Modifier.FINAL)) 
+		else if(parent instanceof FieldDeclaration) {
+			if(modifierSet.contains(Modifier.FINAL))
 				throw new WeedException("Field cannot be final");
 		}
-		
-		
+
+
 	}
 
 	@Override
 	public void willVisit(ASTNode node) {
-		
+
 	}
 
 	@Override
 	public void didVisit(ASTNode node) {
-		
+
 	}
 
 }
