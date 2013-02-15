@@ -7,11 +7,12 @@ import java.util.Set;
 
 import ca.uwaterloo.joos.ast.AST.ASTConstructException;
 import ca.uwaterloo.joos.ast.ASTNode;
-import ca.uwaterloo.joos.ast.ParseTreeTraverse;
-import ca.uwaterloo.joos.ast.ParseTreeTraverse.Traverser;
+import ca.uwaterloo.joos.ast.visitor.ASTVisitor;
+import ca.uwaterloo.joos.parser.ParseTreeTraverse;
 import ca.uwaterloo.joos.parser.ParseTree.LeafNode;
 import ca.uwaterloo.joos.parser.ParseTree.Node;
 import ca.uwaterloo.joos.parser.ParseTree.TreeNode;
+import ca.uwaterloo.joos.parser.ParseTreeTraverse.Traverser;
 
 public class Modifiers extends ASTNode {
 
@@ -19,14 +20,23 @@ public class Modifiers extends ASTNode {
 		ABSTRACT, FINAL, NATIVE, PUBLIC, PROTECTED, STATIC
 	}
 
-	List<Modifier> modifiers;
+	private List<Modifier> modifiers;
 
-	public Modifiers(Node modifiersNode) throws ASTConstructException {
+	/**
+	 * @return the modifiers
+	 */
+	public List<Modifier> getModifiers() {
+		return modifiers;
+	}
+
+	public Modifiers(Node modifiersNode, ASTNode parent) throws ASTConstructException {
+		super(parent);
+		
 		assert modifiersNode instanceof TreeNode : "Modifiers is expecting a TreeNode";
 		
 		this.modifiers = new ArrayList<Modifier>();
 		
-		ParseTreeTraverse traverse = new ParseTreeTraverse(new Traverser() {
+		ParseTreeTraverse traverse = new ParseTreeTraverse(new Traverser(this) {
 
 			public Set<Node> processTreeNode(TreeNode treeNode) {
 				Set<Node> offers = new HashSet<Node>();
@@ -60,5 +70,17 @@ public class Modifiers extends ASTNode {
 			str += modifier.name() + " ";
 		str += "\n";
 		return str;
+	}
+	
+	/* (non-Javadoc)
+	 * @see ca.uwaterloo.joos.ast.ASTNode#accept(ca.uwaterloo.joos.ast.ASTVisitor)
+	 */
+	@Override
+	public void accept(ASTVisitor visitor) throws Exception{
+		visitor.willVisit(this);
+		if(visitor.visit(this)) {
+			
+		}
+		visitor.didVisit(this);
 	}
 }

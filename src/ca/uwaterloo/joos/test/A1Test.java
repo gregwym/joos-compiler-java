@@ -87,9 +87,9 @@ public class A1Test {
 						+ "[" + testFile.getName() + "]");
 			}
 			else if (!realException.getClass().getSimpleName().equals(fileException.getClass().getSimpleName())) {
-				System.out.println("Expecting: " + fileException.getClass().getSimpleName() + "\t"
-						+ "but got: " + realException.getClass().getSimpleName() + "\t\t"
-						+ "[" + testFile.getName() + "]");
+//				System.out.println("Expecting: " + fileException.getClass().getSimpleName() + "\t"
+//						+ "but got: " + realException.getClass().getSimpleName() + "\t\t"
+//						+ "[" + testFile.getName() + "]");
 			}
 		}
 

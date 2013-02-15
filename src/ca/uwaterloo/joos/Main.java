@@ -17,6 +17,7 @@ import ca.uwaterloo.joos.parser.ParseTree;
 import ca.uwaterloo.joos.scanner.DFA;
 import ca.uwaterloo.joos.scanner.Scanner;
 import ca.uwaterloo.joos.scanner.Token;
+import ca.uwaterloo.joos.weeder.Weeder;
 
 /**
  * @author Greg Wang
@@ -32,6 +33,7 @@ public class Main {
 	private final Scanner scanner;
 	private final LR1Parser parser;
 	private final Preprocessor preprocessor;
+	private final Weeder weeder;
 
 	public Main() {
 		// Construct Preprocessor
@@ -59,6 +61,8 @@ public class Main {
 		}
 		// Construct Parser
 		this.parser = new LR1Parser(lr1);
+		
+		this.weeder = new Weeder();
 	}
 
 	public Object execute(File source) throws Exception {
@@ -80,6 +84,9 @@ public class Main {
 		
 		/* AST Constructing */
 		AST ast = new AST(parseTree, source.getName());
+		
+		/* AST Weeding */
+		this.weeder.weedAst(ast);
 
 		return ast;
 	}

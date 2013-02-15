@@ -4,27 +4,34 @@ import java.util.HashSet;
 import java.util.Set;
 
 import ca.uwaterloo.joos.ast.AST.ASTConstructException;
-import ca.uwaterloo.joos.ast.ParseTreeTraverse;
-import ca.uwaterloo.joos.ast.ParseTreeTraverse.Traverser;
+import ca.uwaterloo.joos.ast.ASTNode;
+import ca.uwaterloo.joos.ast.body.InterfaceBody;
 import ca.uwaterloo.joos.ast.type.Modifiers;
+import ca.uwaterloo.joos.ast.visitor.ASTVisitor;
 import ca.uwaterloo.joos.parser.ParseTree.LeafNode;
 import ca.uwaterloo.joos.parser.ParseTree.Node;
 import ca.uwaterloo.joos.parser.ParseTree.TreeNode;
+import ca.uwaterloo.joos.parser.ParseTreeTraverse;
+import ca.uwaterloo.joos.parser.ParseTreeTraverse.Traverser;
 
 public class InterfaceDeclaration extends TypeDeclaration {
 
-	public InterfaceDeclaration(Node node) throws ASTConstructException {
+	public InterfaceDeclaration(Node node, ASTNode parent) throws ASTConstructException {
+		super(parent);
 		assert node instanceof TreeNode : "InterfaceDeclaration is expecting a TreeNode";
 			
-		ParseTreeTraverse traverse = new ParseTreeTraverse(new Traverser() {
+		ParseTreeTraverse traverse = new ParseTreeTraverse(new Traverser(this) {
 	
 			public Set<Node> processTreeNode(TreeNode treeNode) throws ASTConstructException {
 				Set<Node> offers = new HashSet<Node>();
 				if (treeNode.productionRule.getLefthand().equals("modifiers")) {
-					modifiers = new Modifiers(treeNode);
+					modifiers = new Modifiers(treeNode, parent);
+				}
+				else if (treeNode.productionRule.getLefthand().equals("extendsinterfaces")) {
+//					interface = 
 				}
 				else if (treeNode.productionRule.getLefthand().equals("interfacebody")) {
-//					body = new InterfaceBody(treeNode);
+					body = new InterfaceBody(treeNode, parent);
 				}
 				else {
 					for (Node n : treeNode.children) 
@@ -54,6 +61,18 @@ public class InterfaceDeclaration extends TypeDeclaration {
 		str += this.modifiers.toString(level + 1);
 //		str += this.body.toString(level + 1);
 		return str;
+	}
+	
+	/* (non-Javadoc)
+	 * @see ca.uwaterloo.joos.ast.ASTNode#accept(ca.uwaterloo.joos.ast.ASTVisitor)
+	 */
+	@Override
+	public void accept(ASTVisitor visitor) throws Exception{
+		visitor.willVisit(this);
+		if(visitor.visit(this)) {
+			super.accept(visitor);
+		}
+		visitor.didVisit(this);
 	}
 }
 
