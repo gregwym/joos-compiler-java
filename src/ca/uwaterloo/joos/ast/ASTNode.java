@@ -7,15 +7,8 @@ import ca.uwaterloo.joos.Main;
 
 public class ASTNode {
 	protected static final Logger logger = Main.getLogger(ASTNode.class);
-	protected ASTNode parent = null;
+	
 	protected String identifier = new String();
-
-	/**
-	 * @return the parent
-	 */
-	public ASTNode getParent() {
-		return parent;
-	}
 	
 	/**
 	 * @return the identifier

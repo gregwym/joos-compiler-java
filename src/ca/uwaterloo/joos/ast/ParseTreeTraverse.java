@@ -39,8 +39,8 @@ public class ParseTreeTraverse extends ASTNode {
 			
 			if (node instanceof TreeNode) {
 				TreeNode treeNode = (TreeNode) node;
-				Set<Node> children = this.traverser.processTreeNode(treeNode);
-				for(Node n: children) {
+				Set<Node> offer = this.traverser.processTreeNode(treeNode);
+				for(Node n: offer) {
 					nodeQueue.offer(n);
 				}
 			}

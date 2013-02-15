@@ -40,7 +40,6 @@ public class FileUnit extends ASTNode {
 				else if(members.contains("interfacedecl")) {
 					this.typeDeclaration = new InterfaceDeclaration(child.children.get(0));
 				}
-				this.typeDeclaration.parent = this;
 			}
 		}
 	}
