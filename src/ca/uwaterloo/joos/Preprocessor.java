@@ -20,10 +20,13 @@ public class Preprocessor {
 
 	public List<Token> processTokens(List<Token> rawTokens) throws ScanException {
 		List<Token> tokens = new ArrayList<Token>();
-		for(int i = 0;i<rawTokens.size();i++){
-			Token token = rawTokens.get(i);
-			
+		
+		for(Token token:rawTokens){
 			if(!this.undesiredTokenKinds.contains(token.getKind())) tokens.add(token);
+			
+		}
+		for(int i = 0;i<tokens.size();i++){
+			Token token = tokens.get(i);
 			if(token.getKind().equals("INTLIT"))
 			{ 
 				String intPositiveThreshold = "2147483647";
@@ -31,7 +34,7 @@ public class Preprocessor {
 				Set<String> expressionTokenKinds = new HashSet<String>();
 				expressionTokenKinds.add("INTLIT");
 				expressionTokenKinds.add("RPAREN");
-				if(rawTokens.get(i-1).getKind().equals("MINUS")&&!expressionTokenKinds.contains(rawTokens.get(i-2).getKind()))
+				if(tokens.get(i-1).getKind().equals("MINUS")&&!expressionTokenKinds.contains(tokens.get(i-2).getKind()))
 				{
 					checkIntRange(token.getLexeme(),intNegThreshold);
 				}
