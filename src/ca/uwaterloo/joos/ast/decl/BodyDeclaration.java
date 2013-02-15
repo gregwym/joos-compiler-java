@@ -3,10 +3,14 @@
  */
 package ca.uwaterloo.joos.ast.decl;
 
-import java.util.LinkedList;
-import java.util.Queue;
+import java.util.HashSet;
+import java.util.Set;
 
+import ca.uwaterloo.joos.ast.AST.ASTConstructException;
 import ca.uwaterloo.joos.ast.ASTNode;
+import ca.uwaterloo.joos.ast.ParseTreeTraverse;
+import ca.uwaterloo.joos.ast.ParseTreeTraverse.Traverser;
+import ca.uwaterloo.joos.parser.ParseTree.LeafNode;
 import ca.uwaterloo.joos.parser.ParseTree.Node;
 import ca.uwaterloo.joos.parser.ParseTree.TreeNode;
 
@@ -23,37 +27,41 @@ public abstract class BodyDeclaration extends ASTNode {
 		// TODO Auto-generated constructor stub
 	}
 	
-	public static BodyDeclaration newBodyDeclaration(Node declNode) {
+	private static BodyDeclaration newBodyDecl = null;
+	public static BodyDeclaration newBodyDeclaration(Node declNode) throws ASTConstructException {
 		assert declNode instanceof TreeNode : "BodyDecl is expecting a TreeNode";
 	
-		Queue<Node> nodeQueue = new LinkedList<Node>();
-		nodeQueue.offer(declNode);
-		
-		while (!nodeQueue.isEmpty()) {
-			Node node = nodeQueue.poll();
-			logger.finer("Dequeued node " + node.toString());
-		
-			if (node instanceof TreeNode) {
-				TreeNode treeNode = (TreeNode) node;
-				logger.fine("Reach: " + treeNode);
+		ParseTreeTraverse traverse = new ParseTreeTraverse(new Traverser() {
+	
+			public Set<Node> processTreeNode(TreeNode treeNode) {
+				Set<Node> offers = new HashSet<Node>();
 				if(treeNode.productionRule.getLefthand().equals("constructordecl")){
-					return new ConstructorDeclaration();
+					newBodyDecl = new ConstructorDeclaration();
 				}
 				else if(treeNode.productionRule.getLefthand().equals("methoddecl")){
-					return new MethodDeclaration();
+					newBodyDecl = new MethodDeclaration();
 				}
 				else if(treeNode.productionRule.getLefthand().equals("fielddecl")){
-					return new FieldDeclaration();
+					newBodyDecl = new FieldDeclaration();
 				}
 				else {
 					for (Node n : treeNode.children) {
-						nodeQueue.offer(n);
+						offers.add(n);
 					}
 				}
+				return offers;
 			}
-		}
 	
-		return null;
+			public void processLeafNode(LeafNode leafNode) throws ASTConstructException {}
+		    
+		});
+	
+		traverse.traverse(declNode);
+		
+		BodyDeclaration rtn = newBodyDecl;
+		newBodyDecl = null;
+		
+		return rtn;
 	}
 
 	@Override

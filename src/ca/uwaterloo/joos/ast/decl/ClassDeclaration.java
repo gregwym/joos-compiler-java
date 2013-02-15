@@ -1,6 +1,11 @@
 package ca.uwaterloo.joos.ast.decl;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import ca.uwaterloo.joos.ast.AST.ASTConstructException;
+import ca.uwaterloo.joos.ast.ParseTreeTraverse;
+import ca.uwaterloo.joos.ast.ParseTreeTraverse.Traverser;
 import ca.uwaterloo.joos.ast.body.ClassBody;
 import ca.uwaterloo.joos.ast.type.Modifiers;
 import ca.uwaterloo.joos.parser.ParseTree.LeafNode;
@@ -12,25 +17,33 @@ public class ClassDeclaration extends TypeDeclaration {
 
 	public ClassDeclaration(Node node) throws ASTConstructException {
 		assert node instanceof TreeNode : "FileUnit is expecting a TreeNode";
-		TreeNode treeNode = (TreeNode) node;
-
-		for (Node oneChild : treeNode.children) {
-			if(oneChild instanceof LeafNode) {	// TODO: not ideal, need a name class
-				LeafNode child = (LeafNode) oneChild;
-				if(child.token.getKind().equals("ID")) {
-					this.identifier = child.token.getLexeme();
-				}
-				continue;
-			}
 			
-			TreeNode child = (TreeNode) oneChild;
-			if (child.productionRule.getLefthand().equals("modifiers")) {
-				this.modifiers = new Modifiers(child);
+		ParseTreeTraverse traverse = new ParseTreeTraverse(new Traverser() {
+	
+			public Set<Node> processTreeNode(TreeNode treeNode) throws ASTConstructException {
+				Set<Node> offers = new HashSet<Node>();
+				if (treeNode.productionRule.getLefthand().equals("modifiers")) {
+					modifiers = new Modifiers(treeNode);
+				}
+				else if (treeNode.productionRule.getLefthand().equals("classbody")) {
+					body = new ClassBody(treeNode);
+				}
+				else {
+					for (Node n : treeNode.children) 
+						offers.add(n);
+				}
+				return offers;
 			}
-			else if (child.productionRule.getLefthand().equals("classbody")) {
-				this.body = new ClassBody(child);
+	
+			public void processLeafNode(LeafNode leafNode) throws ASTConstructException {
+				if(leafNode.token.getKind().equals("ID")) {
+					identifier = leafNode.token.getLexeme();
+				}
 			}
-		}
+		    
+		});
+	
+		traverse.traverse(node);
 	}
 
 	/**

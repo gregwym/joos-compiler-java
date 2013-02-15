@@ -1,12 +1,14 @@
 package ca.uwaterloo.joos.ast.type;
 
 import java.util.ArrayList;
-import java.util.LinkedList;
+import java.util.HashSet;
 import java.util.List;
-import java.util.Queue;
+import java.util.Set;
 
 import ca.uwaterloo.joos.ast.AST.ASTConstructException;
 import ca.uwaterloo.joos.ast.ASTNode;
+import ca.uwaterloo.joos.ast.ParseTreeTraverse;
+import ca.uwaterloo.joos.ast.ParseTreeTraverse.Traverser;
 import ca.uwaterloo.joos.parser.ParseTree.LeafNode;
 import ca.uwaterloo.joos.parser.ParseTree.Node;
 import ca.uwaterloo.joos.parser.ParseTree.TreeNode;
@@ -23,27 +25,25 @@ public class Modifiers extends ASTNode {
 		assert modifiersNode instanceof TreeNode : "Modifiers is expecting a TreeNode";
 		
 		this.modifiers = new ArrayList<Modifier>();
-	
-		Queue<Node> nodeQueue = new LinkedList<Node>();
-		nodeQueue.offer(modifiersNode);
+		
+		ParseTreeTraverse traverse = new ParseTreeTraverse(new Traverser() {
 
-		while (!nodeQueue.isEmpty()) {
-			Node node = nodeQueue.poll();
-			logger.finer("Dequeued node " + node.toString());
-			
-			if (node instanceof TreeNode) {
-				TreeNode treeNode = (TreeNode) node;
-				for(Node n: treeNode.children) {
-					nodeQueue.offer(n);
-				}
+			public Set<Node> processTreeNode(TreeNode treeNode) {
+				Set<Node> offers = new HashSet<Node>();
+				for (Node n : treeNode.children) 
+					offers.add(n);
+				return offers;
 			}
-			else if(node instanceof LeafNode) {
-				LeafNode leafNode = (LeafNode) node;
-				Modifier modifier = this.stringToModifier(leafNode.token.getKind().toUpperCase());
+
+			public void processLeafNode(LeafNode leafNode) throws ASTConstructException {
+				Modifier modifier = stringToModifier(leafNode.token.getKind().toUpperCase());
 				logger.fine("Modifier added: " + modifier.name());
-				this.modifiers.add(modifier);
+				modifiers.add(modifier);
 			}
-		}
+		    
+		});
+
+		traverse.traverse(modifiersNode);
 	}
 	
 	private Modifier stringToModifier(String name) throws ASTConstructException {
