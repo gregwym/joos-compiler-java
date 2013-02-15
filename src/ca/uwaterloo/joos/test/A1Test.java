@@ -49,7 +49,7 @@ public class A1Test {
 		List<Object[]> data = new ArrayList<Object[]>();
 
 		try {
-			File directory = new File("resources/testcases/a1");
+			File directory = new File("testcases/a1");
 			File[] testFileList = directory.listFiles();
 			for (File testFile: testFileList) {
 				data.add( new Object[] { testFile });
