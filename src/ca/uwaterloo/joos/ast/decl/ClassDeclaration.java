@@ -1,6 +1,7 @@
 package ca.uwaterloo.joos.ast.decl;
 
 import ca.uwaterloo.joos.ast.AST.ASTConstructException;
+import ca.uwaterloo.joos.ast.body.ClassBody;
 import ca.uwaterloo.joos.ast.type.Modifiers;
 import ca.uwaterloo.joos.parser.ParseTree.LeafNode;
 import ca.uwaterloo.joos.parser.ParseTree.Node;
@@ -27,7 +28,7 @@ public class ClassDeclaration extends TypeDeclaration {
 				this.modifiers = new Modifiers(child);
 			}
 			else if (child.productionRule.getLefthand().equals("classbody")) {
-//				this.body = new ClassBody(child);
+				this.body = new ClassBody(child);
 			}
 		}
 	}
@@ -49,7 +50,7 @@ public class ClassDeclaration extends TypeDeclaration {
 //			str += id + " ";
 		str += "\n";
 		str += this.modifiers.toString(level + 1);
-//		str += this.body.toString(level + 1);
+		str += this.body.toString(level + 1);
 		return str;
 	}
 }

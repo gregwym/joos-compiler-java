@@ -1,21 +1,57 @@
 /**
- * 
+ *
  */
 package ca.uwaterloo.joos.ast.body;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import ca.uwaterloo.joos.ast.ASTNode;
+import ca.uwaterloo.joos.ast.decl.BodyDeclaration;
+import ca.uwaterloo.joos.ast.decl.ConstructorDeclaration;
+import ca.uwaterloo.joos.ast.decl.FieldDeclaration;
+import ca.uwaterloo.joos.ast.decl.MethodDeclaration;
 
 /**
  * @author Greg Wang
  *
  */
-public class TypeBody extends ASTNode {
-
+@SuppressWarnings("unchecked")
+public abstract class TypeBody extends ASTNode {
+	protected Set<BodyDeclaration> members;
 	/**
-	 * 
+	 *
 	 */
 	public TypeBody() {
-		// TODO Auto-generated constructor stub
+		this.members = new HashSet<BodyDeclaration>();
 	}
 
+	public Set<MethodDeclaration> getMethods() {
+		return (Set<MethodDeclaration>) this.getMember(MethodDeclaration.class);
+	}
+	
+	public Set<ConstructorDeclaration> getConstructors() {
+		return (Set<ConstructorDeclaration>) this.getMember(MethodDeclaration.class);
+	}
+	
+	public Set<FieldDeclaration> getFields() {
+		return (Set<FieldDeclaration>) this.getMember(MethodDeclaration.class);
+	}
+	
+	private Set<?> getMember(Class<?> type) {
+		Set<BodyDeclaration> members = new HashSet<BodyDeclaration>();
+		for(BodyDeclaration decl: this.members) {
+			if(decl.getClass().equals(type)) members.add(decl);
+		}
+		return members;
+	}
+	
+	@Override
+	public String toString(int level) {
+		String str = super.toString(level);
+		str += "<" + this.getClass().getSimpleName() + "> \n";
+		for(BodyDeclaration member: this.members) 
+			str += member.toString(level + 1);
+		return str;
+	}
 }

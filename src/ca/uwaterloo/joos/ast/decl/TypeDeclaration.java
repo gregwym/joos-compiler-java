@@ -1,5 +1,6 @@
 package ca.uwaterloo.joos.ast.decl;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import ca.uwaterloo.joos.ast.ASTNode;
@@ -11,6 +12,10 @@ public abstract class TypeDeclaration extends ASTNode {
 	protected Modifiers modifiers;
 	protected TypeBody body;
 	protected List<String> interfaces;
+	
+	public TypeDeclaration() {
+		this.interfaces = new ArrayList<String>();
+	}
 	
 	/**
 	 * @return the modifiers
