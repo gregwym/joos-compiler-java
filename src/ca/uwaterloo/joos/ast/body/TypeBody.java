@@ -9,12 +9,12 @@ import ca.uwaterloo.joos.ast.ASTNode;
  * @author Greg Wang
  *
  */
-public class Body extends ASTNode {
+public class TypeBody extends ASTNode {
 
 	/**
 	 * 
 	 */
-	public Body() {
+	public TypeBody() {
 		// TODO Auto-generated constructor stub
 	}
 

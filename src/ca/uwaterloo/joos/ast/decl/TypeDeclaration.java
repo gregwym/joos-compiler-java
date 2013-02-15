@@ -3,13 +3,13 @@ package ca.uwaterloo.joos.ast.decl;
 import java.util.List;
 
 import ca.uwaterloo.joos.ast.ASTNode;
-import ca.uwaterloo.joos.ast.body.Body;
+import ca.uwaterloo.joos.ast.body.TypeBody;
 import ca.uwaterloo.joos.ast.type.Modifiers;
 
 
 public abstract class TypeDeclaration extends ASTNode {
 	protected Modifiers modifiers;
-	protected Body body;
+	protected TypeBody body;
 	protected List<String> interfaces;
 	
 	/**
@@ -29,7 +29,7 @@ public abstract class TypeDeclaration extends ASTNode {
 	/**
 	 * @return the classBody
 	 */
-	public Body getBody() {
+	public TypeBody getBody() {
 		return body;
 	}
 }
