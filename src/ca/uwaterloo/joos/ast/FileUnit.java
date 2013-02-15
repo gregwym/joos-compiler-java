@@ -75,4 +75,19 @@ public class FileUnit extends ASTNode {
 		str += this.typeDeclaration.toString(level + 1);
 		return str;
 	}
+
+	/* (non-Javadoc)
+	 * @see ca.uwaterloo.joos.ast.ASTNode#accept(ca.uwaterloo.joos.ast.ASTVisitor)
+	 */
+	@Override
+	public void accept(ASTVisitor visitor) {
+		visitor.willVisit(this);
+		if(visitor.visit(this)) {
+			this.packageDeclaration.accept(visitor);
+			for(ImportDeclaration importDecl: this.importDeclarations)
+				importDecl.accept(visitor);
+			this.typeDeclaration.accept(visitor);
+		}
+		visitor.didVisit(this);
+	}
 }

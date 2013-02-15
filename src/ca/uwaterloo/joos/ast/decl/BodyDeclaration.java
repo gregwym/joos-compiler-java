@@ -8,6 +8,7 @@ import java.util.Set;
 
 import ca.uwaterloo.joos.ast.AST.ASTConstructException;
 import ca.uwaterloo.joos.ast.ASTNode;
+import ca.uwaterloo.joos.ast.ASTVisitor;
 import ca.uwaterloo.joos.ast.ParseTreeTraverse;
 import ca.uwaterloo.joos.ast.ParseTreeTraverse.Traverser;
 import ca.uwaterloo.joos.ast.type.Modifiers;
@@ -76,5 +77,14 @@ public abstract class BodyDeclaration extends ASTNode {
 		str += "type: " + this.type + "\n";
 		str += this.modifiers.toString(level + 1);
 		return str;
+	}
+	
+	/* (non-Javadoc)
+	 * @see ca.uwaterloo.joos.ast.ASTNode#accept(ca.uwaterloo.joos.ast.ASTVisitor)
+	 */
+	@Override
+	public void accept(ASTVisitor visitor) {
+		this.modifiers.accept(visitor);
+		this.type.accept(visitor);
 	}
 }

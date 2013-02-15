@@ -5,10 +5,14 @@ import java.util.logging.Logger;
 import ca.uwaterloo.joos.Main;
 
 
-public class ASTNode {
+public abstract class ASTNode {
 	protected static final Logger logger = Main.getLogger(ASTNode.class);
 	
 	protected String identifier = new String();
+
+	public ASTNode() {
+
+	}
 	
 	/**
 	 * @return the identifier
@@ -16,10 +20,8 @@ public class ASTNode {
 	public String getIdentifier() {
 		return identifier;
 	}
-
-	public ASTNode() {
-
-	}
+	
+	public abstract void accept(ASTVisitor visitor);
 	
 	@Override
 	public String toString() {

@@ -4,6 +4,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import ca.uwaterloo.joos.ast.AST.ASTConstructException;
+import ca.uwaterloo.joos.ast.ASTVisitor;
 import ca.uwaterloo.joos.ast.ParseTreeTraverse;
 import ca.uwaterloo.joos.ast.ParseTreeTraverse.Traverser;
 import ca.uwaterloo.joos.ast.type.Modifiers;
@@ -64,5 +65,19 @@ public class MethodDeclaration extends BodyDeclaration {
 	public String toString(int level) {
 		String str = super.toString(level);
 		return str;
+	}
+	
+	/* (non-Javadoc)
+	 * @see ca.uwaterloo.joos.ast.ASTNode#accept(ca.uwaterloo.joos.ast.ASTVisitor)
+	 */
+	@Override
+	public void accept(ASTVisitor visitor) {
+		visitor.willVisit(this);
+		if(visitor.visit(this)) {
+			super.accept(visitor);
+//			this.parameters.accept(visitor);
+//			this.body.accept(visitor);
+		}
+		visitor.didVisit(this);
 	}
 }

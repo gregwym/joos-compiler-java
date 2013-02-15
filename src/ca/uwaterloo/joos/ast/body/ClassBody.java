@@ -3,8 +3,8 @@ package ca.uwaterloo.joos.ast.body;
 import java.util.HashSet;
 import java.util.Set;
 
-import ca.uwaterloo.joos.ast.AST.ASTConstructException;
 import ca.uwaterloo.joos.ast.ParseTreeTraverse;
+import ca.uwaterloo.joos.ast.AST.ASTConstructException;
 import ca.uwaterloo.joos.ast.ParseTreeTraverse.Traverser;
 import ca.uwaterloo.joos.ast.decl.BodyDeclaration;
 import ca.uwaterloo.joos.parser.ParseTree.LeafNode;

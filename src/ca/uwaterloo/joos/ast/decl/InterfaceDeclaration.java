@@ -4,6 +4,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import ca.uwaterloo.joos.ast.AST.ASTConstructException;
+import ca.uwaterloo.joos.ast.ASTVisitor;
 import ca.uwaterloo.joos.ast.ParseTreeTraverse;
 import ca.uwaterloo.joos.ast.ParseTreeTraverse.Traverser;
 import ca.uwaterloo.joos.ast.type.Modifiers;
@@ -54,6 +55,18 @@ public class InterfaceDeclaration extends TypeDeclaration {
 		str += this.modifiers.toString(level + 1);
 //		str += this.body.toString(level + 1);
 		return str;
+	}
+	
+	/* (non-Javadoc)
+	 * @see ca.uwaterloo.joos.ast.ASTNode#accept(ca.uwaterloo.joos.ast.ASTVisitor)
+	 */
+	@Override
+	public void accept(ASTVisitor visitor) {
+		visitor.willVisit(this);
+		if(visitor.visit(this)) {
+			super.accept(visitor);
+		}
+		visitor.didVisit(this);
 	}
 }
 
