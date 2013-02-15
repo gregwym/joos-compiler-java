@@ -29,6 +29,12 @@ public class ClassDeclaration extends TypeDeclaration {
 				if (treeNode.productionRule.getLefthand().equals("modifiers")) {
 					modifiers = new Modifiers(treeNode, parent);
 				}
+				else if (treeNode.productionRule.getLefthand().equals("interfaces")) {
+//					interfaces = 
+				}
+				else if (treeNode.productionRule.getLefthand().equals("super")) {
+//					superClass = 
+				}
 				else if (treeNode.productionRule.getLefthand().equals("classbody")) {
 					body = new ClassBody(treeNode, parent);
 				}

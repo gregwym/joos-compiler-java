@@ -26,6 +26,9 @@ public class InterfaceDeclaration extends TypeDeclaration {
 				if (treeNode.productionRule.getLefthand().equals("modifiers")) {
 					modifiers = new Modifiers(treeNode, parent);
 				}
+				else if (treeNode.productionRule.getLefthand().equals("extendsinterfaces")) {
+//					interface = 
+				}
 				else if (treeNode.productionRule.getLefthand().equals("interfacebody")) {
 //					body = new InterfaceBody(treeNode);
 				}
