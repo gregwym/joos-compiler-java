@@ -103,8 +103,8 @@ public class Main {
 		Main instance = new Main();
 
 		try {
-			Object parseTree = instance.execute(new File(args[0]));
-			System.out.println(parseTree.toString());
+			Object result = instance.execute(new File(args[0]));
+			System.out.println(result.toString());
 		} catch (Exception e) {
 			System.err.println("ERROR: " + e.getLocalizedMessage() + " " + e.getClass().getName());
 			e.printStackTrace();
