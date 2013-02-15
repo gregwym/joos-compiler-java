@@ -1,5 +1,7 @@
 package ca.uwaterloo.joos.ast.body;
 
-public class InterfaceBody {
+import ca.uwaterloo.joos.ast.ASTNode;
+
+public class InterfaceBody extends ASTNode{
 
 }

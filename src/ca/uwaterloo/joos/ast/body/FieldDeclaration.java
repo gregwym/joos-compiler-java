@@ -1,5 +1,7 @@
 package ca.uwaterloo.joos.ast.body;
 
-public class FieldDeclaration {
+import ca.uwaterloo.joos.ast.ASTNode;
+
+public class FieldDeclaration extends ASTNode {
 
 }

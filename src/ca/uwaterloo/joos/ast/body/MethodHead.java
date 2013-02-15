@@ -1,5 +1,7 @@
 package ca.uwaterloo.joos.ast.body;
 
-public class MethodHead {
+import ca.uwaterloo.joos.ast.ASTNode;
+
+public class MethodHead extends ASTNode{
 
 }
