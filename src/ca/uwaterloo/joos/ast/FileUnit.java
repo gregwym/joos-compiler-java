@@ -3,6 +3,7 @@ package ca.uwaterloo.joos.ast;
 import java.util.Arrays;
 import java.util.List;
 
+import ca.uwaterloo.joos.ast.AST.ASTConstructException;
 import ca.uwaterloo.joos.ast.body.ClassDeclaration;
 import ca.uwaterloo.joos.ast.body.InterfaceDeclaration;
 import ca.uwaterloo.joos.parser.ParseTree.Node;
@@ -14,7 +15,7 @@ public class FileUnit extends ASTNode {
 	private PackageDeclaration packageDeclaration;
 	private TypeDeclaration typeDeclaration;
 
-	public FileUnit(Node node, String fileName) {
+	public FileUnit(Node node, String fileName) throws ASTConstructException {
 		assert node instanceof TreeNode : "FileUnit is expecting a TreeNode";
 		TreeNode treeNode = (TreeNode) node;
 		this.identifier = fileName;

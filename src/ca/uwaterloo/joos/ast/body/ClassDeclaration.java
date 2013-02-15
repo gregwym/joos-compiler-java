@@ -2,6 +2,7 @@ package ca.uwaterloo.joos.ast.body;
 
 import java.util.List;
 
+import ca.uwaterloo.joos.ast.AST.ASTConstructException;
 import ca.uwaterloo.joos.ast.TypeDeclaration;
 import ca.uwaterloo.joos.ast.type.Modifiers;
 import ca.uwaterloo.joos.parser.ParseTree.LeafNode;
@@ -13,7 +14,7 @@ public class ClassDeclaration extends TypeDeclaration {
 	private List<String> interfaces;
 	private ClassBody classBody;
 
-	public ClassDeclaration(Node node) {
+	public ClassDeclaration(Node node) throws ASTConstructException {
 		assert node instanceof TreeNode : "FileUnit is expecting a TreeNode";
 		TreeNode treeNode = (TreeNode) node;
 

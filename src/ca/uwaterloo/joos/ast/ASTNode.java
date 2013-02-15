@@ -1,8 +1,12 @@
 package ca.uwaterloo.joos.ast;
 
+import java.util.logging.Logger;
+
+import ca.uwaterloo.joos.Main;
+
 
 public class ASTNode {
-	
+	protected static final Logger logger = Main.getLogger(ASTNode.class);
 	protected ASTNode parent = null;
 	protected String identifier = new String();
 
@@ -26,7 +30,7 @@ public class ASTNode {
 	
 	@Override
 	public String toString() {
-		return "<ASTNode> parent: " + this.parent.getClass().getName();
+		return "<ASTNode> id: " + this.identifier;
 	}
 	
 	public String toString(int level) {
