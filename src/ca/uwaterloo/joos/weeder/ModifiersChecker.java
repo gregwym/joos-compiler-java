@@ -66,7 +66,7 @@ public class ModifiersChecker extends ModifiersVisitor {
 			if(modifierSet.contains(Modifier.ABSTRACT) || modifierSet.contains(Modifier.NATIVE)) {
 				MethodDeclaration methodDecl = (MethodDeclaration) modifiers.getParent();
 				if(methodDecl.getBody() != null) {
-					throw new WeedException("Method must be native and static at the same time");
+					throw new WeedException("Abstract or Native method cannot have body");
 				}
 			}
 			

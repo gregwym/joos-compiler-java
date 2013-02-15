@@ -1,31 +1,31 @@
 package ca.uwaterloo.joos.ast.decl;
 
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
 import ca.uwaterloo.joos.ast.AST.ASTConstructException;
 import ca.uwaterloo.joos.ast.ASTNode;
+import ca.uwaterloo.joos.ast.body.Block;
 import ca.uwaterloo.joos.ast.type.Modifiers;
 import ca.uwaterloo.joos.ast.visitor.ASTVisitor;
-import ca.uwaterloo.joos.parser.ParseTreeTraverse;
 import ca.uwaterloo.joos.parser.ParseTree.LeafNode;
 import ca.uwaterloo.joos.parser.ParseTree.Node;
 import ca.uwaterloo.joos.parser.ParseTree.TreeNode;
+import ca.uwaterloo.joos.parser.ParseTreeTraverse;
 import ca.uwaterloo.joos.parser.ParseTreeTraverse.Traverser;
 
 
 public class MethodDeclaration extends BodyDeclaration {
 
 //	protected Parameters parameters;
-//	protected Block body;
+	protected Block body;
 	
 	/**
 	 * @return the body
 	 */
-	public Object getBody() {
-		// TODO
-//		return body;
-		return null;
+	public Block getBody() {
+		return body;
 	}
 
 	public MethodDeclaration(Node declNode, ASTNode parent) throws ASTConstructException {
@@ -49,7 +49,8 @@ public class MethodDeclaration extends BodyDeclaration {
 //					parameters = new Parameters(treeNode);
 				}
 				else if(treeNode.productionRule.getLefthand().equals("methodbody")) {
-//					body = new Block(treeNode);
+					if(Arrays.asList(treeNode.productionRule.getRighthand()).contains("block"))
+						body = new Block(treeNode, parent);
 				}
 				else {
 					for (Node n : treeNode.children)
@@ -87,7 +88,7 @@ public class MethodDeclaration extends BodyDeclaration {
 		if(visitor.visit(this)) {
 			super.accept(visitor);
 //			this.parameters.accept(visitor);
-//			this.body.accept(visitor);
+			if(this.body != null) this.body.accept(visitor);
 		}
 		visitor.didVisit(this);
 	}
