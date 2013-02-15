@@ -103,7 +103,6 @@ public class Main {
 		Main instance = new Main();
 
 		try {
-			Object parseTree = instance.execute(new File("resources/testcases/a1/J1_01.java"));
 			Object parseTree = instance.execute(new File(args[0]));
 			System.out.println(parseTree.toString());
 			ASTTreeGenerator astTreeGenerator = new ASTTreeGenerator();
