@@ -29,6 +29,7 @@ public class Weeder {
 	 */
 	public Weeder() {
 		this.checkers = new ArrayList<ASTVisitor>();
+		this.checkers.add(new TypeDeclarationChecker());
 		this.checkers.add(new ModifiersChecker());
 	}
 
