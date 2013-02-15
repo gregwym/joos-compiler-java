@@ -1,51 +1,63 @@
 package ca.uwaterloo.joos.ast.type;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
+import ca.uwaterloo.joos.ast.AST.ASTConstructException;
 import ca.uwaterloo.joos.ast.ASTNode;
+import ca.uwaterloo.joos.ast.ParseTreeTraverse;
+import ca.uwaterloo.joos.ast.ParseTreeTraverse.Traverser;
 import ca.uwaterloo.joos.parser.ParseTree.LeafNode;
 import ca.uwaterloo.joos.parser.ParseTree.Node;
 import ca.uwaterloo.joos.parser.ParseTree.TreeNode;
-import ca.uwaterloo.joos.scanner.Token;
 
 public class Modifiers extends ASTNode {
-	List<Token> modifierList = new ArrayList<Token>();
-	public Modifiers(Node modifiersNode)
-	{
-		if(modifiersNode instanceof TreeNode)
-		{
-			
-			List<Node> modifierChildren = ((TreeNode)modifiersNode).children;
-			searchNode(modifierChildren,"modifier");
-		}
-		
+
+	public static enum Modifier {
+		ABSTRACT, FINAL, NATIVE, PUBLIC, PROTECTED, STATIC
 	}
-	private void searchNode(List<Node> targetTree,String searchType)
-	{
+
+	List<Modifier> modifiers;
+
+	public Modifiers(Node modifiersNode) throws ASTConstructException {
+		assert modifiersNode instanceof TreeNode : "Modifiers is expecting a TreeNode";
 		
-		for (Node child : targetTree) {
-			if (child instanceof TreeNode) {
-				TreeNode treeNode = (TreeNode) child;
-				if (treeNode.productionRule.getLefthand().equals(
-						searchType)) {
-					modifierList.add(((LeafNode)treeNode.children.get(0)).token);
-					return;
-				}
-				else{
-					searchNode(treeNode.children,searchType);
-				}
+		this.modifiers = new ArrayList<Modifier>();
+		
+		ParseTreeTraverse traverse = new ParseTreeTraverse(new Traverser() {
+
+			public Set<Node> processTreeNode(TreeNode treeNode) {
+				Set<Node> offers = new HashSet<Node>();
+				for (Node n : treeNode.children) 
+					offers.add(n);
+				return offers;
 			}
+
+			public void processLeafNode(LeafNode leafNode) throws ASTConstructException {
+				Modifier modifier = stringToModifier(leafNode.token.getKind().toUpperCase());
+				logger.fine("Modifier added: " + modifier.name());
+				modifiers.add(modifier);
+			}
+		    
+		});
+
+		traverse.traverse(modifiersNode);
+	}
+	
+	private Modifier stringToModifier(String name) throws ASTConstructException {
+		for(Modifier modifier: Modifier.values()) {
+			if(modifier.name().equals(name)) return modifier;
 		}
-		return;
+		throw new ASTConstructException("Unknown modifier " + name);
 	}
 
 	@Override
 	public String toString(int level) {
 		String str = super.toString(level);
-		str += "<Modifiers> ";
-		for(Token token: this.modifierList) 
-			str += token.getKind() + " ";
+		for (Modifier modifier : this.modifiers)
+			str += modifier.name() + " ";
 		str += "\n";
 		return str;
 	}

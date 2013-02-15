@@ -8,7 +8,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.List;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import ca.uwaterloo.joos.ast.AST;
@@ -27,7 +26,7 @@ public class Main {
 	private static final Logger logger = Main.getLogger(Main.class);
 
 	public static Logger getLogger(Class<?> cls) {
-		return Logger.getLogger(Main.class.getName());
+		return Logger.getLogger(cls.getSimpleName());
 	}
 
 	private final Scanner scanner;
@@ -35,8 +34,6 @@ public class Main {
 	private final Preprocessor preprocessor;
 
 	public Main() {
-		logger.setLevel(Level.INFO);
-
 		// Construct Preprocessor
 		this.preprocessor = new Preprocessor();
 
@@ -106,8 +103,8 @@ public class Main {
 		Main instance = new Main();
 
 		try {
-			Object parseTree = instance.execute(new File(args[0]));
-			System.out.println(parseTree.toString());
+			Object result = instance.execute(new File(args[0]));
+			System.out.println(result.toString());
 		} catch (Exception e) {
 			System.err.println("ERROR: " + e.getLocalizedMessage() + " " + e.getClass().getName());
 			e.printStackTrace();

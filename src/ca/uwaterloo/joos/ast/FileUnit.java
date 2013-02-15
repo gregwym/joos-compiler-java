@@ -3,8 +3,12 @@ package ca.uwaterloo.joos.ast;
 import java.util.Arrays;
 import java.util.List;
 
-import ca.uwaterloo.joos.ast.body.ClassDeclaration;
-import ca.uwaterloo.joos.ast.body.InterfaceDeclaration;
+import ca.uwaterloo.joos.ast.AST.ASTConstructException;
+import ca.uwaterloo.joos.ast.decl.ClassDeclaration;
+import ca.uwaterloo.joos.ast.decl.ImportDeclaration;
+import ca.uwaterloo.joos.ast.decl.InterfaceDeclaration;
+import ca.uwaterloo.joos.ast.decl.PackageDeclaration;
+import ca.uwaterloo.joos.ast.decl.TypeDeclaration;
 import ca.uwaterloo.joos.parser.ParseTree.Node;
 import ca.uwaterloo.joos.parser.ParseTree.TreeNode;
 
@@ -14,7 +18,7 @@ public class FileUnit extends ASTNode {
 	private PackageDeclaration packageDeclaration;
 	private TypeDeclaration typeDeclaration;
 
-	public FileUnit(Node node, String fileName) {
+	public FileUnit(Node node, String fileName) throws ASTConstructException {
 		assert node instanceof TreeNode : "FileUnit is expecting a TreeNode";
 		TreeNode treeNode = (TreeNode) node;
 		this.identifier = fileName;
@@ -65,7 +69,7 @@ public class FileUnit extends ASTNode {
 	@Override
 	public String toString(int level) {
 		String str = super.toString(level);
-		str += "<FileUnit> filename: " + this.identifier + "\n";
+		str += "\n";
 //		str += this.packageDeclaration.toString(level + 1);
 //		for(ImportDeclaration importDecl: this.importDeclarations)
 //			str += importDecl.toString(level + 1);
