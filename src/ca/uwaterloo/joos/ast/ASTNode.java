@@ -39,6 +39,7 @@ public class ASTNode {
 			str += "  ";
 		}
 		str += "<" + this.getClass().getSimpleName() + "> ";
+		str += this.identifier + " ";
 		return str;
 	}
 }

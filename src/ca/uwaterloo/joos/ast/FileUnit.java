@@ -69,7 +69,7 @@ public class FileUnit extends ASTNode {
 	@Override
 	public String toString(int level) {
 		String str = super.toString(level);
-		str += "filename: " + this.identifier + "\n";
+		str += "\n";
 //		str += this.packageDeclaration.toString(level + 1);
 //		for(ImportDeclaration importDecl: this.importDeclarations)
 //			str += importDecl.toString(level + 1);

@@ -73,7 +73,7 @@ public abstract class BodyDeclaration extends ASTNode {
 	@Override
 	public String toString(int level) {
 		String str = super.toString(level);
-		str += "name: " + this.identifier + " type: " + this.type + "\n";
+		str += "type: " + this.type + "\n";
 		str += this.modifiers.toString(level + 1);
 		return str;
 	}

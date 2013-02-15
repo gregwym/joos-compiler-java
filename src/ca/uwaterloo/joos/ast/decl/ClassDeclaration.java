@@ -16,7 +16,7 @@ public class ClassDeclaration extends TypeDeclaration {
 	private String superClass;
 
 	public ClassDeclaration(Node node) throws ASTConstructException {
-		assert node instanceof TreeNode : "FileUnit is expecting a TreeNode";
+		assert node instanceof TreeNode : "ClassDeclaration is expecting a TreeNode";
 			
 		ParseTreeTraverse traverse = new ParseTreeTraverse(new Traverser() {
 	
@@ -58,8 +58,8 @@ public class ClassDeclaration extends TypeDeclaration {
 		String str = super.toString(level);
 		str += "extends: " + this.superClass;
 		str += " implements: ";
-//		for(String id: this.interfaces)
-//			str += id + " ";
+		for(String id: this.interfaces)
+			str += id + " ";
 		str += "\n";
 		str += this.modifiers.toString(level + 1);
 		str += this.body.toString(level + 1);
