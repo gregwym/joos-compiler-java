@@ -10,6 +10,8 @@ import ca.uwaterloo.joos.ast.AST.ASTConstructException;
 import ca.uwaterloo.joos.ast.ASTNode;
 import ca.uwaterloo.joos.ast.ParseTreeTraverse;
 import ca.uwaterloo.joos.ast.ParseTreeTraverse.Traverser;
+import ca.uwaterloo.joos.ast.type.Modifiers;
+import ca.uwaterloo.joos.ast.type.Type;
 import ca.uwaterloo.joos.parser.ParseTree.LeafNode;
 import ca.uwaterloo.joos.parser.ParseTree.Node;
 import ca.uwaterloo.joos.parser.ParseTree.TreeNode;
@@ -19,13 +21,14 @@ import ca.uwaterloo.joos.parser.ParseTree.TreeNode;
  *
  */
 public abstract class BodyDeclaration extends ASTNode {
+	
+	protected Modifiers modifiers;
+	protected Type type;
 
 	/**
 	 * 
 	 */
-	public BodyDeclaration() {
-		// TODO Auto-generated constructor stub
-	}
+	public BodyDeclaration() {}
 	
 	private static BodyDeclaration newBodyDecl = null;
 	public static BodyDeclaration newBodyDeclaration(Node declNode) throws ASTConstructException {
@@ -45,7 +48,7 @@ public abstract class BodyDeclaration extends ASTNode {
 					newBodyDecl = new MethodDeclaration(treeNode);
 				}
 				else if(treeNode.productionRule.getLefthand().equals("fielddecl")){
-					newBodyDecl = new FieldDeclaration();
+					newBodyDecl = new FieldDeclaration(treeNode);
 				}
 				else {
 					for (Node n : treeNode.children) {
@@ -70,7 +73,8 @@ public abstract class BodyDeclaration extends ASTNode {
 	@Override
 	public String toString(int level) {
 		String str = super.toString(level);
-		str += "name: " + this.identifier + "\n";
+		str += "name: " + this.identifier + " type: " + this.type + "\n";
+		str += this.modifiers.toString(level + 1);
 		return str;
 	}
 }

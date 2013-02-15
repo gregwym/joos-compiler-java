@@ -7,21 +7,18 @@ import ca.uwaterloo.joos.ast.AST.ASTConstructException;
 import ca.uwaterloo.joos.ast.ParseTreeTraverse;
 import ca.uwaterloo.joos.ast.ParseTreeTraverse.Traverser;
 import ca.uwaterloo.joos.ast.type.Modifiers;
-import ca.uwaterloo.joos.ast.type.Type;
 import ca.uwaterloo.joos.parser.ParseTree.LeafNode;
 import ca.uwaterloo.joos.parser.ParseTree.Node;
 import ca.uwaterloo.joos.parser.ParseTree.TreeNode;
 
 
 public class MethodDeclaration extends BodyDeclaration {
-	
-	protected Modifiers modifiers;
-	protected Type returnType;
+
 //	protected Parameters parameters;
 //	protected Block body;
 	
 	public MethodDeclaration(Node declNode) throws ASTConstructException {
-		assert declNode instanceof TreeNode : "Modifiers is expecting a TreeNode";
+		assert declNode instanceof TreeNode : "MethodDeclaration is expecting a TreeNode";
 				
 		ParseTreeTraverse traverse = new ParseTreeTraverse(new Traverser() {
 
@@ -66,7 +63,6 @@ public class MethodDeclaration extends BodyDeclaration {
 	@Override
 	public String toString(int level) {
 		String str = super.toString(level);
-		str += this.modifiers.toString(level + 1);
 		return str;
 	}
 }
