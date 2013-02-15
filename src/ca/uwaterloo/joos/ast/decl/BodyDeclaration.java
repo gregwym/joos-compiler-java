@@ -33,13 +33,16 @@ public abstract class BodyDeclaration extends ASTNode {
 	
 		ParseTreeTraverse traverse = new ParseTreeTraverse(new Traverser() {
 	
-			public Set<Node> processTreeNode(TreeNode treeNode) {
+			public Set<Node> processTreeNode(TreeNode treeNode) throws ASTConstructException {
 				Set<Node> offers = new HashSet<Node>();
 				if(treeNode.productionRule.getLefthand().equals("constructordecl")){
-					newBodyDecl = new ConstructorDeclaration();
+					newBodyDecl = new ConstructorDeclaration(treeNode);
+				}
+				else if(treeNode.productionRule.getLefthand().equals("absmethoddecl")){
+					newBodyDecl = new MethodDeclaration(treeNode);
 				}
 				else if(treeNode.productionRule.getLefthand().equals("methoddecl")){
-					newBodyDecl = new MethodDeclaration();
+					newBodyDecl = new MethodDeclaration(treeNode);
 				}
 				else if(treeNode.productionRule.getLefthand().equals("fielddecl")){
 					newBodyDecl = new FieldDeclaration();
@@ -67,7 +70,7 @@ public abstract class BodyDeclaration extends ASTNode {
 	@Override
 	public String toString(int level) {
 		String str = super.toString(level);
-		str += "\n";
+		str += "name: " + this.identifier + "\n";
 		return str;
 	}
 }
