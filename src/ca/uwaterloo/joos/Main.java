@@ -61,7 +61,7 @@ public class Main {
 		this.parser = new LR1Parser(lr1);
 	}
 
-	public ParseTree execute(File source) throws Exception {
+	public Object execute(File source) throws Exception {
 		logger.info("Processing: " + source.getName());
 
 		/* Scanning */
@@ -88,12 +88,12 @@ public class Main {
 		Main instance = new Main();
 
 		try {
-			ParseTree parseTree = instance.execute(new File("resources/testcases/a1/Je_1_AbstractClass_Final.java"));
+			Object parseTree = instance.execute(new File("resources/testcases/a1/J1_01.java"));
+			System.out.println(parseTree.toString());
 			ASTTreeGenerator astTreeGenerator = new ASTTreeGenerator();
 			if(parseTree!=null){
-				astTreeGenerator.GenerateASTTree(parseTree);	
+				astTreeGenerator.GenerateASTTree((ParseTree) parseTree);
 			}
-			System.out.println(parseTree.toString());
 		} catch (Exception e) {
 			System.err.println("ERROR: " + e.getLocalizedMessage() + " " + e.getClass().getName());
 			e.printStackTrace();
