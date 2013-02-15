@@ -16,7 +16,7 @@ import ca.uwaterloo.joos.parser.ParseTree.TreeNode;
  * @author Greg Wang
  *
  */
-public class ParseTreeTraverse extends ASTNode {
+public class ParseTreeTraverse {
 	
 	public static interface Traverser {
 		public Set<Node> processTreeNode(TreeNode treeNode) throws ASTConstructException;
@@ -35,7 +35,6 @@ public class ParseTreeTraverse extends ASTNode {
 
 		while (!nodeQueue.isEmpty()) {
 			Node node = nodeQueue.poll();
-			logger.finer("Dequeued node " + node.toString());
 			
 			if (node instanceof TreeNode) {
 				TreeNode treeNode = (TreeNode) node;
