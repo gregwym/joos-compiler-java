@@ -5,14 +5,14 @@ import java.util.Set;
 
 import ca.uwaterloo.joos.ast.AST.ASTConstructException;
 import ca.uwaterloo.joos.ast.ASTNode;
-import ca.uwaterloo.joos.ast.ASTVisitor;
-import ca.uwaterloo.joos.ast.ParseTreeTraverse;
-import ca.uwaterloo.joos.ast.ParseTreeTraverse.Traverser;
 import ca.uwaterloo.joos.ast.body.ClassBody;
 import ca.uwaterloo.joos.ast.type.Modifiers;
+import ca.uwaterloo.joos.ast.visitor.ASTVisitor;
+import ca.uwaterloo.joos.parser.ParseTreeTraverse;
 import ca.uwaterloo.joos.parser.ParseTree.LeafNode;
 import ca.uwaterloo.joos.parser.ParseTree.Node;
 import ca.uwaterloo.joos.parser.ParseTree.TreeNode;
+import ca.uwaterloo.joos.parser.ParseTreeTraverse.Traverser;
 
 public class ClassDeclaration extends TypeDeclaration {
 	private String superClass;

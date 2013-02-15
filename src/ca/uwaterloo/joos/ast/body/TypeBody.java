@@ -7,11 +7,11 @@ import java.util.HashSet;
 import java.util.Set;
 
 import ca.uwaterloo.joos.ast.ASTNode;
-import ca.uwaterloo.joos.ast.ASTVisitor;
 import ca.uwaterloo.joos.ast.decl.BodyDeclaration;
 import ca.uwaterloo.joos.ast.decl.ConstructorDeclaration;
 import ca.uwaterloo.joos.ast.decl.FieldDeclaration;
 import ca.uwaterloo.joos.ast.decl.MethodDeclaration;
+import ca.uwaterloo.joos.ast.visitor.ASTVisitor;
 
 /**
  * @author Greg Wang

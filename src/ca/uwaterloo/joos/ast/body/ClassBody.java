@@ -4,13 +4,13 @@ import java.util.HashSet;
 import java.util.Set;
 
 import ca.uwaterloo.joos.ast.ASTNode;
-import ca.uwaterloo.joos.ast.ParseTreeTraverse;
 import ca.uwaterloo.joos.ast.AST.ASTConstructException;
-import ca.uwaterloo.joos.ast.ParseTreeTraverse.Traverser;
 import ca.uwaterloo.joos.ast.decl.BodyDeclaration;
+import ca.uwaterloo.joos.parser.ParseTreeTraverse;
 import ca.uwaterloo.joos.parser.ParseTree.LeafNode;
 import ca.uwaterloo.joos.parser.ParseTree.Node;
 import ca.uwaterloo.joos.parser.ParseTree.TreeNode;
+import ca.uwaterloo.joos.parser.ParseTreeTraverse.Traverser;
 
 public class ClassBody extends TypeBody {
 

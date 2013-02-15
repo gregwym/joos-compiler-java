@@ -1,7 +1,7 @@
 package ca.uwaterloo.joos.ast.type;
 
 import ca.uwaterloo.joos.ast.ASTNode;
-import ca.uwaterloo.joos.ast.ASTVisitor;
+import ca.uwaterloo.joos.ast.visitor.ASTVisitor;
 
 public abstract class Type extends ASTNode{
 	

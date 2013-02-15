@@ -4,9 +4,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import ca.uwaterloo.joos.ast.ASTNode;
-import ca.uwaterloo.joos.ast.ASTVisitor;
 import ca.uwaterloo.joos.ast.body.TypeBody;
 import ca.uwaterloo.joos.ast.type.Modifiers;
+import ca.uwaterloo.joos.ast.visitor.ASTVisitor;
 
 
 public abstract class TypeDeclaration extends ASTNode {

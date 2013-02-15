@@ -2,13 +2,14 @@
 /**
  * 
  */
-package ca.uwaterloo.joos.ast;
+package ca.uwaterloo.joos.parser;
 
 import java.util.LinkedList;
 import java.util.Queue;
 import java.util.Set;
 
 import ca.uwaterloo.joos.ast.AST.ASTConstructException;
+import ca.uwaterloo.joos.ast.ASTNode;
 import ca.uwaterloo.joos.parser.ParseTree.LeafNode;
 import ca.uwaterloo.joos.parser.ParseTree.Node;
 import ca.uwaterloo.joos.parser.ParseTree.TreeNode;

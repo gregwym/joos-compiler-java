@@ -1,7 +1,9 @@
 /**
  * 
  */
-package ca.uwaterloo.joos.ast;
+package ca.uwaterloo.joos.ast.visitor;
+
+import ca.uwaterloo.joos.ast.ASTNode;
 
 /**
  * @author Greg Wang

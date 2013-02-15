@@ -3,6 +3,7 @@ package ca.uwaterloo.joos.ast;
 import java.util.logging.Logger;
 
 import ca.uwaterloo.joos.Main;
+import ca.uwaterloo.joos.ast.visitor.ASTVisitor;
 
 
 public abstract class ASTNode {

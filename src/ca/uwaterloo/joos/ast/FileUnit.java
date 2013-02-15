@@ -9,6 +9,7 @@ import ca.uwaterloo.joos.ast.decl.ImportDeclaration;
 import ca.uwaterloo.joos.ast.decl.InterfaceDeclaration;
 import ca.uwaterloo.joos.ast.decl.PackageDeclaration;
 import ca.uwaterloo.joos.ast.decl.TypeDeclaration;
+import ca.uwaterloo.joos.ast.visitor.ASTVisitor;
 import ca.uwaterloo.joos.parser.ParseTree.Node;
 import ca.uwaterloo.joos.parser.ParseTree.TreeNode;
 
