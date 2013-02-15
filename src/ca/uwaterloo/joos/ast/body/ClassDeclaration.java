@@ -1,7 +1,5 @@
 package ca.uwaterloo.joos.ast.body;
 
-import java.util.List;
-
 import ca.uwaterloo.joos.ast.AST.ASTConstructException;
 import ca.uwaterloo.joos.ast.TypeDeclaration;
 import ca.uwaterloo.joos.ast.type.Modifiers;
@@ -10,9 +8,7 @@ import ca.uwaterloo.joos.parser.ParseTree.Node;
 import ca.uwaterloo.joos.parser.ParseTree.TreeNode;
 
 public class ClassDeclaration extends TypeDeclaration {
-	private List<String> superClass;
-	private List<String> interfaces;
-	private ClassBody classBody;
+	private String superClass;
 
 	public ClassDeclaration(Node node) throws ASTConstructException {
 		assert node instanceof TreeNode : "FileUnit is expecting a TreeNode";
@@ -32,7 +28,7 @@ public class ClassDeclaration extends TypeDeclaration {
 				this.modifiers = new Modifiers(child);
 			}
 			else if (child.productionRule.getLefthand().equals("classbody")) {
-//				this.classBody = new ClassBody(child);
+//				this.body = new ClassBody(child);
 			}
 		}
 	}
@@ -40,37 +36,21 @@ public class ClassDeclaration extends TypeDeclaration {
 	/**
 	 * @return the superClass
 	 */
-	public List<String> getSuperClass() {
+	public String getSuperClass() {
 		return superClass;
-	}
-
-	/**
-	 * @return the interfaces
-	 */
-	public List<String> getInterfaces() {
-		return interfaces;
-	}
-
-	/**
-	 * @return the classBody
-	 */
-	public ClassBody getClassBody() {
-		return classBody;
 	}
 	
 	@Override
 	public String toString(int level) {
 		String str = super.toString(level);
 		str += "<ClassDecl>";
-		str += " extends: ";
-//		for(String id: this.superClass)
-//			str += id + " ";
-		str += "implements: ";
+		str += " extends: " + this.superClass;
+		str += " implements: ";
 //		for(String id: this.interfaces)
 //			str += id + " ";
 		str += "\n";
 		str += this.modifiers.toString(level + 1);
-//		str += this.classBody.toString(level + 1);
+//		str += this.body.toString(level + 1);
 		return str;
 	}
 }
