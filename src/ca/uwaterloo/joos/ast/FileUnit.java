@@ -4,8 +4,11 @@ import java.util.Arrays;
 import java.util.List;
 
 import ca.uwaterloo.joos.ast.AST.ASTConstructException;
-import ca.uwaterloo.joos.ast.body.ClassDeclaration;
-import ca.uwaterloo.joos.ast.body.InterfaceDeclaration;
+import ca.uwaterloo.joos.ast.decl.ClassDeclaration;
+import ca.uwaterloo.joos.ast.decl.ImportDeclaration;
+import ca.uwaterloo.joos.ast.decl.InterfaceDeclaration;
+import ca.uwaterloo.joos.ast.decl.PackageDeclaration;
+import ca.uwaterloo.joos.ast.decl.TypeDeclaration;
 import ca.uwaterloo.joos.parser.ParseTree.Node;
 import ca.uwaterloo.joos.parser.ParseTree.TreeNode;
 

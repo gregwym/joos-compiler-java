@@ -1,4 +1,4 @@
-package ca.uwaterloo.joos.ast.body;
+package ca.uwaterloo.joos.ast.decl;
 
 import ca.uwaterloo.joos.ast.ASTNode;
 

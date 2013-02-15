@@ -1,7 +1,6 @@
-package ca.uwaterloo.joos.ast.body;
+package ca.uwaterloo.joos.ast.decl;
 
 import ca.uwaterloo.joos.ast.AST.ASTConstructException;
-import ca.uwaterloo.joos.ast.TypeDeclaration;
 import ca.uwaterloo.joos.ast.type.Modifiers;
 import ca.uwaterloo.joos.parser.ParseTree.LeafNode;
 import ca.uwaterloo.joos.parser.ParseTree.Node;

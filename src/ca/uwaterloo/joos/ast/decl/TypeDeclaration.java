@@ -1,7 +1,8 @@
-package ca.uwaterloo.joos.ast;
+package ca.uwaterloo.joos.ast.decl;
 
 import java.util.List;
 
+import ca.uwaterloo.joos.ast.ASTNode;
 import ca.uwaterloo.joos.ast.body.Body;
 import ca.uwaterloo.joos.ast.type.Modifiers;
 
