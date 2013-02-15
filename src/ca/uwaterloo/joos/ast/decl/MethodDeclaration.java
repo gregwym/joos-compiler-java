@@ -19,6 +19,15 @@ public class MethodDeclaration extends BodyDeclaration {
 //	protected Parameters parameters;
 //	protected Block body;
 	
+	/**
+	 * @return the body
+	 */
+	public Object getBody() {
+		// TODO
+//		return body;
+		return null;
+	}
+
 	public MethodDeclaration(Node declNode, ASTNode parent) throws ASTConstructException {
 		super(parent);
 		assert declNode instanceof TreeNode : "MethodDeclaration is expecting a TreeNode";

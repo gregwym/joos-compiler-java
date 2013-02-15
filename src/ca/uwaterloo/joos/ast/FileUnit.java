@@ -87,9 +87,9 @@ public class FileUnit extends ASTNode {
 	public void accept(ASTVisitor visitor) throws Exception{
 		visitor.willVisit(this);
 		if(visitor.visit(this)) {
-			this.packageDeclaration.accept(visitor);
-			for(ImportDeclaration importDecl: this.importDeclarations)
-				importDecl.accept(visitor);
+//			this.packageDeclaration.accept(visitor);
+//			for(ImportDeclaration importDecl: this.importDeclarations)
+//				importDecl.accept(visitor);
 			this.typeDeclaration.accept(visitor);
 		}
 		visitor.didVisit(this);

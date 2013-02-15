@@ -49,6 +49,6 @@ public abstract class TypeDeclaration extends ASTNode {
 //		for(InterfaceType interfaceType: this.interfaces) {
 //			interfaceType.accept(visitor);
 //		}
-		this.body.accept(visitor);
+		if(this.body != null) this.body.accept(visitor);
 	}
 }
