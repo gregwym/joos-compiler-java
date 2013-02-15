@@ -20,12 +20,25 @@ public class Preprocessor {
 
 	public List<Token> processTokens(List<Token> rawTokens) throws ScanException {
 		List<Token> tokens = new ArrayList<Token>();
-
-		for(Token token: rawTokens) {
+		for(int i = 0;i<rawTokens.size();i++){
+			Token token = rawTokens.get(i);
+			
 			if(!this.undesiredTokenKinds.contains(token.getKind())) tokens.add(token);
 			if(token.getKind().equals("INTLIT"))
-			{
-				checkIntRange(token.getLexeme());
+			{ 
+				String intPositiveThreshold = "2147483647";
+				String intNegThreshold = "2147483648";
+				Set<String> expressionTokenKinds = new HashSet<String>();
+				expressionTokenKinds.add("INTLIT");
+				expressionTokenKinds.add("RPAREN");
+				if(rawTokens.get(i-1).getKind().equals("MINUS")&&!expressionTokenKinds.contains(rawTokens.get(i-2).getKind()))
+				{
+					checkIntRange(token.getLexeme(),intNegThreshold);
+				}
+				else
+			   {
+				checkIntRange(token.getLexeme(),intPositiveThreshold);
+				}
 			}
 		}
 
@@ -34,8 +47,8 @@ public class Preprocessor {
 		return tokens;
 	}
 	
-	private static void checkIntRange(String intString)throws ScanException{
-		String intergerThreshold = "2147483647";
+	private static void checkIntRange(String intString,String intergerThreshold)throws ScanException{
+		
 		
 		if(intString.length() == intergerThreshold.length())
 		{
@@ -48,7 +61,7 @@ public class Preprocessor {
 		   }
 		}
 		if(intString.length() > intergerThreshold.length())
-		{
+		{  
 			throw new ScanException("Interger out of Range");	
 		}
 	}
