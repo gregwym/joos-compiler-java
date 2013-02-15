@@ -5,7 +5,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -248,7 +247,10 @@ public class LR1 {
 
 		public ProductionRule(String[] rule){
 			this.lefthand = rule[0];
-			this.righthand = Arrays.copyOfRange(rule, 1, rule.length);
+			this.righthand = new String[rule.length - 1];
+			for(int i = 1; i < rule.length; i++) {
+				this.righthand[i - 1] = rule[i];
+			}
 		}
 
 		public String getLefthand(){
