@@ -38,6 +38,7 @@ public class ASTNode {
 		for(int i = 0; i < level; i++) {
 			str += "  ";
 		}
+		str += "<" + this.getClass().getSimpleName() + "> ";
 		return str;
 	}
 }

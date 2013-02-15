@@ -56,7 +56,6 @@ public class Modifiers extends ASTNode {
 	@Override
 	public String toString(int level) {
 		String str = super.toString(level);
-		str += "<Modifiers> ";
 		for (Modifier modifier : this.modifiers)
 			str += modifier.name() + " ";
 		str += "\n";

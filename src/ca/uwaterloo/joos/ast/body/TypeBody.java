@@ -49,7 +49,7 @@ public abstract class TypeBody extends ASTNode {
 	@Override
 	public String toString(int level) {
 		String str = super.toString(level);
-		str += "<" + this.getClass().getSimpleName() + "> \n";
+		str += "\n";
 		for(BodyDeclaration member: this.members) 
 			str += member.toString(level + 1);
 		return str;

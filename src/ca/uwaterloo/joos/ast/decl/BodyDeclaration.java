@@ -67,7 +67,7 @@ public abstract class BodyDeclaration extends ASTNode {
 	@Override
 	public String toString(int level) {
 		String str = super.toString(level);
-		str += "<" + this.getClass().getSimpleName() + "> \n";
+		str += "\n";
 		return str;
 	}
 }

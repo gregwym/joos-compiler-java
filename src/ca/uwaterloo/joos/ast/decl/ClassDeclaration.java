@@ -56,8 +56,7 @@ public class ClassDeclaration extends TypeDeclaration {
 	@Override
 	public String toString(int level) {
 		String str = super.toString(level);
-		str += "<ClassDecl>";
-		str += " extends: " + this.superClass;
+		str += "extends: " + this.superClass;
 		str += " implements: ";
 //		for(String id: this.interfaces)
 //			str += id + " ";
