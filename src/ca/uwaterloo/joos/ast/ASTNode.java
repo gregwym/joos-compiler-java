@@ -30,7 +30,7 @@ public abstract class ASTNode {
 		return identifier;
 	}
 	
-	public abstract void accept(ASTVisitor visitor);
+	public abstract void accept(ASTVisitor visitor) throws Exception;
 	
 	@Override
 	public String toString() {

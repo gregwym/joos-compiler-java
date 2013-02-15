@@ -13,7 +13,7 @@ public class ImportDeclaration extends ASTNode{
 	 * @see ca.uwaterloo.joos.ast.ASTNode#accept(ca.uwaterloo.joos.ast.ASTVisitor)
 	 */
 	@Override
-	public void accept(ASTVisitor visitor) {
+	public void accept(ASTVisitor visitor) throws Exception{
 		visitor.willVisit(this);
 		if(visitor.visit(this)) {
 			

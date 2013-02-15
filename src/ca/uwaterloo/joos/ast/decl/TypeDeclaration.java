@@ -44,7 +44,7 @@ public abstract class TypeDeclaration extends ASTNode {
 	 * @see ca.uwaterloo.joos.ast.ASTNode#accept(ca.uwaterloo.joos.ast.ASTVisitor)
 	 */
 	@Override
-	public void accept(ASTVisitor visitor) {
+	public void accept(ASTVisitor visitor) throws Exception{
 		this.modifiers.accept(visitor);
 //		for(InterfaceType interfaceType: this.interfaces) {
 //			interfaceType.accept(visitor);

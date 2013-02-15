@@ -85,7 +85,7 @@ public abstract class BodyDeclaration extends ASTNode {
 	 * @see ca.uwaterloo.joos.ast.ASTNode#accept(ca.uwaterloo.joos.ast.ASTVisitor)
 	 */
 	@Override
-	public void accept(ASTVisitor visitor) {
+	public void accept(ASTVisitor visitor) throws Exception{
 		this.modifiers.accept(visitor);
 		this.type.accept(visitor);
 	}
