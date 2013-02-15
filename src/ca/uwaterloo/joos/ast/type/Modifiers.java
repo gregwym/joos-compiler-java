@@ -3,12 +3,13 @@ package ca.uwaterloo.joos.ast.type;
 import java.util.ArrayList;
 import java.util.List;
 
+import ca.uwaterloo.joos.ast.ASTNode;
 import ca.uwaterloo.joos.parser.ParseTree.LeafNode;
 import ca.uwaterloo.joos.parser.ParseTree.Node;
 import ca.uwaterloo.joos.parser.ParseTree.TreeNode;
 import ca.uwaterloo.joos.scanner.Token;
 
-public class Modifiers {
+public class Modifiers extends ASTNode {
 	List<Token> modifierList = new ArrayList<Token>();
 	public Modifiers(Node modifiersNode)
 	{
@@ -17,7 +18,6 @@ public class Modifiers {
 			
 			List<Node> modifierChildren = ((TreeNode)modifiersNode).children;
 			searchNode(modifierChildren,"modifier");
-			System.out.println(modifierList.size());
 		}
 		
 	}
@@ -27,10 +27,8 @@ public class Modifiers {
 		for (Node child : targetTree) {
 			if (child instanceof TreeNode) {
 				TreeNode treeNode = (TreeNode) child;
-				System.out.println(treeNode.toString());
 				if (treeNode.productionRule.getLefthand().equals(
 						searchType)) {
-					System.out.println("find"+((LeafNode)treeNode.children.get(0)).token);
 					modifierList.add(((LeafNode)treeNode.children.get(0)).token);
 					return;
 				}
@@ -42,4 +40,13 @@ public class Modifiers {
 		return;
 	}
 
+	@Override
+	public String toString(int level) {
+		String str = super.toString(level);
+		str += "<Modifiers> ";
+		for(Token token: this.modifierList) 
+			str += token.getKind() + " ";
+		str += "\n";
+		return str;
+	}
 }
