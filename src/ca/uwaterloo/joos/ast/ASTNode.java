@@ -3,13 +3,19 @@ package ca.uwaterloo.joos.ast;
 import java.util.logging.Logger;
 
 import ca.uwaterloo.joos.Main;
+import ca.uwaterloo.joos.ast.visitor.ASTVisitor;
 
 
-public class ASTNode {
+public abstract class ASTNode {
 	protected static final Logger logger = Main.getLogger(ASTNode.class);
+	
 	protected ASTNode parent = null;
 	protected String identifier = new String();
 
+	public ASTNode(ASTNode parent) {
+		this.parent = parent;
+	}
+	
 	/**
 	 * @return the parent
 	 */
@@ -23,10 +29,8 @@ public class ASTNode {
 	public String getIdentifier() {
 		return identifier;
 	}
-
-	public ASTNode() {
-
-	}
+	
+	public abstract void accept(ASTVisitor visitor) throws Exception;
 	
 	@Override
 	public String toString() {
@@ -40,6 +44,7 @@ public class ASTNode {
 		}
 		str += "<" + this.getClass().getSimpleName() + "> ";
 		str += this.identifier + " ";
+		if(this.parent != null) str += "parent: " + this.parent.getClass().getSimpleName() + " ";
 		return str;
 	}
 }

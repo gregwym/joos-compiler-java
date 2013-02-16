@@ -11,6 +11,7 @@ import ca.uwaterloo.joos.ast.decl.BodyDeclaration;
 import ca.uwaterloo.joos.ast.decl.ConstructorDeclaration;
 import ca.uwaterloo.joos.ast.decl.FieldDeclaration;
 import ca.uwaterloo.joos.ast.decl.MethodDeclaration;
+import ca.uwaterloo.joos.ast.visitor.ASTVisitor;
 
 /**
  * @author Greg Wang
@@ -22,7 +23,8 @@ public abstract class TypeBody extends ASTNode {
 	/**
 	 *
 	 */
-	public TypeBody() {
+	public TypeBody(ASTNode parent) {
+		super(parent);
 		this.members = new HashSet<BodyDeclaration>();
 	}
 
@@ -53,5 +55,18 @@ public abstract class TypeBody extends ASTNode {
 		for(BodyDeclaration member: this.members) 
 			str += member.toString(level + 1);
 		return str;
+	}
+	
+	/* (non-Javadoc)
+	 * @see ca.uwaterloo.joos.ast.ASTNode#accept(ca.uwaterloo.joos.ast.ASTVisitor)
+	 */
+	@Override
+	public void accept(ASTVisitor visitor) throws Exception{
+		visitor.willVisit(this);
+		if(visitor.visit(this)) {
+			for(BodyDeclaration member: this.members)
+				member.accept(visitor);
+		}
+		visitor.didVisit(this);
 	}
 }

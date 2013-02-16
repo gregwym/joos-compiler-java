@@ -9,6 +9,7 @@ import ca.uwaterloo.joos.ast.decl.ImportDeclaration;
 import ca.uwaterloo.joos.ast.decl.InterfaceDeclaration;
 import ca.uwaterloo.joos.ast.decl.PackageDeclaration;
 import ca.uwaterloo.joos.ast.decl.TypeDeclaration;
+import ca.uwaterloo.joos.ast.visitor.ASTVisitor;
 import ca.uwaterloo.joos.parser.ParseTree.Node;
 import ca.uwaterloo.joos.parser.ParseTree.TreeNode;
 
@@ -18,8 +19,11 @@ public class FileUnit extends ASTNode {
 	private PackageDeclaration packageDeclaration;
 	private TypeDeclaration typeDeclaration;
 
-	public FileUnit(Node node, String fileName) throws ASTConstructException {
+	public FileUnit(Node node, String fileName, ASTNode parent) throws ASTConstructException {
+		super(parent);
+		
 		assert node instanceof TreeNode : "FileUnit is expecting a TreeNode";
+		
 		TreeNode treeNode = (TreeNode) node;
 		this.identifier = fileName;
 
@@ -35,12 +39,11 @@ public class FileUnit extends ASTNode {
 				List<String> members = Arrays.asList(child.productionRule.getRighthand());
 				
 				if(members.contains("classdecl")) {
-					this.typeDeclaration = new ClassDeclaration(child.children.get(0));
+					this.typeDeclaration = new ClassDeclaration(child.children.get(0), this);
 				}
 				else if(members.contains("interfacedecl")) {
-					this.typeDeclaration = new InterfaceDeclaration(child.children.get(0));
+					this.typeDeclaration = new InterfaceDeclaration(child.children.get(0), this);
 				}
-				this.typeDeclaration.parent = this;
 			}
 		}
 	}
@@ -75,5 +78,20 @@ public class FileUnit extends ASTNode {
 //			str += importDecl.toString(level + 1);
 		str += this.typeDeclaration.toString(level + 1);
 		return str;
+	}
+
+	/* (non-Javadoc)
+	 * @see ca.uwaterloo.joos.ast.ASTNode#accept(ca.uwaterloo.joos.ast.ASTVisitor)
+	 */
+	@Override
+	public void accept(ASTVisitor visitor) throws Exception{
+		visitor.willVisit(this);
+		if(visitor.visit(this)) {
+//			this.packageDeclaration.accept(visitor);
+//			for(ImportDeclaration importDecl: this.importDeclarations)
+//				importDecl.accept(visitor);
+			this.typeDeclaration.accept(visitor);
+		}
+		visitor.didVisit(this);
 	}
 }

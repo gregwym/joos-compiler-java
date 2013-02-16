@@ -1,26 +1,35 @@
+
 /**
  * 
  */
-package ca.uwaterloo.joos.ast;
+package ca.uwaterloo.joos.parser;
 
 import java.util.LinkedList;
 import java.util.Queue;
 import java.util.Set;
 
 import ca.uwaterloo.joos.ast.AST.ASTConstructException;
+import ca.uwaterloo.joos.ast.ASTNode;
 import ca.uwaterloo.joos.parser.ParseTree.LeafNode;
 import ca.uwaterloo.joos.parser.ParseTree.Node;
 import ca.uwaterloo.joos.parser.ParseTree.TreeNode;
+
 
 /**
  * @author Greg Wang
  *
  */
-public class ParseTreeTraverse extends ASTNode {
+public class ParseTreeTraverse {
 	
-	public static interface Traverser {
-		public Set<Node> processTreeNode(TreeNode treeNode) throws ASTConstructException;
-		public void processLeafNode(LeafNode treeNode) throws ASTConstructException;
+	public static abstract class Traverser {
+		protected ASTNode parent;
+		
+		public Traverser(ASTNode parent) {
+			this.parent = parent;
+		}
+		
+		public abstract Set<Node> processTreeNode(TreeNode treeNode) throws ASTConstructException;
+		public abstract void processLeafNode(LeafNode treeNode) throws ASTConstructException;
 	}
 	
 	private Traverser traverser;
@@ -35,12 +44,11 @@ public class ParseTreeTraverse extends ASTNode {
 
 		while (!nodeQueue.isEmpty()) {
 			Node node = nodeQueue.poll();
-			logger.finer("Dequeued node " + node.toString());
 			
 			if (node instanceof TreeNode) {
 				TreeNode treeNode = (TreeNode) node;
-				Set<Node> children = this.traverser.processTreeNode(treeNode);
-				for(Node n: children) {
+				Set<Node> offer = this.traverser.processTreeNode(treeNode);
+				for(Node n: offer) {
 					nodeQueue.offer(n);
 				}
 			}

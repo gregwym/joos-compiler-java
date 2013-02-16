@@ -1,8 +1,5 @@
 package ca.uwaterloo.joos.ast;
 
-import java.util.logging.Level;
-
-import ca.uwaterloo.joos.Main;
 import ca.uwaterloo.joos.parser.LR1.ProductionRule;
 import ca.uwaterloo.joos.parser.ParseTree;
 import ca.uwaterloo.joos.parser.ParseTree.TreeNode;
@@ -24,7 +21,6 @@ public class AST {
 
 	public AST(ParseTree parseTree, String fileName) throws ASTConstructException {
 		assert parseTree != null : "Null parse tree";
-		Main.getLogger(ASTNode.class).setLevel(Level.FINE);
 
 		ParseTree.TreeNode parseTreeRoot = (TreeNode) parseTree.root;
 		assert parseTreeRoot instanceof ParseTree.TreeNode : "Parse tree root is not a TreeNode";
@@ -33,7 +29,7 @@ public class AST {
 		assert productionRule.getLefthand().equals("S") : "Parse tree does not start with symbol S";
 
 		// Construct FileUnit with the `file` in `S -> BOF file EOF`
-		this.root = new FileUnit(parseTreeRoot.children.get(1), fileName);
+		this.root = new FileUnit(parseTreeRoot.children.get(1), fileName, null);
 	}
 
 	@Override
