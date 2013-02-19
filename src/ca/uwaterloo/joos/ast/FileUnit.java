@@ -1,5 +1,6 @@
 package ca.uwaterloo.joos.ast;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -15,10 +16,6 @@ import ca.uwaterloo.joos.parser.ParseTree.TreeNode;
 
 public class FileUnit extends ASTNode {
 
-	private List<ImportDeclaration> importDeclarations;
-	private PackageDeclaration packageDeclaration;
-	private TypeDeclaration typeDeclaration;
-
 	public FileUnit(Node node, String fileName, ASTNode parent) throws ASTConstructException {
 		super(parent);
 		
@@ -30,47 +27,35 @@ public class FileUnit extends ASTNode {
 		for (Node oneChild : treeNode.children) {
 			TreeNode child = (TreeNode) oneChild;
 			if (child.productionRule.getLefthand().equals("packagedecl")) {
-//				 this.packageDeclaration = new PackageDeclaration(child);
+				 //this.packageDeclaration = new PackageDeclaration(child);
+				PackageDeclaration packageDeclaration = new PackageDeclaration(child,this);
+				childrenList.put(new SimpleDescriptor("packagedecl"),packageDeclaration);
 			}
 			else if (child.productionRule.getLefthand().equals("importdecls")) {
+				List<ImportDeclaration> importDeclarations = new ArrayList<ImportDeclaration>(); 
+				ImportDeclaration importDeclaration = new ImportDeclaration(child,this);
+				importDeclarations.add(importDeclaration);
+				childrenList.put(new ListDescriptor("importdecls"),importDeclarations);
 //				this.importDeclarations.add(new ImportDeclaration());
 			}
 			else if (child.productionRule.getLefthand().equals("typedecl")) {
 				List<String> members = Arrays.asList(child.productionRule.getRighthand());
 				
 				if(members.contains("classdecl")) {
-					this.typeDeclaration = new ClassDeclaration(child.children.get(0), this);
+					ClassDeclaration classDeclaration = new ClassDeclaration(child.children.get(0),this);
+					childrenList.put(new ChildDescriptor("classdecl"),classDeclaration);
 				}
 				else if(members.contains("interfacedecl")) {
-					this.typeDeclaration = new InterfaceDeclaration(child.children.get(0), this);
+					InterfaceDeclaration interfaceDeclaration = new InterfaceDeclaration(child.children.get(0),this);
+					childrenList.put(new ChildDescriptor("interfacedecl"),interfaceDeclaration);
 				}
 			}
 		}
 	}
-	
-	/**
-	 * @return the importDeclarations
-	 */
-	public List<ImportDeclaration> getImportDeclarations() {
-		return importDeclarations;
-	}
 
-	/**
-	 * @return the packageDeclaration
-	 */
-	public PackageDeclaration getPackageDeclaration() {
-		return packageDeclaration;
-	}
-
-	/**
-	 * @return the typeDeclaration
-	 */
-	public TypeDeclaration getTypeDeclaration() {
-		return typeDeclaration;
-	}
 	
-	@Override
-	public String toString(int level) {
+	//@Override
+	/*public String toString(int level) {
 		String str = super.toString(level);
 		str += "\n";
 //		str += this.packageDeclaration.toString(level + 1);
@@ -78,7 +63,7 @@ public class FileUnit extends ASTNode {
 //			str += importDecl.toString(level + 1);
 		str += this.typeDeclaration.toString(level + 1);
 		return str;
-	}
+	}*/
 
 	/* (non-Javadoc)
 	 * @see ca.uwaterloo.joos.ast.ASTNode#accept(ca.uwaterloo.joos.ast.ASTVisitor)
@@ -90,7 +75,7 @@ public class FileUnit extends ASTNode {
 //			this.packageDeclaration.accept(visitor);
 //			for(ImportDeclaration importDecl: this.importDeclarations)
 //				importDecl.accept(visitor);
-			this.typeDeclaration.accept(visitor);
+			//this.typeDeclaration.accept(visitor);
 		}
 		visitor.didVisit(this);
 	}

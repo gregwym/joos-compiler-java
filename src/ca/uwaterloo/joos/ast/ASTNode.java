@@ -1,5 +1,7 @@
 package ca.uwaterloo.joos.ast;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.logging.Logger;
 
 import ca.uwaterloo.joos.Main;
@@ -11,7 +13,7 @@ public abstract class ASTNode {
 	
 	protected ASTNode parent = null;
 	protected String identifier = new String();
-
+	protected Map <Descriptor,Object>  childrenList = new HashMap<Descriptor,Object>();
 	public ASTNode(ASTNode parent) {
 		this.parent = parent;
 	}
