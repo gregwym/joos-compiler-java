@@ -38,7 +38,9 @@ public abstract class ASTNode {
 	public String toString() {
 		return "<ASTNode> id: " + this.identifier;
 	}
-	
+	public Object getChildByType(String TypeName){
+		
+	}
 	public String toString(int level) {
 		String str = "";
 		for(int i = 0; i < level; i++) {

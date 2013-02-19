@@ -5,6 +5,8 @@ import java.util.Set;
 
 import ca.uwaterloo.joos.ast.AST.ASTConstructException;
 import ca.uwaterloo.joos.ast.ASTNode;
+import ca.uwaterloo.joos.ast.ChildDescriptor;
+import ca.uwaterloo.joos.ast.SimpleDescriptor;
 import ca.uwaterloo.joos.ast.body.InterfaceBody;
 import ca.uwaterloo.joos.ast.type.Modifiers;
 import ca.uwaterloo.joos.ast.visitor.ASTVisitor;
@@ -25,13 +27,13 @@ public class InterfaceDeclaration extends TypeDeclaration {
 			public Set<Node> processTreeNode(TreeNode treeNode) throws ASTConstructException {
 				Set<Node> offers = new HashSet<Node>();
 				if (treeNode.productionRule.getLefthand().equals("modifiers")) {
-					modifiers = new Modifiers(treeNode, parent);
+					childrenList.put(new SimpleDescriptor("modifiers") , new Modifiers(treeNode, parent));
 				}
 				else if (treeNode.productionRule.getLefthand().equals("extendsinterfaces")) {
 //					interface = 
 				}
 				else if (treeNode.productionRule.getLefthand().equals("interfacebody")) {
-					body = new InterfaceBody(treeNode, parent);
+					childrenList.put(new ChildDescriptor("interfacebody"), new InterfaceBody(treeNode, parent));
 				}
 				else {
 					for (Node n : treeNode.children) 
@@ -51,7 +53,7 @@ public class InterfaceDeclaration extends TypeDeclaration {
 		traverse.traverse(node);
 	}
 	
-	@Override
+	/*@Override
 	public String toString(int level) {
 		String str = super.toString(level);
 		str += "extends: ";
@@ -61,7 +63,7 @@ public class InterfaceDeclaration extends TypeDeclaration {
 		str += this.modifiers.toString(level + 1);
 //		str += this.body.toString(level + 1);
 		return str;
-	}
+	}*/
 	
 	/* (non-Javadoc)
 	 * @see ca.uwaterloo.joos.ast.ASTNode#accept(ca.uwaterloo.joos.ast.ASTVisitor)

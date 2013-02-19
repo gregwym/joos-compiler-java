@@ -4,6 +4,7 @@
 package ca.uwaterloo.joos.weeder;
 
 import ca.uwaterloo.joos.ast.ASTNode;
+import ca.uwaterloo.joos.ast.ChildDescriptor;
 import ca.uwaterloo.joos.ast.FileUnit;
 import ca.uwaterloo.joos.ast.body.TypeBody;
 import ca.uwaterloo.joos.ast.decl.ClassDeclaration;
@@ -33,7 +34,8 @@ public class TypeDeclarationChecker extends ASTVisitor {
 		if(node instanceof TypeDeclaration) {
 			if(node instanceof ClassDeclaration) {
 				TypeDeclaration typeDecl = (TypeDeclaration) node;
-				TypeBody typeBody = typeDecl.getBody();
+				//TODO checkthis later
+				TypeBody typeBody = (TypeBody) typeDecl.getChildByDescriptor(new ChildDescriptor("typeBody"));
 				if(typeBody.getConstructors().size() < 1) {
 					throw new WeedException("Class body must contain at least one constructor");
 				}
