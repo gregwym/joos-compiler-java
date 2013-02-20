@@ -7,8 +7,8 @@ import java.util.Set;
 
 import ca.uwaterloo.joos.ast.AST.ASTConstructException;
 import ca.uwaterloo.joos.ast.ASTNode;
-import ca.uwaterloo.joos.ast.ChildDescriptor;
 import ca.uwaterloo.joos.ast.body.ClassBody;
+import ca.uwaterloo.joos.ast.descriptor.ChildDescriptor;
 import ca.uwaterloo.joos.ast.type.ClassType;
 import ca.uwaterloo.joos.ast.type.InterfaceType;
 import ca.uwaterloo.joos.ast.type.Modifiers;

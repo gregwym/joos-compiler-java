@@ -1,7 +1,7 @@
 /**
  * 
  */
-package ca.uwaterloo.joos.ast;
+package ca.uwaterloo.joos.ast.descriptor;
 
 /**
  * @author wenzhuman

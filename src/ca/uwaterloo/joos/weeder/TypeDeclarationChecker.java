@@ -4,11 +4,11 @@
 package ca.uwaterloo.joos.weeder;
 
 import ca.uwaterloo.joos.ast.ASTNode;
-import ca.uwaterloo.joos.ast.ChildDescriptor;
 import ca.uwaterloo.joos.ast.FileUnit;
 import ca.uwaterloo.joos.ast.body.TypeBody;
 import ca.uwaterloo.joos.ast.decl.ClassDeclaration;
 import ca.uwaterloo.joos.ast.decl.TypeDeclaration;
+import ca.uwaterloo.joos.ast.descriptor.ChildDescriptor;
 import ca.uwaterloo.joos.ast.visitor.ASTVisitor;
 import ca.uwaterloo.joos.weeder.Weeder.WeedException;
 
