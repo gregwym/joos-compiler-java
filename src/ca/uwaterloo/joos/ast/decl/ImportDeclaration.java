@@ -2,11 +2,11 @@ package ca.uwaterloo.joos.ast.decl;
 
 import ca.uwaterloo.joos.ast.ASTNode;
 import ca.uwaterloo.joos.ast.visitor.ASTVisitor;
-import ca.uwaterloo.joos.parser.ParseTree.Node;
+import ca.uwaterloo.joos.parser.ParseTree.TreeNode;
 
 public class ImportDeclaration extends ASTNode{
 	
-	public ImportDeclaration(Node TypeRoot,ASTNode parent) {
+	public ImportDeclaration(TreeNode TypeRoot, ASTNode parent) {
 		super(parent);
 	}
 	

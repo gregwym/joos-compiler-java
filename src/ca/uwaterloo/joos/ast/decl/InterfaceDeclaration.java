@@ -6,11 +6,8 @@ import java.util.Set;
 import ca.uwaterloo.joos.ast.AST.ASTConstructException;
 import ca.uwaterloo.joos.ast.ASTNode;
 import ca.uwaterloo.joos.ast.ChildDescriptor;
-import ca.uwaterloo.joos.ast.ListDescriptor;
-import ca.uwaterloo.joos.ast.SimpleDescriptor;
-import ca.uwaterloo.joos.ast.body.ClassBody;
+import ca.uwaterloo.joos.ast.ChildListDescriptor;
 import ca.uwaterloo.joos.ast.body.InterfaceBody;
-import ca.uwaterloo.joos.ast.type.ClassType;
 import ca.uwaterloo.joos.ast.type.InterfaceType;
 import ca.uwaterloo.joos.ast.type.Modifiers;
 import ca.uwaterloo.joos.ast.visitor.ASTVisitor;
@@ -22,9 +19,9 @@ import ca.uwaterloo.joos.parser.ParseTreeTraverse.Traverser;
 
 public class InterfaceDeclaration extends TypeDeclaration {
 	protected static ChildDescriptor MODIFIERS = new ChildDescriptor(Modifiers.class);
-	protected static ListDescriptor EXTENDINTERFACES = new ListDescriptor(InterfaceType.class);
+	protected static ChildListDescriptor EXTENDINTERFACES = new ChildListDescriptor(InterfaceType.class);
 	protected static ChildDescriptor INTERFACEBODY = new ChildDescriptor(InterfaceBody.class);
-	public InterfaceDeclaration(Node node, ASTNode parent) throws ASTConstructException {
+	public InterfaceDeclaration(TreeNode node, ASTNode parent) throws ASTConstructException {
 		super(parent);
 		assert node instanceof TreeNode : "InterfaceDeclaration is expecting a TreeNode";
 			

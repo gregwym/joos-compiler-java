@@ -3,9 +3,9 @@ package ca.uwaterloo.joos.ast;
  * @author wenzhuman
  *
  */
-public class ListDescriptor extends Descriptor {
+public class ChildListDescriptor extends Descriptor {
 	
-	 public ListDescriptor(Class<?> elementType) {
+	 public ChildListDescriptor(Class<?> elementType) {
 		super(elementType);
      }
 

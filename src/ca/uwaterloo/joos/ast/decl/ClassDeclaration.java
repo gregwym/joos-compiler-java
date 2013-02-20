@@ -8,24 +8,23 @@ import java.util.Set;
 import ca.uwaterloo.joos.ast.AST.ASTConstructException;
 import ca.uwaterloo.joos.ast.ASTNode;
 import ca.uwaterloo.joos.ast.ChildDescriptor;
-import ca.uwaterloo.joos.ast.ListDescriptor;
-import ca.uwaterloo.joos.ast.SimpleDescriptor;
+import ca.uwaterloo.joos.ast.ChildListDescriptor;
 import ca.uwaterloo.joos.ast.body.ClassBody;
 import ca.uwaterloo.joos.ast.type.ClassType;
 import ca.uwaterloo.joos.ast.type.InterfaceType;
 import ca.uwaterloo.joos.ast.type.Modifiers;
 import ca.uwaterloo.joos.ast.visitor.ASTVisitor;
-import ca.uwaterloo.joos.parser.ParseTreeTraverse;
 import ca.uwaterloo.joos.parser.ParseTree.LeafNode;
 import ca.uwaterloo.joos.parser.ParseTree.Node;
 import ca.uwaterloo.joos.parser.ParseTree.TreeNode;
+import ca.uwaterloo.joos.parser.ParseTreeTraverse;
 import ca.uwaterloo.joos.parser.ParseTreeTraverse.Traverser;
 
 public class ClassDeclaration extends TypeDeclaration {
 	private String superClass;
 	protected static ChildDescriptor MODIFIERS = new ChildDescriptor(Modifiers.class);
-	protected static ListDescriptor INTERFACES = new ListDescriptor(InterfaceType.class);
-	protected static ListDescriptor SUPER = new ListDescriptor(ClassType.class);
+	protected static ChildListDescriptor INTERFACES = new ChildListDescriptor(InterfaceType.class);
+	protected static ChildListDescriptor SUPER = new ChildListDescriptor(ClassType.class);
 	protected static ChildDescriptor CLASSBODY = new ChildDescriptor(ClassBody.class);
 	public ClassDeclaration(Node node, ASTNode parent) throws ASTConstructException {	
 		super(parent);

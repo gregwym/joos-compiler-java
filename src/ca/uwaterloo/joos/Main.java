@@ -91,7 +91,7 @@ public class Main {
 		System.out.println(visitor.getString());
 		
 		/* AST Weeding */
-		this.weeder.weedAst(ast);
+//		this.weeder.weedAst(ast);
 
 		return ast;
 	}
