@@ -62,15 +62,6 @@ public class Modifiers extends ASTNode {
 		}
 		throw new ASTConstructException("Unknown modifier " + name);
 	}
-
-	@Override
-	public String toString(int level) {
-		String str = super.toString(level);
-		for (Modifier modifier : this.modifiers)
-			str += modifier.name() + " ";
-		str += "\n";
-		return str;
-	}
 	
 	/* (non-Javadoc)
 	 * @see ca.uwaterloo.joos.ast.ASTNode#accept(ca.uwaterloo.joos.ast.ASTVisitor)

@@ -38,6 +38,6 @@ public class AST {
 
 	@Override
 	public String toString() {
-		return this.root.toString(0);
+		return this.root.toString();
 	}
 }

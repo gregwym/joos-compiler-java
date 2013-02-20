@@ -24,7 +24,7 @@ public class FileUnit extends ASTNode {
 
 	public FileUnit(Node node, String fileName, ASTNode parent) throws ASTConstructException {
 		super(parent);
-		this.identifier = fileName;
+		this.setIdentifier(fileName);
 
 		assert node instanceof TreeNode : "FileUnit is expecting a TreeNode";
 		
@@ -34,24 +34,24 @@ public class FileUnit extends ASTNode {
 				Set<Node> offers = new HashSet<Node>();
 				if (treeNode.productionRule.getLefthand().equals("packagedecl")) {
 					PackageDeclaration packageDeclaration = new PackageDeclaration(treeNode, parent);
-					childrenList.put(PACKAGE, packageDeclaration);
+					addChild(PACKAGE, packageDeclaration);
 					logger.fine("Added PackageDecl: " + packageDeclaration);
 				} else if (treeNode.productionRule.getLefthand().equals("importdecls")) {
 					List<ASTNode> imports = getImportDeclarations();
 					if(imports == null) {
 						imports = new ArrayList<ASTNode>();
-						childrenList.put(IMPORTS, imports);
+						addChild(IMPORTS, imports);
 					}
 					ImportDeclaration importDeclaration = new ImportDeclaration(treeNode, parent);
 					imports.add(importDeclaration);
 					logger.fine("Added ImportDecl: " + importDeclaration);
 				} else if (treeNode.productionRule.getLefthand().equals("classdecl")) {
 					ClassDeclaration classDeclaration = new ClassDeclaration(treeNode, parent);
-					childrenList.put(TYPE, classDeclaration);
+					addChild(TYPE, classDeclaration);
 					logger.fine("Added ClassDecl: " + classDeclaration);
 				} else if (treeNode.productionRule.getLefthand().equals("interfacedecl")) {
 					InterfaceDeclaration interfaceDeclaration = new InterfaceDeclaration(treeNode, parent);
-					childrenList.put(TYPE, interfaceDeclaration);
+					addChild(TYPE, interfaceDeclaration);
 					logger.fine("Added InterfaceDecl: " + interfaceDeclaration);
 				}
 				else {
@@ -78,33 +78,5 @@ public class FileUnit extends ASTNode {
 	
 	public TypeDeclaration getTypeDeclaration() throws ChildTypeUnmatchException{
 		return (TypeDeclaration) this.getChildByDescriptor(FileUnit.TYPE);
-	}
-	
-	@Override
-	public String toString(int level) {
-		String str = super.toString(level);
-		for (Descriptor key : this.childrenList.keySet()) {
-			if (key instanceof ChildListDescriptor) {
-				try {
-					List<ASTNode> children = this.getChildByDescriptor((ChildListDescriptor) key);
-					for (ASTNode child : children) {
-						System.out.println(child.toString());
-						str += child.toString(level + 1);
-					}
-				} catch (ChildTypeUnmatchException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-			}
-			else if(key instanceof ChildDescriptor) {
-				try {
-					str += this.getChildByDescriptor((ChildDescriptor) key).toString(level + 1);
-				} catch (ChildTypeUnmatchException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-			}
-		}
-		return str;
 	}
 }

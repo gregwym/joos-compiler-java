@@ -19,9 +19,9 @@ public abstract class ASTNode {
 		}
 	}
 
-	protected ASTNode parent = null;
-	protected String identifier = new String();
-	protected Map<Descriptor, Object> childrenList = new HashMap<Descriptor, Object>();
+	private ASTNode parent = null;
+	private String identifier = new String();
+	private Map<Descriptor, Object> childrenList = new HashMap<Descriptor, Object>();
 
 	public ASTNode(ASTNode parent) {
 		this.parent = parent;
@@ -40,6 +40,14 @@ public abstract class ASTNode {
 	public String getIdentifier() {
 		return identifier;
 	}
+	
+	protected void setIdentifier(String identifier) {
+		this.identifier = identifier;
+	}
+	
+	protected void addChild(Descriptor descriptor, Object value) {
+		this.childrenList.put(descriptor, value);
+	}
 
 	@SuppressWarnings("unchecked")
 	public List<ASTNode> getChildByDescriptor(ChildListDescriptor listDescriptor) throws ChildTypeUnmatchException {
@@ -52,10 +60,10 @@ public abstract class ASTNode {
 
 	public ASTNode getChildByDescriptor(ChildDescriptor childDescriptor) throws ChildTypeUnmatchException {
 		Object child = childrenList.get(childDescriptor);
-		if (child instanceof ASTNode) {
+		if (childDescriptor.getElementClass().isAssignableFrom(child.getClass())) {
 			return (ASTNode) child;
 		}
-		throw new ChildTypeUnmatchException(childDescriptor + " is not mapping to a ASTNode");
+		throw new ChildTypeUnmatchException(childDescriptor + " is not mapping to a " + childDescriptor.getElementClass().getSimpleName());
 	}
 
 	public void accept(ASTVisitor visitor) throws Exception {
@@ -84,19 +92,6 @@ public abstract class ASTNode {
 		if(this.identifier.length() > 0) str += " " + this.identifier;
 		if (this.parent != null)
 			str += " parent: " + this.parent.getClass().getSimpleName();
-		return str;
-	}
-
-	public String toString(int level) {
-		String str = "";
-		for (int i = 0; i < level; i++) {
-			str += "  ";
-		}
-		str += "<" + this.getClass().getSimpleName() + ">";
-		if(this.identifier.length() > 0) str += " " + this.identifier;
-		if (this.parent != null)
-			str += " parent: " + this.parent.getClass().getSimpleName();
-		str += "\n";
 		return str;
 	}
 }
