@@ -7,6 +7,9 @@ import java.util.logging.Logger;
 
 import ca.uwaterloo.joos.Main;
 import ca.uwaterloo.joos.ast.AST.ASTConstructException;
+import ca.uwaterloo.joos.ast.descriptor.ChildDescriptor;
+import ca.uwaterloo.joos.ast.descriptor.ChildListDescriptor;
+import ca.uwaterloo.joos.ast.descriptor.Descriptor;
 import ca.uwaterloo.joos.ast.visitor.ASTVisitor;
 
 public abstract class ASTNode {

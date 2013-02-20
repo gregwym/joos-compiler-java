@@ -3,9 +3,9 @@ package ca.uwaterloo.joos.ast.decl;
 import java.util.List;
 
 import ca.uwaterloo.joos.ast.ASTNode;
-import ca.uwaterloo.joos.ast.ChildDescriptor;
-import ca.uwaterloo.joos.ast.ChildListDescriptor;
 import ca.uwaterloo.joos.ast.body.TypeBody;
+import ca.uwaterloo.joos.ast.descriptor.ChildDescriptor;
+import ca.uwaterloo.joos.ast.descriptor.ChildListDescriptor;
 import ca.uwaterloo.joos.ast.type.InterfaceType;
 import ca.uwaterloo.joos.ast.type.Modifiers;
 
