@@ -9,7 +9,7 @@ package ca.uwaterloo.joos.ast;
  */
 public class SimpleDescriptor extends Descriptor{
 
-	public SimpleDescriptor(String elementType) {
+	public SimpleDescriptor(Class<?> elementType) {
 		super(elementType);
 		// TODO Auto-generated constructor stub
 	}

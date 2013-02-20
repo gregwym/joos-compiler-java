@@ -9,7 +9,7 @@ package ca.uwaterloo.joos.ast;
  */
 public class ChildDescriptor extends Descriptor {
 
-	public ChildDescriptor(String elementType) {
+	public ChildDescriptor(Class<?> elementType) {
 		super(elementType);
 	}
 

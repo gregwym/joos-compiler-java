@@ -1,6 +1,7 @@
 package ca.uwaterloo.joos.ast;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 
@@ -38,8 +39,13 @@ public abstract class ASTNode {
 	public String toString() {
 		return "<ASTNode> id: " + this.identifier;
 	}
-	public Object getChildByType(String TypeName){
+	public List<ASTNode> getChildByDescriptor(ListDescriptor listDescriptor){
 		
+		return (List<ASTNode>) childrenList.get(listDescriptor);
+	}
+    public ASTNode getChildByDescriptor(ChildDescriptor childDescriptor){
+		
+		return (ASTNode) childrenList.get(childDescriptor);
 	}
 	public String toString(int level) {
 		String str = "";

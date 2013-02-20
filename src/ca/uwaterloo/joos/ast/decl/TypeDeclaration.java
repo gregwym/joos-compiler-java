@@ -21,7 +21,9 @@ public abstract class TypeDeclaration extends ASTNode {
 	
 	}
 
-	public TypeBody getChildByDescriptor(Descriptor childDescriptor) {
+	
+
+	public Object getChildrenByDescriptor(Descriptor childDescriptor) {
 		// TODO Auto-generated method stub
 		return null;
 	}

@@ -10,12 +10,18 @@ import ca.uwaterloo.joos.ast.decl.ImportDeclaration;
 import ca.uwaterloo.joos.ast.decl.InterfaceDeclaration;
 import ca.uwaterloo.joos.ast.decl.PackageDeclaration;
 import ca.uwaterloo.joos.ast.decl.TypeDeclaration;
+import ca.uwaterloo.joos.ast.type.ClassType;
+import ca.uwaterloo.joos.ast.type.InterfaceType;
+import ca.uwaterloo.joos.ast.type.Modifiers;
 import ca.uwaterloo.joos.ast.visitor.ASTVisitor;
 import ca.uwaterloo.joos.parser.ParseTree.Node;
 import ca.uwaterloo.joos.parser.ParseTree.TreeNode;
 
 public class FileUnit extends ASTNode {
-
+	protected static ChildDescriptor PACKAGEDECLARATION = new ChildDescriptor(PackageDeclaration.class);
+	protected static ListDescriptor IMPORTDECALARATION = new ListDescriptor(ImportDeclaration.class);
+	protected static ChildDescriptor CLASSDECLARATION = new ChildDescriptor(ClassDeclaration.class);
+	protected static ChildDescriptor INTERFACEDECLARATION = new ChildDescriptor(InterfaceDeclaration.class);
 	public FileUnit(Node node, String fileName, ASTNode parent) throws ASTConstructException {
 		super(parent);
 		
@@ -23,34 +29,34 @@ public class FileUnit extends ASTNode {
 		
 		TreeNode treeNode = (TreeNode) node;
 		this.identifier = fileName;
-
+		List<ImportDeclaration> importDeclarations = new ArrayList<ImportDeclaration>(); 
 		for (Node oneChild : treeNode.children) {
 			TreeNode child = (TreeNode) oneChild;
 			if (child.productionRule.getLefthand().equals("packagedecl")) {
 				 //this.packageDeclaration = new PackageDeclaration(child);
 				PackageDeclaration packageDeclaration = new PackageDeclaration(child,this);
-				childrenList.put(new SimpleDescriptor("packagedecl"),packageDeclaration);
+				childrenList.put(new SimpleDescriptor(packageDeclaration.getClass()),packageDeclaration);
 			}
 			else if (child.productionRule.getLefthand().equals("importdecls")) {
-				List<ImportDeclaration> importDeclarations = new ArrayList<ImportDeclaration>(); 
+				
 				ImportDeclaration importDeclaration = new ImportDeclaration(child,this);
 				importDeclarations.add(importDeclaration);
-				childrenList.put(new ListDescriptor("importdecls"),importDeclarations);
-//				this.importDeclarations.add(new ImportDeclaration());
+				
 			}
 			else if (child.productionRule.getLefthand().equals("typedecl")) {
 				List<String> members = Arrays.asList(child.productionRule.getRighthand());
 				
 				if(members.contains("classdecl")) {
 					ClassDeclaration classDeclaration = new ClassDeclaration(child.children.get(0),this);
-					childrenList.put(new ChildDescriptor("classdecl"),classDeclaration);
+					childrenList.put(CLASSDECLARATION,classDeclaration);
 				}
 				else if(members.contains("interfacedecl")) {
 					InterfaceDeclaration interfaceDeclaration = new InterfaceDeclaration(child.children.get(0),this);
-					childrenList.put(new ChildDescriptor("interfacedecl"),interfaceDeclaration);
+					childrenList.put(INTERFACEDECLARATION,interfaceDeclaration);
 				}
 			}
 		}
+			childrenList.put(PACKAGEDECLARATION,importDeclarations);
 	}
 
 	

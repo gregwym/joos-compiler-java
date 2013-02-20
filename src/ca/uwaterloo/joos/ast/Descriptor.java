@@ -4,9 +4,10 @@ package ca.uwaterloo.joos.ast;
  *
  */
 public class Descriptor{
-  public String elementType;
-  public Descriptor(String elementType)
+  public Class<?> elementClass;
+ 
+  public Descriptor (Class<?> elementClass)
   {
-	  this.elementType = elementType; 
+	  this.elementClass = elementClass;
   }
 }

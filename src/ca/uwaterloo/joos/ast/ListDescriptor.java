@@ -4,8 +4,8 @@ package ca.uwaterloo.joos.ast;
  *
  */
 public class ListDescriptor extends Descriptor {
-
-	 public ListDescriptor(String elementType) {
+	
+	 public ListDescriptor(Class<?> elementType) {
 		super(elementType);
      }
 
