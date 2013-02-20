@@ -60,17 +60,17 @@ public abstract class ASTNode {
 
 	public void accept(ASTVisitor visitor) throws Exception {
 		visitor.willVisit(this);
+		logger.finer("Visiting <" + this.getClass().getSimpleName() + ">");
 		if (visitor.visit(this)) {
 			for (Descriptor key : this.childrenList.keySet()) {
 				if (key instanceof ChildListDescriptor) {
-					List<ASTNode> children = 
-							this.getChildByDescriptor((ChildListDescriptor) key);
+					List<ASTNode> children = this.getChildByDescriptor((ChildListDescriptor) key);
 					for (ASTNode child : children) {
-						visitor.visit(child);
+						child.accept(visitor);
 					}
 				}
 				else if(key instanceof ChildDescriptor) {
-					visitor.visit(this.getChildByDescriptor((ChildDescriptor) key));
+					this.getChildByDescriptor((ChildDescriptor) key).accept(visitor);
 				}
 			}
 		}
@@ -79,7 +79,12 @@ public abstract class ASTNode {
 
 	@Override
 	public String toString() {
-		return "<" + this.getClass().getSimpleName() + "> " + this.identifier;
+		String str = "";
+		str += "<" + this.getClass().getSimpleName() + ">";
+		if(this.identifier.length() > 0) str += " " + this.identifier;
+		if (this.parent != null)
+			str += " parent: " + this.parent.getClass().getSimpleName();
+		return str;
 	}
 
 	public String toString(int level) {
