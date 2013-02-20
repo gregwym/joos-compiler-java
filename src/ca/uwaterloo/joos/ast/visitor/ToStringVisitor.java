@@ -12,7 +12,7 @@ import ca.uwaterloo.joos.ast.ASTNode;
 public class ToStringVisitor extends ASTVisitor {
 
 	private String theString = new String();
-	private int level = 0;
+	private int level = -1;
 
 	/*
 	 * (non-Javadoc)
