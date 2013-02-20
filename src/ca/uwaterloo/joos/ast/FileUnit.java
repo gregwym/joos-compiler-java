@@ -1,8 +1,9 @@
 package ca.uwaterloo.joos.ast;
 
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import ca.uwaterloo.joos.ast.AST.ASTConstructException;
 import ca.uwaterloo.joos.ast.decl.ClassDeclaration;
@@ -10,79 +11,72 @@ import ca.uwaterloo.joos.ast.decl.ImportDeclaration;
 import ca.uwaterloo.joos.ast.decl.InterfaceDeclaration;
 import ca.uwaterloo.joos.ast.decl.PackageDeclaration;
 import ca.uwaterloo.joos.ast.decl.TypeDeclaration;
-import ca.uwaterloo.joos.ast.type.ClassType;
-import ca.uwaterloo.joos.ast.type.InterfaceType;
-import ca.uwaterloo.joos.ast.type.Modifiers;
-import ca.uwaterloo.joos.ast.visitor.ASTVisitor;
+import ca.uwaterloo.joos.parser.ParseTree.LeafNode;
 import ca.uwaterloo.joos.parser.ParseTree.Node;
 import ca.uwaterloo.joos.parser.ParseTree.TreeNode;
+import ca.uwaterloo.joos.parser.ParseTreeTraverse;
+import ca.uwaterloo.joos.parser.ParseTreeTraverse.Traverser;
 
 public class FileUnit extends ASTNode {
-	protected static ChildDescriptor PACKAGEDECLARATION = new ChildDescriptor(PackageDeclaration.class);
-	protected static ListDescriptor IMPORTDECALARATION = new ListDescriptor(ImportDeclaration.class);
-	protected static ChildDescriptor CLASSDECLARATION = new ChildDescriptor(ClassDeclaration.class);
-	protected static ChildDescriptor INTERFACEDECLARATION = new ChildDescriptor(InterfaceDeclaration.class);
+	protected static final ChildDescriptor PACKAGE = new ChildDescriptor(PackageDeclaration.class);
+	protected static final ChildListDescriptor IMPORTS = new ChildListDescriptor(ImportDeclaration.class);
+	protected static final ChildDescriptor TYPE = new ChildDescriptor(TypeDeclaration.class);
+
 	public FileUnit(Node node, String fileName, ASTNode parent) throws ASTConstructException {
 		super(parent);
-		
+		this.setIdentifier(fileName);
+
 		assert node instanceof TreeNode : "FileUnit is expecting a TreeNode";
 		
-		TreeNode treeNode = (TreeNode) node;
-		this.identifier = fileName;
-		List<ImportDeclaration> importDeclarations = new ArrayList<ImportDeclaration>(); 
-		for (Node oneChild : treeNode.children) {
-			TreeNode child = (TreeNode) oneChild;
-			if (child.productionRule.getLefthand().equals("packagedecl")) {
-				 //this.packageDeclaration = new PackageDeclaration(child);
-				PackageDeclaration packageDeclaration = new PackageDeclaration(child,this);
-				childrenList.put(new SimpleDescriptor(packageDeclaration.getClass()),packageDeclaration);
-			}
-			else if (child.productionRule.getLefthand().equals("importdecls")) {
-				
-				ImportDeclaration importDeclaration = new ImportDeclaration(child,this);
-				importDeclarations.add(importDeclaration);
-				
-			}
-			else if (child.productionRule.getLefthand().equals("typedecl")) {
-				List<String> members = Arrays.asList(child.productionRule.getRighthand());
-				
-				if(members.contains("classdecl")) {
-					ClassDeclaration classDeclaration = new ClassDeclaration(child.children.get(0),this);
-					childrenList.put(CLASSDECLARATION,classDeclaration);
+		ParseTreeTraverse traverse = new ParseTreeTraverse(new Traverser(this) {
+			
+			public Set<Node> processTreeNode(TreeNode treeNode) throws ASTConstructException {
+				Set<Node> offers = new HashSet<Node>();
+				if (treeNode.productionRule.getLefthand().equals("packagedecl")) {
+					PackageDeclaration packageDeclaration = new PackageDeclaration(treeNode, parent);
+					addChild(PACKAGE, packageDeclaration);
+					logger.fine("Added PackageDecl: " + packageDeclaration);
+				} else if (treeNode.productionRule.getLefthand().equals("importdecls")) {
+					List<ASTNode> imports = getImportDeclarations();
+					if(imports == null) {
+						imports = new ArrayList<ASTNode>();
+						addChild(IMPORTS, imports);
+					}
+					ImportDeclaration importDeclaration = new ImportDeclaration(treeNode, parent);
+					imports.add(importDeclaration);
+					logger.fine("Added ImportDecl: " + importDeclaration);
+				} else if (treeNode.productionRule.getLefthand().equals("classdecl")) {
+					ClassDeclaration classDeclaration = new ClassDeclaration(treeNode, parent);
+					addChild(TYPE, classDeclaration);
+					logger.fine("Added ClassDecl: " + classDeclaration);
+				} else if (treeNode.productionRule.getLefthand().equals("interfacedecl")) {
+					InterfaceDeclaration interfaceDeclaration = new InterfaceDeclaration(treeNode, parent);
+					addChild(TYPE, interfaceDeclaration);
+					logger.fine("Added InterfaceDecl: " + interfaceDeclaration);
 				}
-				else if(members.contains("interfacedecl")) {
-					InterfaceDeclaration interfaceDeclaration = new InterfaceDeclaration(child.children.get(0),this);
-					childrenList.put(INTERFACEDECLARATION,interfaceDeclaration);
-				}
+				else {
+					for (Node n : treeNode.children) 
+						offers.add(n);
+				}		
+				return offers;
 			}
-		}
-			childrenList.put(PACKAGEDECLARATION,importDeclarations);
-	}
-
 	
-	//@Override
-	/*public String toString(int level) {
-		String str = super.toString(level);
-		str += "\n";
-//		str += this.packageDeclaration.toString(level + 1);
-//		for(ImportDeclaration importDecl: this.importDeclarations)
-//			str += importDecl.toString(level + 1);
-		str += this.typeDeclaration.toString(level + 1);
-		return str;
-	}*/
-
-	/* (non-Javadoc)
-	 * @see ca.uwaterloo.joos.ast.ASTNode#accept(ca.uwaterloo.joos.ast.ASTVisitor)
-	 */
-	@Override
-	public void accept(ASTVisitor visitor) throws Exception{
-		visitor.willVisit(this);
-		if(visitor.visit(this)) {
-//			this.packageDeclaration.accept(visitor);
-//			for(ImportDeclaration importDecl: this.importDeclarations)
-//				importDecl.accept(visitor);
-			//this.typeDeclaration.accept(visitor);
-		}
-		visitor.didVisit(this);
+			public void processLeafNode(LeafNode leafNode) throws ASTConstructException {
+			}
+		});
+		
+		traverse.traverse(node);
+	}
+	
+	public PackageDeclaration getPackageDeclaration() throws ChildTypeUnmatchException{
+		return (PackageDeclaration) this.getChildByDescriptor(FileUnit.PACKAGE);
+	}
+	
+	public List<ASTNode> getImportDeclarations() throws ChildTypeUnmatchException{
+		return this.getChildByDescriptor(FileUnit.IMPORTS);
+	}
+	
+	public TypeDeclaration getTypeDeclaration() throws ChildTypeUnmatchException{
+		return (TypeDeclaration) this.getChildByDescriptor(FileUnit.TYPE);
 	}
 }

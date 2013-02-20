@@ -7,10 +7,10 @@ import ca.uwaterloo.joos.ast.AST.ASTConstructException;
 import ca.uwaterloo.joos.ast.ASTNode;
 import ca.uwaterloo.joos.ast.type.Modifiers;
 import ca.uwaterloo.joos.ast.visitor.ASTVisitor;
-import ca.uwaterloo.joos.parser.ParseTreeTraverse;
 import ca.uwaterloo.joos.parser.ParseTree.LeafNode;
 import ca.uwaterloo.joos.parser.ParseTree.Node;
 import ca.uwaterloo.joos.parser.ParseTree.TreeNode;
+import ca.uwaterloo.joos.parser.ParseTreeTraverse;
 import ca.uwaterloo.joos.parser.ParseTreeTraverse.Traverser;
 
 
@@ -44,7 +44,7 @@ public class FieldDeclaration extends BodyDeclaration {
 
 			public void processLeafNode(LeafNode leafNode) throws ASTConstructException {
 				if(leafNode.token.getKind().equals("ID")) {
-					identifier = leafNode.token.getLexeme();
+					setIdentifier(leafNode.token.getLexeme());
 				}
 			}
 		});

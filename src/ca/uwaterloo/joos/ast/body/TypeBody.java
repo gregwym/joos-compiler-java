@@ -48,15 +48,6 @@ public abstract class TypeBody extends ASTNode {
 		return members;
 	}
 	
-	@Override
-	public String toString(int level) {
-		String str = super.toString(level);
-		str += "\n";
-		for(BodyDeclaration member: this.members) 
-			str += member.toString(level + 1);
-		return str;
-	}
-	
 	/* (non-Javadoc)
 	 * @see ca.uwaterloo.joos.ast.ASTNode#accept(ca.uwaterloo.joos.ast.ASTVisitor)
 	 */

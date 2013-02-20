@@ -8,7 +8,6 @@ import ca.uwaterloo.joos.ast.AST.ASTConstructException;
 import ca.uwaterloo.joos.ast.ASTNode;
 import ca.uwaterloo.joos.ast.body.Block;
 import ca.uwaterloo.joos.ast.type.Modifiers;
-import ca.uwaterloo.joos.ast.visitor.ASTVisitor;
 import ca.uwaterloo.joos.parser.ParseTree.LeafNode;
 import ca.uwaterloo.joos.parser.ParseTree.Node;
 import ca.uwaterloo.joos.parser.ParseTree.TreeNode;
@@ -61,7 +60,7 @@ public class MethodDeclaration extends BodyDeclaration {
 
 			public void processLeafNode(LeafNode leafNode) throws ASTConstructException {
 				if(leafNode.token.getKind().equals("ID")) {
-					identifier = leafNode.token.getLexeme();
+					setIdentifier(leafNode.token.getLexeme());
 				}
 				if(leafNode.token.getKind().equals("VOID")) {
 //					returnType = new Type("VOID");
@@ -71,25 +70,5 @@ public class MethodDeclaration extends BodyDeclaration {
 		});
 
 		traverse.traverse(declNode);
-	}
-
-	@Override
-	public String toString(int level) {
-		String str = super.toString(level);
-		return str;
-	}
-	
-	/* (non-Javadoc)
-	 * @see ca.uwaterloo.joos.ast.ASTNode#accept(ca.uwaterloo.joos.ast.ASTVisitor)
-	 */
-	@Override
-	public void accept(ASTVisitor visitor) throws Exception{
-		visitor.willVisit(this);
-		if(visitor.visit(this)) {
-			super.accept(visitor);
-//			this.parameters.accept(visitor);
-			if(this.body != null) this.body.accept(visitor);
-		}
-		visitor.didVisit(this);
 	}
 }

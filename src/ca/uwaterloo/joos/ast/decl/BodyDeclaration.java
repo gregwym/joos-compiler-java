@@ -11,10 +11,10 @@ import ca.uwaterloo.joos.ast.ASTNode;
 import ca.uwaterloo.joos.ast.type.Modifiers;
 import ca.uwaterloo.joos.ast.type.Type;
 import ca.uwaterloo.joos.ast.visitor.ASTVisitor;
-import ca.uwaterloo.joos.parser.ParseTreeTraverse;
 import ca.uwaterloo.joos.parser.ParseTree.LeafNode;
 import ca.uwaterloo.joos.parser.ParseTree.Node;
 import ca.uwaterloo.joos.parser.ParseTree.TreeNode;
+import ca.uwaterloo.joos.parser.ParseTreeTraverse;
 import ca.uwaterloo.joos.parser.ParseTreeTraverse.Traverser;
 
 /**
@@ -71,14 +71,6 @@ public abstract class BodyDeclaration extends ASTNode {
 		newBodyDecl = null;
 		
 		return rtn;
-	}
-
-	@Override
-	public String toString(int level) {
-		String str = super.toString(level);
-		str += "type: " + this.type + "\n";
-		str += this.modifiers.toString(level + 1);
-		return str;
 	}
 	
 	/* (non-Javadoc)

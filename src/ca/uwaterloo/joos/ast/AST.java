@@ -1,5 +1,7 @@
 package ca.uwaterloo.joos.ast;
 
+import java.util.logging.Level;
+
 import ca.uwaterloo.joos.parser.LR1.ProductionRule;
 import ca.uwaterloo.joos.parser.ParseTree;
 import ca.uwaterloo.joos.parser.ParseTree.TreeNode;
@@ -20,6 +22,8 @@ public class AST {
 	}
 
 	public AST(ParseTree parseTree, String fileName) throws ASTConstructException {
+		ASTNode.logger.setLevel(Level.FINER);
+		
 		assert parseTree != null : "Null parse tree";
 
 		ParseTree.TreeNode parseTreeRoot = (TreeNode) parseTree.root;
@@ -34,6 +38,6 @@ public class AST {
 
 	@Override
 	public String toString() {
-		return this.root.toString(0);
+		return this.root.toString();
 	}
 }
