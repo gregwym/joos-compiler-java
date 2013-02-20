@@ -87,11 +87,11 @@ public class Main {
 		AST ast = new AST(parseTree, source.getName());
 		
 		ToStringVisitor visitor = new ToStringVisitor();
-		visitor.visit(ast.getRoot());
+		ast.getRoot().accept(visitor);
 		System.out.println(visitor.getString());
 		
 		/* AST Weeding */
-//		this.weeder.weedAst(ast);
+		this.weeder.weedAst(ast);
 
 		return ast;
 	}
@@ -115,8 +115,7 @@ public class Main {
 		Main instance = new Main();
 
 		try {
-			Object result = instance.execute(new File(args[0]));
-			System.out.println(result.toString());
+			instance.execute(new File(args[0]));
 		} catch (Exception e) {
 			System.err.println("ERROR: " + e.getLocalizedMessage() + " " + e.getClass().getName());
 			e.printStackTrace();
