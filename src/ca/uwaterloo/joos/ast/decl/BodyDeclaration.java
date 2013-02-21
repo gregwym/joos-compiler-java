@@ -3,10 +3,9 @@
  */
 package ca.uwaterloo.joos.ast.decl;
 
+import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import ca.uwaterloo.joos.ast.AST.ASTConstructException;
 import ca.uwaterloo.joos.ast.ASTNode;
@@ -49,8 +48,8 @@ public abstract class BodyDeclaration extends ASTNode {
 	 * ca.uwaterloo.joos.parser.ParseTree.TreeNode)
 	 */
 	@Override
-	public Set<Node> processTreeNode(TreeNode treeNode) throws Exception {
-		Set<Node> offers = new HashSet<Node>();
+	public List<Node> processTreeNode(TreeNode treeNode) throws Exception {
+		List<Node> offers = new ArrayList<Node>();
 		if (treeNode.productionRule.getLefthand().equals("modifiers")) {
 			Modifiers modifiers = new Modifiers(treeNode, this);
 			addChild(MODIFIERS, modifiers);

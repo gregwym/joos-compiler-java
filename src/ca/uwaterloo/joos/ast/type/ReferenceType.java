@@ -1,7 +1,7 @@
 package ca.uwaterloo.joos.ast.type;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.List;
 
 import ca.uwaterloo.joos.ast.AST.ASTConstructException;
 import ca.uwaterloo.joos.ast.ASTNode;
@@ -26,8 +26,8 @@ public class ReferenceType extends Type {
 	}
 
 	@Override
-	public Set<Node> processTreeNode(TreeNode treeNode) throws Exception {
-		Set<Node> offers = new HashSet<Node>();
+	public List<Node> processTreeNode(TreeNode treeNode) throws Exception {
+		List<Node> offers = new ArrayList<Node>();
 		if (treeNode.productionRule.getLefthand().equals("qualifiedname")) {
 			Name name = new QualifiedName(treeNode, this);
 			this.addChild(NAME, name);

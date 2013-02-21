@@ -4,9 +4,7 @@
 package ca.uwaterloo.joos.ast.body;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import ca.uwaterloo.joos.ast.ASTNode;
 import ca.uwaterloo.joos.ast.decl.ConstructorDeclaration;
@@ -49,8 +47,8 @@ public abstract class TypeBody extends ASTNode {
 	}
 
 	@Override
-	public Set<Node> processTreeNode(TreeNode treeNode) throws Exception {
-		Set<Node> offers = new HashSet<Node>();
+	public List<Node> processTreeNode(TreeNode treeNode) throws Exception {
+		List<Node> offers = new ArrayList<Node>();
 		if (treeNode.productionRule.getLefthand().equals("constructordecl")) {
 			List<ConstructorDeclaration> decls = getConstructors();
 			if (decls == null) {

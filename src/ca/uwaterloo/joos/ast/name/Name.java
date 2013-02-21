@@ -1,7 +1,7 @@
 package ca.uwaterloo.joos.ast.name;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.List;
 
 import ca.uwaterloo.joos.ast.ASTNode;
 import ca.uwaterloo.joos.parser.ParseTree.Node;
@@ -17,8 +17,8 @@ public abstract class Name extends ASTNode {
 	public abstract String getName() throws Exception;
 
 	@Override
-	public Set<Node> processTreeNode(TreeNode treeNode) throws Exception {
-		Set<Node> offers = new HashSet<Node>();
+	public List<Node> processTreeNode(TreeNode treeNode) throws Exception {
+		List<Node> offers = new ArrayList<Node>();
 		offers.addAll(treeNode.children);
 		return offers;
 	}

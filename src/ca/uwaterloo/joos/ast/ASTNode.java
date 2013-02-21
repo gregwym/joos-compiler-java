@@ -116,15 +116,15 @@ public abstract class ASTNode implements Traverser {
 	public final String toString() {
 		String str = "";
 		str += "<" + this.getClass().getSimpleName() + ">";
-		if(this.identifier.length() > 0) str += " " + this.identifier;
+		if(this.identifier.length() > 0) str += " " + this.identifier + " |";
 		for (Descriptor key : this.childrenList.keySet()) {
 			if( key instanceof SimpleDescriptor || key instanceof SimpleListDescriptor ) {
 				Object child = this.childrenList.get(key);
-				str += " " + key.getElementClass().getSimpleName() + ": " + child;
+				str += " " + key.getElementClass().getSimpleName() + ": " + child + " |";
 			}
 		}
 		if (this.parent != null)
-			str += " | parent: " + this.parent.getClass().getSimpleName();
+			str += " parent: " + this.parent.getClass().getSimpleName();
 		return str;
 	}
 }

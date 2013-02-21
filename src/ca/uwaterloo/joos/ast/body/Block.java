@@ -3,7 +3,7 @@
  */
 package ca.uwaterloo.joos.ast.body;
 
-import java.util.Set;
+import java.util.List;
 
 import ca.uwaterloo.joos.ast.ASTNode;
 import ca.uwaterloo.joos.parser.ParseTree.LeafNode;
@@ -26,7 +26,7 @@ public class Block extends ASTNode {
 	}
 
 	@Override
-	public Set<Node> processTreeNode(TreeNode treeNode) throws Exception {
+	public List<Node> processTreeNode(TreeNode treeNode) throws Exception {
 		// TODO Auto-generated method stub
 		return null;
 	}
