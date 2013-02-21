@@ -4,7 +4,7 @@
 package ca.uwaterloo.joos.ast.visitor;
 
 import ca.uwaterloo.joos.ast.ASTNode;
-import ca.uwaterloo.joos.ast.type.Modifiers;
+import ca.uwaterloo.joos.ast.Modifiers;
 
 /**
  * @author Greg Wang

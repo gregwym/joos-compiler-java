@@ -1,4 +1,4 @@
-package ca.uwaterloo.joos.ast.type;
+package ca.uwaterloo.joos.ast;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.Set;
 
 import ca.uwaterloo.joos.ast.AST.ASTConstructException;
-import ca.uwaterloo.joos.ast.ASTNode;
 import ca.uwaterloo.joos.ast.descriptor.SimpleListDescriptor;
 import ca.uwaterloo.joos.parser.ParseTree.LeafNode;
 import ca.uwaterloo.joos.parser.ParseTree.Node;
