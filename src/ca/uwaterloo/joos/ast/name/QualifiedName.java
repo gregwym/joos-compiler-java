@@ -1,4 +1,4 @@
-package ca.uwaterloo.joos.name;
+package ca.uwaterloo.joos.ast.name;
 
 import java.util.LinkedList;
 import java.util.List;
