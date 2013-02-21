@@ -18,8 +18,8 @@ public class PrimitiveType extends Type {
 		BOOLEAN, BYTE, CHAR, INT, SHORT
 	}
 
-	public PrimitiveType(Node primitiveNod, ASTNode parent) throws Exception {
-		super(primitiveNod, parent);
+	public PrimitiveType(Node node, ASTNode parent) throws Exception {
+		super(node, parent);
 	}
 
 	private Primitive stringToType(String name) throws ASTConstructException {
