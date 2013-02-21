@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package ca.uwaterloo.joos.ast.decl;
 
@@ -22,7 +22,7 @@ import ca.uwaterloo.joos.parser.ParseTree.TreeNode;
 
 /**
  * @author Greg Wang
- * 
+ *
  */
 public abstract class BodyDeclaration extends ASTNode {
 
@@ -43,7 +43,7 @@ public abstract class BodyDeclaration extends ASTNode {
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see
 	 * ca.uwaterloo.joos.parser.ParseTreeTraverse.Traverser#processTreeNode(
 	 * ca.uwaterloo.joos.parser.ParseTree.TreeNode)
@@ -71,12 +71,11 @@ public abstract class BodyDeclaration extends ASTNode {
 			}
 			addChild(TYPE, type);
 		} else {
-			for (Node n : treeNode.children)
-				offers.add(n);
+			offers.addAll(treeNode.children);
 		}
 		return offers;
 	}
-	
+
 
 	/* (non-Javadoc)
 	 * @see ca.uwaterloo.joos.parser.ParseTreeTraverse.Traverser#processLeafNode(ca.uwaterloo.joos.parser.ParseTree.LeafNode)

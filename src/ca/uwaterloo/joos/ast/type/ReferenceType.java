@@ -6,9 +6,9 @@ import java.util.Set;
 import ca.uwaterloo.joos.ast.AST.ASTConstructException;
 import ca.uwaterloo.joos.ast.ASTNode;
 import ca.uwaterloo.joos.ast.descriptor.ChildDescriptor;
-import ca.uwaterloo.joos.name.Name;
-import ca.uwaterloo.joos.name.QualifiedName;
-import ca.uwaterloo.joos.name.SimpleName;
+import ca.uwaterloo.joos.ast.name.Name;
+import ca.uwaterloo.joos.ast.name.QualifiedName;
+import ca.uwaterloo.joos.ast.name.SimpleName;
 import ca.uwaterloo.joos.parser.ParseTree.LeafNode;
 import ca.uwaterloo.joos.parser.ParseTree.Node;
 import ca.uwaterloo.joos.parser.ParseTree.TreeNode;
@@ -31,15 +31,13 @@ public class ReferenceType extends Type {
 		if (treeNode.productionRule.getLefthand().equals("qualifiedname")) {
 			Name name = new QualifiedName(treeNode, this);
 			this.addChild(NAME, name);
-		}
-		if (treeNode.productionRule.getLefthand().equals("simplename")) {
+		} else if (treeNode.productionRule.getLefthand().equals("simplename")) {
 			Name name = new SimpleName(treeNode, this);
 			this.addChild(NAME, name);
 		} else if (treeNode.productionRule.getLefthand().equals("arraytype")) {
 			throw new ASTConstructException("ArrayType should not appears in ReferenceType");
 		} else {
-			for (Node n : treeNode.children)
-				offers.add(n);
+			offers.addAll(treeNode.children);
 		}
 		return offers;
 	}

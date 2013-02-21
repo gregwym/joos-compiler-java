@@ -13,7 +13,7 @@ import ca.uwaterloo.joos.parser.ParseTree.Node;
 import ca.uwaterloo.joos.parser.ParseTree.TreeNode;
 
 public class Modifiers extends ASTNode {
-	
+
 	public static final SimpleListDescriptor MODIFIERS = new SimpleListDescriptor(Modifier.class);
 
 	public static enum Modifier {
@@ -23,17 +23,17 @@ public class Modifiers extends ASTNode {
 	public Modifiers(Node node, ASTNode parent) throws Exception {
 		super(node, parent);
 	}
-	
+
 	private Modifier stringToModifier(String name) throws ASTConstructException {
 		for(Modifier modifier: Modifier.values()) {
 			if(modifier.name().equals(name)) return modifier;
 		}
 		throw new ASTConstructException("Unknown modifier " + name);
 	}
-	
+
 	/**
 	 * @return the modifiers
-	 * @throws ChildTypeUnmatchException 
+	 * @throws ChildTypeUnmatchException
 	 */
 	@SuppressWarnings("unchecked")
 	public List<Modifier> getModifiers() throws ChildTypeUnmatchException {
@@ -43,8 +43,7 @@ public class Modifiers extends ASTNode {
 	@Override
 	public Set<Node> processTreeNode(TreeNode treeNode) throws Exception {
 		Set<Node> offers = new HashSet<Node>();
-		for (Node n : treeNode.children) 
-			offers.add(n);
+		offers.addAll(treeNode.children);
 		return offers;
 	}
 
@@ -55,7 +54,7 @@ public class Modifiers extends ASTNode {
 			modifiers = new ArrayList<Modifier>();
 			addChild(MODIFIERS, modifiers);
 		}
-		
+
 		Modifier modifier = stringToModifier(leafNode.token.getKind().toUpperCase());
 		modifiers.add(modifier);
 		logger.fine("Modifier added: " + modifier.name());

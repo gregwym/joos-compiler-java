@@ -56,8 +56,7 @@ public abstract class TypeDeclaration extends ASTNode {
 			ClassBody body = new ClassBody(treeNode, this);
 			addChild(BODY, body);
 		} else {
-			for (Node n : treeNode.children)
-				offers.add(n);
+			offers.addAll(treeNode.children);
 		}
 		return offers;
 	}
