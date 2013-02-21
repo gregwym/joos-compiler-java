@@ -57,6 +57,5 @@ public class Modifiers extends ASTNode {
 
 		Modifier modifier = stringToModifier(leafNode.token.getKind().toUpperCase());
 		modifiers.add(modifier);
-		logger.fine("Modifier added: " + modifier.name());
 	}
 }
