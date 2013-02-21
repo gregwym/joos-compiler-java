@@ -10,14 +10,14 @@ import ca.uwaterloo.joos.parser.ParseTree.Node;
  * @author Greg Wang
  *
  */
-public class FieldDeclaration extends VariableDeclaration {
+public class LocalVariableDeclaration extends VariableDeclaration {
 
 	/**
 	 * @param node
 	 * @param parent
 	 * @throws Exception
 	 */
-	public FieldDeclaration(Node node, ASTNode parent) throws Exception {
+	public LocalVariableDeclaration(Node node, ASTNode parent) throws Exception {
 		super(node, parent);
 		// TODO Auto-generated constructor stub
 	}
