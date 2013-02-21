@@ -40,6 +40,7 @@ public class ParseTreeTraverse {
 			if (node instanceof TreeNode) {
 				TreeNode treeNode = (TreeNode) node;
 				Set<Node> offer = this.traverser.processTreeNode(treeNode);
+				if(offer != null)
 				for(Node n: offer) {
 					nodeQueue.offer(n);
 				}

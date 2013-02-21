@@ -13,6 +13,8 @@ import ca.uwaterloo.joos.ast.descriptor.Descriptor;
 import ca.uwaterloo.joos.ast.descriptor.SimpleDescriptor;
 import ca.uwaterloo.joos.ast.descriptor.SimpleListDescriptor;
 import ca.uwaterloo.joos.ast.visitor.ASTVisitor;
+import ca.uwaterloo.joos.parser.ParseTree.Node;
+import ca.uwaterloo.joos.parser.ParseTreeTraverse;
 import ca.uwaterloo.joos.parser.ParseTreeTraverse.Traverser;
 
 public abstract class ASTNode implements Traverser {
@@ -29,8 +31,11 @@ public abstract class ASTNode implements Traverser {
 	private String identifier = new String();
 	private Map<Descriptor, Object> childrenList = new HashMap<Descriptor, Object>();
 
-	public ASTNode(ASTNode parent) {
+	public ASTNode(Node node, ASTNode parent) throws Exception {
 		this.parent = parent;
+		
+		ParseTreeTraverse traverse = new ParseTreeTraverse(this);
+		traverse.traverse(node);
 	}
 
 	/**
@@ -55,11 +60,10 @@ public abstract class ASTNode implements Traverser {
 		this.childrenList.put(descriptor, value);
 	}
 
-	@SuppressWarnings("unchecked")
-	public List<ASTNode> getChildByDescriptor(ChildListDescriptor listDescriptor) throws ChildTypeUnmatchException {
+	public List<?> getChildByDescriptor(ChildListDescriptor listDescriptor) throws ChildTypeUnmatchException {
 		Object child = childrenList.get(listDescriptor);
 		if (child == null || child instanceof List) {
-			return (List<ASTNode>) child;
+			return (List<?>) child;
 		}
 		throw new ChildTypeUnmatchException(listDescriptor + " is not mapping to a List");
 	}
@@ -72,11 +76,10 @@ public abstract class ASTNode implements Traverser {
 		throw new ChildTypeUnmatchException(childDescriptor + " is not mapping to a " + childDescriptor.getElementClass().getSimpleName());
 	}
 	
-	@SuppressWarnings("unchecked")
-	public List<Object> getChildByDescriptor(SimpleListDescriptor listDescriptor) throws ChildTypeUnmatchException {
+	public List<?> getChildByDescriptor(SimpleListDescriptor listDescriptor) throws ChildTypeUnmatchException {
 		Object child = childrenList.get(listDescriptor);
 		if (child == null || child instanceof List) {
-			return (List<Object>) child;
+			return (List<?>) child;
 		}
 		throw new ChildTypeUnmatchException(listDescriptor + " is not mapping to a List");
 	}
@@ -89,13 +92,14 @@ public abstract class ASTNode implements Traverser {
 		throw new ChildTypeUnmatchException(childDescriptor + " is not mapping to a " + childDescriptor.getElementClass().getSimpleName());
 	}
 
+	@SuppressWarnings("unchecked")
 	public void accept(ASTVisitor visitor) throws Exception {
 		visitor.willVisit(this);
 		logger.finer("Visiting <" + this.getClass().getSimpleName() + ">");
 		if (visitor.visit(this)) {
 			for (Descriptor key : this.childrenList.keySet()) {
 				if (key instanceof ChildListDescriptor) {
-					List<ASTNode> children = this.getChildByDescriptor((ChildListDescriptor) key);
+					List<ASTNode> children = (List<ASTNode>) this.getChildByDescriptor((ChildListDescriptor) key);
 					for (ASTNode child : children) {
 						child.accept(visitor);
 					}

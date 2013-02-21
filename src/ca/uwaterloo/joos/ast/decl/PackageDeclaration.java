@@ -1,23 +1,26 @@
 package ca.uwaterloo.joos.ast.decl;
 
+import java.util.Set;
+
 import ca.uwaterloo.joos.ast.ASTNode;
-import ca.uwaterloo.joos.ast.visitor.ASTVisitor;
+import ca.uwaterloo.joos.parser.ParseTree.LeafNode;
+import ca.uwaterloo.joos.parser.ParseTree.Node;
 import ca.uwaterloo.joos.parser.ParseTree.TreeNode;
 
 public class PackageDeclaration extends ASTNode {
-	public PackageDeclaration(TreeNode TypeRoot, ASTNode parent) {
-		super(parent);
+	public PackageDeclaration(Node node, ASTNode parent) throws Exception {
+		super(node, parent);
 	}
-	
-	/* (non-Javadoc)
-	 * @see ca.uwaterloo.joos.ast.ASTNode#accept(ca.uwaterloo.joos.ast.ASTVisitor)
-	 */
+
 	@Override
-	public void accept(ASTVisitor visitor) throws Exception{
-		visitor.willVisit(this);
-		if(visitor.visit(this)) {
-			
-		}
-		visitor.didVisit(this);
+	public Set<Node> processTreeNode(TreeNode treeNode) throws Exception {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public void processLeafNode(LeafNode leafNode) throws Exception {
+		// TODO Auto-generated method stub
+		
 	}
 }

@@ -6,7 +6,7 @@ import ca.uwaterloo.joos.ast.visitor.ASTVisitor;
 public abstract class Type extends ASTNode{
 	
 	public Type(ASTNode parent) {
-		super(parent);
+
 	}
 	
 	/* (non-Javadoc)

@@ -28,8 +28,8 @@ public class ClassDeclaration extends TypeDeclaration {
 	@Override
 	public Set<Node> processTreeNode(TreeNode treeNode) throws Exception {
 		if (treeNode.productionRule.getLefthand().equals("super")) {
-			ClassType superType = new ClassType(this);
-			addChild(SUPER, superType);
+//			ClassType superType = new ClassType(this);
+//			addChild(SUPER, superType);
 		}
 		else {
 			return super.processTreeNode(treeNode);
