@@ -14,4 +14,9 @@ public class Descriptor {
 	public Class<?> getElementClass() {
 		return elementClass;
 	}
+	
+	@Override
+	public String toString() {
+		return "<" + this.getClass().getSimpleName() + ">";
+	}
 }
