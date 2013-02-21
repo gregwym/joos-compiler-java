@@ -1,6 +1,5 @@
 package ca.uwaterloo.joos.ast.decl;
 
-import java.util.HashSet;
 import java.util.Set;
 
 import ca.uwaterloo.joos.ast.ASTNode;
@@ -34,6 +33,6 @@ public class ClassDeclaration extends TypeDeclaration {
 		else {
 			return super.processTreeNode(treeNode);
 		}
-		return new HashSet<Node>();
+		return null;
 	}
 }

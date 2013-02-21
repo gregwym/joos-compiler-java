@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Set;
 
 import ca.uwaterloo.joos.ast.ASTNode;
+import ca.uwaterloo.joos.ast.body.ClassBody;
 import ca.uwaterloo.joos.ast.body.TypeBody;
 import ca.uwaterloo.joos.ast.descriptor.ChildDescriptor;
 import ca.uwaterloo.joos.ast.descriptor.ChildListDescriptor;
@@ -41,7 +42,8 @@ public abstract class TypeDeclaration extends ASTNode {
 	public Set<Node> processTreeNode(TreeNode treeNode) throws Exception {
 		Set<Node> offers = new HashSet<Node>();
 		if (treeNode.productionRule.getLefthand().equals("modifiers")) {
-			addChild(MODIFIERS, new Modifiers(treeNode, this));
+			Modifiers modifiers = new Modifiers(treeNode, this);
+			addChild(MODIFIERS, modifiers);
 		} else if (treeNode.productionRule.getLefthand().equals("interfaces")) {
 //			List<InterfaceType> interfaces = getInterfaces();
 //			if (interfaces == null) {
@@ -51,7 +53,7 @@ public abstract class TypeDeclaration extends ASTNode {
 //			InterfaceType interfaceType = new InterfaceType(this);
 //			interfaces.add(interfaceType);
 		} else if (treeNode.productionRule.getLefthand().equals("classbody")) {
-//			addChild(BODY, new ClassBody(treeNode, this));
+			addChild(BODY, new ClassBody(treeNode, this));
 		} else {
 			for (Node n : treeNode.children)
 				offers.add(n);

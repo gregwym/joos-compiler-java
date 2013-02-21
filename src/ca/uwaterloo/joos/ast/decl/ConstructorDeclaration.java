@@ -3,7 +3,6 @@
  */
 package ca.uwaterloo.joos.ast.decl;
 
-import ca.uwaterloo.joos.ast.AST.ASTConstructException;
 import ca.uwaterloo.joos.ast.ASTNode;
 import ca.uwaterloo.joos.parser.ParseTree.Node;
 
@@ -13,12 +12,8 @@ import ca.uwaterloo.joos.parser.ParseTree.Node;
  */
 public class ConstructorDeclaration extends MethodDeclaration {
 
-	/**
-	 * @throws ASTConstructException 
-	 * 
-	 */
-	public ConstructorDeclaration(Node declNode, ASTNode parent) throws ASTConstructException {
-		super(declNode, parent);
+	public ConstructorDeclaration(Node node, ASTNode parent) throws Exception {
+		super(node, parent);
 		// TODO Auto-generated constructor stub
 	}
 
