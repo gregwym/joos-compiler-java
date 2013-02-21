@@ -8,7 +8,6 @@ import ca.uwaterloo.joos.ast.FileUnit;
 import ca.uwaterloo.joos.ast.body.TypeBody;
 import ca.uwaterloo.joos.ast.decl.ClassDeclaration;
 import ca.uwaterloo.joos.ast.decl.TypeDeclaration;
-import ca.uwaterloo.joos.ast.descriptor.ChildDescriptor;
 import ca.uwaterloo.joos.ast.visitor.ASTVisitor;
 import ca.uwaterloo.joos.weeder.Weeder.WeedException;
 
@@ -34,11 +33,10 @@ public class TypeDeclarationChecker extends ASTVisitor {
 		if(node instanceof TypeDeclaration) {
 			if(node instanceof ClassDeclaration) {
 				TypeDeclaration typeDecl = (TypeDeclaration) node;
-				//TODO checkthis later
-//				TypeBody typeBody = (TypeBody) typeDecl.getChildrenByDescriptor(new ChildDescriptor("typeBody"));
-//				if(typeBody.getConstructors().size() < 1) {
-//					throw new WeedException("Class body must contain at least one constructor");
-//				}
+                TypeBody typeBody = typeDecl.getBody();
+                if(typeBody.getConstructors().size() < 1) {
+                        throw new WeedException("Class body must contain at least one constructor");
+                }
 			}
 			
 			ASTNode parent = node.getParent();

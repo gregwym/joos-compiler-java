@@ -1,27 +1,12 @@
 package ca.uwaterloo.joos.ast.type;
 
 import ca.uwaterloo.joos.ast.ASTNode;
-import ca.uwaterloo.joos.ast.visitor.ASTVisitor;
 import ca.uwaterloo.joos.parser.ParseTree.Node;
 
 public abstract class Type extends ASTNode {
 
-	public Type(Node typeNode, ASTNode parent) throws Exception {
-		super(typeNode, parent);
+	public Type(Node node, ASTNode parent) throws Exception {
+		super(node, parent);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * ca.uwaterloo.joos.ast.ASTNode#accept(ca.uwaterloo.joos.ast.ASTVisitor)
-	 */
-	@Override
-	public void accept(ASTVisitor visitor) throws Exception {
-		visitor.willVisit(this);
-		if (visitor.visit(this)) {
-
-		}
-		visitor.didVisit(this);
-	}
 }

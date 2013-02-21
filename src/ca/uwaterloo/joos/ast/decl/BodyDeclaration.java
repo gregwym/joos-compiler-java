@@ -3,12 +3,18 @@
  */
 package ca.uwaterloo.joos.ast.decl;
 
+import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
+import ca.uwaterloo.joos.ast.AST.ASTConstructException;
 import ca.uwaterloo.joos.ast.ASTNode;
 import ca.uwaterloo.joos.ast.descriptor.ChildDescriptor;
+import ca.uwaterloo.joos.ast.type.ArrayType;
 import ca.uwaterloo.joos.ast.type.Modifiers;
+import ca.uwaterloo.joos.ast.type.PrimitiveType;
+import ca.uwaterloo.joos.ast.type.ReferenceType;
 import ca.uwaterloo.joos.ast.type.Type;
 import ca.uwaterloo.joos.parser.ParseTree.LeafNode;
 import ca.uwaterloo.joos.parser.ParseTree.Node;
@@ -48,9 +54,22 @@ public abstract class BodyDeclaration extends ASTNode {
 		if (treeNode.productionRule.getLefthand().equals("modifiers")) {
 			Modifiers modifiers = new Modifiers(treeNode, this);
 			addChild(MODIFIERS, modifiers);
-		} else if (treeNode.productionRule.getLefthand().equals("type")) {
-//			Type type = new Type(treeNode, this);
-//			addChild(TYPE, type);
+		} else if (treeNode.productionRule.getLefthand().equals("primitivetype")) {
+			Type type = new PrimitiveType(treeNode, this);
+			addChild(TYPE, type);
+		} else if (treeNode.productionRule.getLefthand().equals("referencetype")) {
+			Type type = null;
+			List<String> rhs = Arrays.asList(treeNode.productionRule.getRighthand());
+			if(rhs.contains("arraytype")) {
+				type = new ArrayType(treeNode.children.get(0), this);
+			}
+			else if(rhs.contains("name")) {
+				type = new ReferenceType(treeNode.children.get(0), this);
+			}
+			else {
+				throw new ASTConstructException("Unknown referencetype" + rhs);
+			}
+			addChild(TYPE, type);
 		} else {
 			for (Node n : treeNode.children)
 				offers.add(n);
