@@ -7,13 +7,13 @@ import java.util.HashSet;
 import java.util.Set;
 
 import ca.uwaterloo.joos.ast.ASTNode;
+import ca.uwaterloo.joos.ast.Modifiers;
+import ca.uwaterloo.joos.ast.Modifiers.Modifier;
 import ca.uwaterloo.joos.ast.body.InterfaceBody;
 import ca.uwaterloo.joos.ast.decl.ClassDeclaration;
 import ca.uwaterloo.joos.ast.decl.FieldDeclaration;
 import ca.uwaterloo.joos.ast.decl.InterfaceDeclaration;
 import ca.uwaterloo.joos.ast.decl.MethodDeclaration;
-import ca.uwaterloo.joos.ast.type.Modifiers;
-import ca.uwaterloo.joos.ast.type.Modifiers.Modifier;
 import ca.uwaterloo.joos.ast.visitor.ModifiersVisitor;
 import ca.uwaterloo.joos.weeder.Weeder.WeedException;
 

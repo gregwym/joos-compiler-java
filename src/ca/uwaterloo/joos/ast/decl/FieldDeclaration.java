@@ -3,12 +3,14 @@ package ca.uwaterloo.joos.ast.decl;
 import java.util.Set;
 
 import ca.uwaterloo.joos.ast.ASTNode;
+import ca.uwaterloo.joos.ast.descriptor.ChildDescriptor;
+import ca.uwaterloo.joos.ast.expr.Expression;
 import ca.uwaterloo.joos.parser.ParseTree.Node;
 import ca.uwaterloo.joos.parser.ParseTree.TreeNode;
 
 public class FieldDeclaration extends BodyDeclaration {
 
-	// protected static final ChildDescriptor INITIAL = new ChildDescriptor(Expression.class);
+	 protected static final ChildDescriptor INITIAL = new ChildDescriptor(Expression.class);
 
 	public FieldDeclaration(Node node, ASTNode parent) throws Exception {
 		super(node, parent);
@@ -25,7 +27,8 @@ public class FieldDeclaration extends BodyDeclaration {
 	@Override
 	public Set<Node> processTreeNode(TreeNode treeNode) throws Exception {
 		if (treeNode.productionRule.getLefthand().equals("expr")) {
-//			Expression initial = new Expression(treeNode, this);
+			Expression initial = new Expression(treeNode, this);
+			this.addChild(INITIAL, initial);
 		} else {
 			return super.processTreeNode(treeNode);
 		}
