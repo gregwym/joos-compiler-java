@@ -24,16 +24,16 @@ public class FileUnit extends ASTNode {
 		this.setIdentifier(fileName);
 	}
 
-	public PackageDeclaration getPackageDeclaration() throws ChildTypeUnmatchException{
+	public PackageDeclaration getPackageDeclaration() throws ChildTypeUnmatchException {
 		return (PackageDeclaration) this.getChildByDescriptor(FileUnit.PACKAGE);
 	}
 
 	@SuppressWarnings("unchecked")
-	public List<ImportDeclaration> getImportDeclarations() throws ChildTypeUnmatchException{
+	public List<ImportDeclaration> getImportDeclarations() throws ChildTypeUnmatchException {
 		return (List<ImportDeclaration>) this.getChildByDescriptor(FileUnit.IMPORTS);
 	}
 
-	public TypeDeclaration getTypeDeclaration() throws ChildTypeUnmatchException{
+	public TypeDeclaration getTypeDeclaration() throws ChildTypeUnmatchException {
 		return (TypeDeclaration) this.getChildByDescriptor(FileUnit.TYPE);
 	}
 
@@ -44,14 +44,16 @@ public class FileUnit extends ASTNode {
 			PackageDeclaration packageDeclaration = new PackageDeclaration(treeNode, this);
 			addChild(PACKAGE, packageDeclaration);
 			logger.fine("Added PackageDecl: " + packageDeclaration);
-		} else if (treeNode.productionRule.getLefthand().equals("importdecls")) {
+		} else if (treeNode.productionRule.getLefthand().equals("importdecl")) {
 			List<ImportDeclaration> imports = getImportDeclarations();
-			if(imports == null) {
+			if (imports == null) {
 				imports = new ArrayList<ImportDeclaration>();
 				addChild(IMPORTS, imports);
 			}
-			ImportDeclaration importDeclaration = new ImportDeclaration(treeNode, this);
-			imports.add(importDeclaration);
+			ImportDeclaration importDeclaration = ImportDeclaration.newImportDeclaration(treeNode, this);
+			if (importDeclaration != null) {
+				imports.add(importDeclaration);
+			}
 			logger.fine("Added ImportDecl: " + importDeclaration);
 		} else if (treeNode.productionRule.getLefthand().equals("classdecl")) {
 			ClassDeclaration classDeclaration = new ClassDeclaration(treeNode, this);
@@ -61,8 +63,7 @@ public class FileUnit extends ASTNode {
 			InterfaceDeclaration interfaceDeclaration = new InterfaceDeclaration(treeNode, this);
 			addChild(TYPE, interfaceDeclaration);
 			logger.fine("Added InterfaceDecl: " + interfaceDeclaration);
-		}
-		else {
+		} else {
 			offers.addAll(treeNode.children);
 		}
 		return offers;

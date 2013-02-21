@@ -19,7 +19,7 @@ public class PackageDeclaration extends ASTNode {
 	@Override
 	public List<Node> processTreeNode(TreeNode treeNode) throws Exception {
 		List<Node> offers = new ArrayList<Node>();
-		if (treeNode.productionRule.getLefthand().equals("packagedecl")) {
+		if (treeNode.productionRule.getLefthand().equals("qualifiedname")) {
 			QualifiedName packageName = new QualifiedName(treeNode, this);
 			addChild(PACKAGENAME, packageName);
 		} else {
