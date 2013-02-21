@@ -53,7 +53,8 @@ public abstract class TypeDeclaration extends ASTNode {
 //			InterfaceType interfaceType = new InterfaceType(this);
 //			interfaces.add(interfaceType);
 		} else if (treeNode.productionRule.getLefthand().equals("classbody")) {
-			addChild(BODY, new ClassBody(treeNode, this));
+			ClassBody body = new ClassBody(treeNode, this);
+			addChild(BODY, body);
 		} else {
 			for (Node n : treeNode.children)
 				offers.add(n);

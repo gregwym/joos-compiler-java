@@ -3,8 +3,11 @@
  */
 package ca.uwaterloo.joos.ast.body;
 
+import java.util.Set;
+
 import ca.uwaterloo.joos.ast.ASTNode;
-import ca.uwaterloo.joos.ast.visitor.ASTVisitor;
+import ca.uwaterloo.joos.parser.ParseTree.LeafNode;
+import ca.uwaterloo.joos.parser.ParseTree.Node;
 import ca.uwaterloo.joos.parser.ParseTree.TreeNode;
 
 /**
@@ -15,19 +18,23 @@ public class Block extends ASTNode {
 
 	/**
 	 * @param parent
+	 * @throws Exception 
 	 */
-	public Block(TreeNode treeNode, ASTNode parent) {
-		super(parent);
+	public Block(Node node, ASTNode parent) throws Exception {
+		super(node, parent);
 		// TODO Auto-generated constructor stub
 	}
 
-	/* (non-Javadoc)
-	 * @see ca.uwaterloo.joos.ast.ASTNode#accept(ca.uwaterloo.joos.ast.visitor.ASTVisitor)
-	 */
 	@Override
-	public void accept(ASTVisitor visitor) throws Exception {
+	public Set<Node> processTreeNode(TreeNode treeNode) throws Exception {
 		// TODO Auto-generated method stub
+		return null;
+	}
 
+	@Override
+	public void processLeafNode(LeafNode leafNode) throws Exception {
+		// TODO Auto-generated method stub
+		
 	}
 
 }
