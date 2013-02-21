@@ -95,7 +95,7 @@ public abstract class ASTNode implements Traverser {
 	@SuppressWarnings("unchecked")
 	public final void accept(ASTVisitor visitor) throws Exception {
 		visitor.willVisit(this);
-		logger.finer("Visiting <" + this.getClass().getSimpleName() + ">");
+		logger.finest("Visiting <" + this.getClass().getSimpleName() + ">");
 		if (visitor.visit(this)) {
 			for (Descriptor key : this.childrenList.keySet()) {
 				if (key instanceof ChildListDescriptor) {
@@ -117,14 +117,14 @@ public abstract class ASTNode implements Traverser {
 		String str = "";
 		str += "<" + this.getClass().getSimpleName() + ">";
 		if(this.identifier.length() > 0) str += " " + this.identifier;
-		if (this.parent != null)
-			str += " parent: " + this.parent.getClass().getSimpleName();
 		for (Descriptor key : this.childrenList.keySet()) {
 			if( key instanceof SimpleDescriptor || key instanceof SimpleListDescriptor ) {
 				Object child = this.childrenList.get(key);
 				str += " " + key.getElementClass().getSimpleName() + ": " + child;
 			}
 		}
+		if (this.parent != null)
+			str += " ^ parent: " + this.parent.getClass().getSimpleName();
 		return str;
 	}
 }

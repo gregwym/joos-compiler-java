@@ -4,13 +4,13 @@ import java.util.Set;
 
 import ca.uwaterloo.joos.ast.ASTNode;
 import ca.uwaterloo.joos.ast.descriptor.ChildDescriptor;
-import ca.uwaterloo.joos.ast.type.ClassType;
+import ca.uwaterloo.joos.ast.type.ReferenceType;
 import ca.uwaterloo.joos.parser.ParseTree.Node;
 import ca.uwaterloo.joos.parser.ParseTree.TreeNode;
 
 public class ClassDeclaration extends TypeDeclaration {
 
-	protected static final ChildDescriptor SUPER = new ChildDescriptor(ClassType.class);
+	protected static final ChildDescriptor SUPER = new ChildDescriptor(ReferenceType.class);
 
 	public ClassDeclaration(Node node, ASTNode parent) throws Exception {
 		super(node, parent);
@@ -20,8 +20,8 @@ public class ClassDeclaration extends TypeDeclaration {
 	 * @return the superClass
 	 * @throws ChildTypeUnmatchException 
 	 */
-	public ClassType getSuperClass() throws ChildTypeUnmatchException {
-		return (ClassType) this.getChildByDescriptor(ClassDeclaration.SUPER);
+	public ReferenceType getSuperClass() throws ChildTypeUnmatchException {
+		return (ReferenceType) this.getChildByDescriptor(ClassDeclaration.SUPER);
 	}
 	
 	@Override

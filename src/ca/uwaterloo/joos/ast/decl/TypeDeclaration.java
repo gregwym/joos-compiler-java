@@ -9,8 +9,8 @@ import ca.uwaterloo.joos.ast.body.ClassBody;
 import ca.uwaterloo.joos.ast.body.TypeBody;
 import ca.uwaterloo.joos.ast.descriptor.ChildDescriptor;
 import ca.uwaterloo.joos.ast.descriptor.ChildListDescriptor;
-import ca.uwaterloo.joos.ast.type.InterfaceType;
 import ca.uwaterloo.joos.ast.type.Modifiers;
+import ca.uwaterloo.joos.ast.type.ReferenceType;
 import ca.uwaterloo.joos.parser.ParseTree.LeafNode;
 import ca.uwaterloo.joos.parser.ParseTree.Node;
 import ca.uwaterloo.joos.parser.ParseTree.TreeNode;
@@ -18,7 +18,7 @@ import ca.uwaterloo.joos.parser.ParseTree.TreeNode;
 public abstract class TypeDeclaration extends ASTNode {
 
 	protected static final ChildDescriptor MODIFIERS = new ChildDescriptor(Modifiers.class);
-	protected static final ChildListDescriptor INTERFACES = new ChildListDescriptor(InterfaceType.class);
+	protected static final ChildListDescriptor INTERFACES = new ChildListDescriptor(ReferenceType.class);
 	protected static final ChildDescriptor BODY = new ChildDescriptor(TypeBody.class);
 
 	public TypeDeclaration(Node node, ASTNode parent) throws Exception {
@@ -30,8 +30,8 @@ public abstract class TypeDeclaration extends ASTNode {
 	}
 
 	@SuppressWarnings("unchecked")
-	public List<InterfaceType> getInterfaces() throws ChildTypeUnmatchException {
-		return (List<InterfaceType>) this.getChildByDescriptor(TypeDeclaration.INTERFACES);
+	public List<ReferenceType> getInterfaces() throws ChildTypeUnmatchException {
+		return (List<ReferenceType>) this.getChildByDescriptor(TypeDeclaration.INTERFACES);
 	}
 
 	public TypeBody getBody() throws ChildTypeUnmatchException {
