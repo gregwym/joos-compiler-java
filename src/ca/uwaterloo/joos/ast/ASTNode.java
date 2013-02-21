@@ -10,6 +10,8 @@ import ca.uwaterloo.joos.ast.AST.ASTConstructException;
 import ca.uwaterloo.joos.ast.descriptor.ChildDescriptor;
 import ca.uwaterloo.joos.ast.descriptor.ChildListDescriptor;
 import ca.uwaterloo.joos.ast.descriptor.Descriptor;
+import ca.uwaterloo.joos.ast.descriptor.SimpleDescriptor;
+import ca.uwaterloo.joos.ast.descriptor.SimpleListDescriptor;
 import ca.uwaterloo.joos.ast.visitor.ASTVisitor;
 
 public abstract class ASTNode {
@@ -65,6 +67,23 @@ public abstract class ASTNode {
 		Object child = childrenList.get(childDescriptor);
 		if (childDescriptor.getElementClass().isAssignableFrom(child.getClass())) {
 			return (ASTNode) child;
+		}
+		throw new ChildTypeUnmatchException(childDescriptor + " is not mapping to a " + childDescriptor.getElementClass().getSimpleName());
+	}
+	
+	@SuppressWarnings("unchecked")
+	public List<Object> getChildByDescriptor(SimpleListDescriptor listDescriptor) throws ChildTypeUnmatchException {
+		Object child = childrenList.get(listDescriptor);
+		if (child == null || child instanceof List) {
+			return (List<Object>) child;
+		}
+		throw new ChildTypeUnmatchException(listDescriptor + " is not mapping to a List");
+	}
+	
+	public Object getChildByDescriptor(SimpleDescriptor childDescriptor) throws ChildTypeUnmatchException {
+		Object child = childrenList.get(childDescriptor);
+		if (childDescriptor.getElementClass().isAssignableFrom(child.getClass())) {
+			return (Object) child;
 		}
 		throw new ChildTypeUnmatchException(childDescriptor + " is not mapping to a " + childDescriptor.getElementClass().getSimpleName());
 	}
