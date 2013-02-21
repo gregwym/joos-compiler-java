@@ -7,35 +7,26 @@ import java.util.Set;
 
 import ca.uwaterloo.joos.ast.AST.ASTConstructException;
 import ca.uwaterloo.joos.ast.ASTNode;
-import ca.uwaterloo.joos.ast.visitor.ASTVisitor;
-import ca.uwaterloo.joos.parser.ParseTreeTraverse;
+import ca.uwaterloo.joos.ast.descriptor.SimpleListDescriptor;
 import ca.uwaterloo.joos.parser.ParseTree.LeafNode;
 import ca.uwaterloo.joos.parser.ParseTree.Node;
 import ca.uwaterloo.joos.parser.ParseTree.TreeNode;
+import ca.uwaterloo.joos.parser.ParseTreeTraverse;
 import ca.uwaterloo.joos.parser.ParseTreeTraverse.Traverser;
 
 public class Modifiers extends ASTNode {
+	
+	public static final SimpleListDescriptor MODIFIERS = new SimpleListDescriptor(Modifier.class);
 
 	public static enum Modifier {
 		ABSTRACT, FINAL, NATIVE, PUBLIC, PROTECTED, STATIC
-	}
-
-	private List<Modifier> modifiers;
-
-	/**
-	 * @return the modifiers
-	 */
-	public List<Modifier> getModifiers() {
-		return modifiers;
 	}
 
 	public Modifiers(Node modifiersNode, ASTNode parent) throws ASTConstructException {
 		super(parent);
 		
 		assert modifiersNode instanceof TreeNode : "Modifiers is expecting a TreeNode";
-		
-		this.modifiers = new ArrayList<Modifier>();
-		
+				
 		ParseTreeTraverse traverse = new ParseTreeTraverse(new Traverser(this) {
 
 			public Set<Node> processTreeNode(TreeNode treeNode) {
@@ -46,9 +37,15 @@ public class Modifiers extends ASTNode {
 			}
 
 			public void processLeafNode(LeafNode leafNode) throws ASTConstructException {
+				List<Object> modifiers = getModifiers();
+				if (modifiers == null) {
+					modifiers = new ArrayList<Object>();
+					addChild(MODIFIERS, modifiers);
+				}
+				
 				Modifier modifier = stringToModifier(leafNode.token.getKind().toUpperCase());
-				logger.fine("Modifier added: " + modifier.name());
 				modifiers.add(modifier);
+				logger.fine("Modifier added: " + modifier.name());
 			}
 		    
 		});
@@ -63,15 +60,11 @@ public class Modifiers extends ASTNode {
 		throw new ASTConstructException("Unknown modifier " + name);
 	}
 	
-	/* (non-Javadoc)
-	 * @see ca.uwaterloo.joos.ast.ASTNode#accept(ca.uwaterloo.joos.ast.ASTVisitor)
+	/**
+	 * @return the modifiers
+	 * @throws ChildTypeUnmatchException 
 	 */
-	@Override
-	public void accept(ASTVisitor visitor) throws Exception{
-		visitor.willVisit(this);
-		if(visitor.visit(this)) {
-			
-		}
-		visitor.didVisit(this);
+	public List<Object> getModifiers() throws ChildTypeUnmatchException {
+		return this.getChildByDescriptor(MODIFIERS);
 	}
 }
