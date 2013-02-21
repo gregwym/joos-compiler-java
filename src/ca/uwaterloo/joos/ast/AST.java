@@ -21,7 +21,7 @@ public class AST {
 		return this.root;
 	}
 
-	public AST(ParseTree parseTree, String fileName) throws ASTConstructException {
+	public AST(ParseTree parseTree, String fileName) throws Exception {
 		ASTNode.logger.setLevel(Level.FINER);
 		
 		assert parseTree != null : "Null parse tree";

@@ -13,8 +13,9 @@ import ca.uwaterloo.joos.ast.descriptor.Descriptor;
 import ca.uwaterloo.joos.ast.descriptor.SimpleDescriptor;
 import ca.uwaterloo.joos.ast.descriptor.SimpleListDescriptor;
 import ca.uwaterloo.joos.ast.visitor.ASTVisitor;
+import ca.uwaterloo.joos.parser.ParseTreeTraverse.Traverser;
 
-public abstract class ASTNode {
+public abstract class ASTNode implements Traverser {
 	protected static final Logger logger = Main.getLogger(ASTNode.class);
 
 	@SuppressWarnings("serial")
