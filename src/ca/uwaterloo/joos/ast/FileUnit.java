@@ -25,16 +25,16 @@ public class FileUnit extends ASTNode {
 		super(node, parent);
 		this.setIdentifier(fileName);
 	}
-	
+
 	public PackageDeclaration getPackageDeclaration() throws ChildTypeUnmatchException{
 		return (PackageDeclaration) this.getChildByDescriptor(FileUnit.PACKAGE);
 	}
-	
+
 	@SuppressWarnings("unchecked")
 	public List<ImportDeclaration> getImportDeclarations() throws ChildTypeUnmatchException{
 		return (List<ImportDeclaration>) this.getChildByDescriptor(FileUnit.IMPORTS);
 	}
-	
+
 	public TypeDeclaration getTypeDeclaration() throws ChildTypeUnmatchException{
 		return (TypeDeclaration) this.getChildByDescriptor(FileUnit.TYPE);
 	}
@@ -65,9 +65,8 @@ public class FileUnit extends ASTNode {
 			logger.fine("Added InterfaceDecl: " + interfaceDeclaration);
 		}
 		else {
-			for (Node n : treeNode.children) 
-				offers.add(n);
-		}		
+			offers.addAll(treeNode.children);
+		}
 		return offers;
 	}
 

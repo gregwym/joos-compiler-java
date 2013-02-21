@@ -37,8 +37,7 @@ public class PrimitiveType extends Type {
 	@Override
 	public Set<Node> processTreeNode(TreeNode treeNode) throws Exception {
 		Set<Node> offers = new HashSet<Node>();
-		for (Node n : treeNode.children)
-			offers.add(n);
+		offers.addAll(treeNode.children);
 		return offers;
 	}
 

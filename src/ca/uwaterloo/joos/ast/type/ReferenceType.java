@@ -37,8 +37,7 @@ public class ReferenceType extends Type {
 		} else if (treeNode.productionRule.getLefthand().equals("arraytype")) {
 			throw new ASTConstructException("ArrayType should not appears in ReferenceType");
 		} else {
-			for (Node n : treeNode.children)
-				offers.add(n);
+			offers.addAll(treeNode.children);
 		}
 		return offers;
 	}

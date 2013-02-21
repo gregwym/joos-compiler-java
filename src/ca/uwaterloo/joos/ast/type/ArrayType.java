@@ -31,8 +31,7 @@ public class ArrayType extends Type {
 			Type type = new ReferenceType(treeNode, this);
 			this.addChild(TYPE, type);
 		} else {
-			for (Node n : treeNode.children)
-				offers.add(n);
+			offers.addAll(treeNode.children);
 		}
 		return offers;
 	}

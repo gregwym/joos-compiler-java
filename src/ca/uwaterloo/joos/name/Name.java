@@ -13,14 +13,13 @@ public abstract class Name extends ASTNode {
 		super(node, parent);
 		this.setIdentifier(this.getName());
 	}
-	
+
 	public abstract String getName() throws Exception;
 
 	@Override
 	public Set<Node> processTreeNode(TreeNode treeNode) throws Exception {
 		Set<Node> offers = new HashSet<Node>();
-		for (Node n : treeNode.children)
-			offers.add(n);
+		offers.addAll(treeNode.children);
 		return offers;
 	}
 
