@@ -124,7 +124,7 @@ public abstract class ASTNode implements Traverser {
 			}
 		}
 		if (this.parent != null)
-			str += " ^ parent: " + this.parent.getClass().getSimpleName();
+			str += " | parent: " + this.parent.getClass().getSimpleName();
 		return str;
 	}
 }
