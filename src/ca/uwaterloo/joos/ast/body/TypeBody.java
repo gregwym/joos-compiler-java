@@ -24,7 +24,7 @@ public abstract class TypeBody extends ASTNode {
 
 	public static final ChildListDescriptor METHODS = new ChildListDescriptor(MethodDeclaration.class);
 	public static final ChildListDescriptor CONSTRUCTORS = new ChildListDescriptor(ConstructorDeclaration.class);
-	public static final ChildListDescriptor FIELDS = new ChildListDescriptor(MethodDeclaration.class);
+	public static final ChildListDescriptor FIELDS = new ChildListDescriptor(FieldDeclaration.class);
 
 	/**
 	 * @throws Exception

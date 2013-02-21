@@ -8,11 +8,11 @@ import ca.uwaterloo.joos.ast.expr.Expression;
 import ca.uwaterloo.joos.parser.ParseTree.Node;
 import ca.uwaterloo.joos.parser.ParseTree.TreeNode;
 
-public class FieldDeclaration extends BodyDeclaration {
+public abstract class VariableDeclaration extends BodyDeclaration {
 
-	 protected static final ChildDescriptor INITIAL = new ChildDescriptor(Expression.class);
+	protected static final ChildDescriptor INITIAL = new ChildDescriptor(Expression.class);
 
-	public FieldDeclaration(Node node, ASTNode parent) throws Exception {
+	public VariableDeclaration(Node node, ASTNode parent) throws Exception {
 		super(node, parent);
 		// TODO Auto-generated constructor stub
 	}
