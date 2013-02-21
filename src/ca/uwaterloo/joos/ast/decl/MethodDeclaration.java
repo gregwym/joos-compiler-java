@@ -35,8 +35,8 @@ public class MethodDeclaration extends BodyDeclaration {
 //              returnType = new Type();
         }
         else if(treeNode.productionRule.getLefthand().equals("block")) {
-//                Block body = new Block(treeNode, this);
-//                addChild(BODY, body);
+                Block body = new Block(treeNode, this);
+                addChild(BODY, body);
         }
         else {
              return super.processTreeNode(treeNode);
