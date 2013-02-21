@@ -31,8 +31,7 @@ public class ReferenceType extends Type {
 		if (treeNode.productionRule.getLefthand().equals("qualifiedname")) {
 			Name name = new QualifiedName(treeNode, this);
 			this.addChild(NAME, name);
-		}
-		if (treeNode.productionRule.getLefthand().equals("simplename")) {
+		} else if (treeNode.productionRule.getLefthand().equals("simplename")) {
 			Name name = new SimpleName(treeNode, this);
 			this.addChild(NAME, name);
 		} else if (treeNode.productionRule.getLefthand().equals("arraytype")) {
