@@ -1,9 +1,7 @@
 package ca.uwaterloo.joos.ast;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import ca.uwaterloo.joos.ast.AST.ASTConstructException;
 import ca.uwaterloo.joos.ast.descriptor.SimpleListDescriptor;
@@ -40,8 +38,8 @@ public class Modifiers extends ASTNode {
 	}
 
 	@Override
-	public Set<Node> processTreeNode(TreeNode treeNode) throws Exception {
-		Set<Node> offers = new HashSet<Node>();
+	public List<Node> processTreeNode(TreeNode treeNode) throws Exception {
+		List<Node> offers = new ArrayList<Node>();
 		offers.addAll(treeNode.children);
 		return offers;
 	}

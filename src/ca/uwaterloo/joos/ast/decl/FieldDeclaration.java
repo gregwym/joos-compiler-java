@@ -1,6 +1,6 @@
 package ca.uwaterloo.joos.ast.decl;
 
-import java.util.Set;
+import java.util.List;
 
 import ca.uwaterloo.joos.ast.ASTNode;
 import ca.uwaterloo.joos.ast.descriptor.ChildDescriptor;
@@ -25,7 +25,7 @@ public class FieldDeclaration extends BodyDeclaration {
 	 * ca.uwaterloo.joos.parser.ParseTree.TreeNode)
 	 */
 	@Override
-	public Set<Node> processTreeNode(TreeNode treeNode) throws Exception {
+	public List<Node> processTreeNode(TreeNode treeNode) throws Exception {
 		if (treeNode.productionRule.getLefthand().equals("expr")) {
 			Expression initial = new Expression(treeNode, this);
 			this.addChild(INITIAL, initial);

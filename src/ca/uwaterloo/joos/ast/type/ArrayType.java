@@ -1,7 +1,7 @@
 package ca.uwaterloo.joos.ast.type;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.List;
 
 import ca.uwaterloo.joos.ast.ASTNode;
 import ca.uwaterloo.joos.ast.descriptor.ChildDescriptor;
@@ -21,8 +21,8 @@ public class ArrayType extends Type {
 	}
 
 	@Override
-	public Set<Node> processTreeNode(TreeNode treeNode) throws Exception {
-		Set<Node> offers = new HashSet<Node>();
+	public List<Node> processTreeNode(TreeNode treeNode) throws Exception {
+		List<Node> offers = new ArrayList<Node>();
 		if (treeNode.productionRule.getLefthand().equals("primitivetype")) {
 			Type type = new PrimitiveType(treeNode, this);
 			this.addChild(TYPE, type);

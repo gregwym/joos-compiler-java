@@ -3,7 +3,7 @@
  */
 package ca.uwaterloo.joos.ast.expr;
 
-import java.util.Set;
+import java.util.List;
 
 import ca.uwaterloo.joos.ast.ASTNode;
 import ca.uwaterloo.joos.parser.ParseTree.LeafNode;
@@ -30,7 +30,7 @@ public class Expression extends ASTNode {
 	 * @see ca.uwaterloo.joos.parser.ParseTreeTraverse.Traverser#processTreeNode(ca.uwaterloo.joos.parser.ParseTree.TreeNode)
 	 */
 	@Override
-	public Set<Node> processTreeNode(TreeNode treeNode) throws Exception {
+	public List<Node> processTreeNode(TreeNode treeNode) throws Exception {
 		// TODO Auto-generated method stub
 		return null;
 	}

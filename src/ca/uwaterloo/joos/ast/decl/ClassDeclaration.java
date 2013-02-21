@@ -1,6 +1,6 @@
 package ca.uwaterloo.joos.ast.decl;
 
-import java.util.Set;
+import java.util.List;
 
 import ca.uwaterloo.joos.ast.ASTNode;
 import ca.uwaterloo.joos.ast.descriptor.ChildDescriptor;
@@ -25,7 +25,7 @@ public class ClassDeclaration extends TypeDeclaration {
 	}
 	
 	@Override
-	public Set<Node> processTreeNode(TreeNode treeNode) throws Exception {
+	public List<Node> processTreeNode(TreeNode treeNode) throws Exception {
 		if (treeNode.productionRule.getLefthand().equals("super")) {
 //			ClassType superType = new ClassType(this);
 //			addChild(SUPER, superType);
