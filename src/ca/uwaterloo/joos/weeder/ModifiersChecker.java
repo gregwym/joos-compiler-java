@@ -30,7 +30,8 @@ public class ModifiersChecker extends ModifiersVisitor {
 	protected void visitModifiers(Modifiers modifiers) throws Exception {
 		Set<Modifier> modifierSet = new HashSet<Modifier>();
 
-		for(Modifier modifier: modifiers.getModifiers()) {
+		for(Object obj: modifiers.getModifiers()) {
+			Modifier modifier = (Modifier) obj;
 			if(modifierSet.contains(modifier)) throw new WeedException("Duplicated modifer" + modifier.name());
 			modifierSet.add(modifier);
 		}

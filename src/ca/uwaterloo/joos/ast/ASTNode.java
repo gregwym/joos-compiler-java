@@ -114,6 +114,12 @@ public abstract class ASTNode {
 		if(this.identifier.length() > 0) str += " " + this.identifier;
 		if (this.parent != null)
 			str += " parent: " + this.parent.getClass().getSimpleName();
+		for (Descriptor key : this.childrenList.keySet()) {
+			if( key instanceof SimpleDescriptor || key instanceof SimpleListDescriptor ) {
+				Object child = this.childrenList.get(key);
+				str += " " + key.getElementClass().getSimpleName() + ": " + child;
+			}
+		}
 		return str;
 	}
 }
