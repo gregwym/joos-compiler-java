@@ -23,6 +23,7 @@ public class FileUnit extends ASTNode {
 
 	public FileUnit(Node node, String fileName, ASTNode parent) throws Exception {
 		super(node, parent);
+		this.setIdentifier(fileName);
 	}
 	
 	public PackageDeclaration getPackageDeclaration() throws ChildTypeUnmatchException{

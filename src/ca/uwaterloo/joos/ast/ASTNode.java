@@ -93,7 +93,7 @@ public abstract class ASTNode implements Traverser {
 	}
 
 	@SuppressWarnings("unchecked")
-	public void accept(ASTVisitor visitor) throws Exception {
+	public final void accept(ASTVisitor visitor) throws Exception {
 		visitor.willVisit(this);
 		logger.finer("Visiting <" + this.getClass().getSimpleName() + ">");
 		if (visitor.visit(this)) {
@@ -113,7 +113,7 @@ public abstract class ASTNode implements Traverser {
 	}
 
 	@Override
-	public String toString() {
+	public final String toString() {
 		String str = "";
 		str += "<" + this.getClass().getSimpleName() + ">";
 		if(this.identifier.length() > 0) str += " " + this.identifier;
