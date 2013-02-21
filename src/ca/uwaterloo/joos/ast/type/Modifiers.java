@@ -12,7 +12,6 @@ import ca.uwaterloo.joos.parser.ParseTree.LeafNode;
 import ca.uwaterloo.joos.parser.ParseTree.Node;
 import ca.uwaterloo.joos.parser.ParseTree.TreeNode;
 import ca.uwaterloo.joos.parser.ParseTreeTraverse;
-import ca.uwaterloo.joos.parser.ParseTreeTraverse.Traverser;
 
 public class Modifiers extends ASTNode {
 	
@@ -22,33 +21,12 @@ public class Modifiers extends ASTNode {
 		ABSTRACT, FINAL, NATIVE, PUBLIC, PROTECTED, STATIC
 	}
 
-	public Modifiers(Node modifiersNode, ASTNode parent) throws ASTConstructException {
+	public Modifiers(Node modifiersNode, ASTNode parent) throws Exception {
 		super(parent);
 		
 		assert modifiersNode instanceof TreeNode : "Modifiers is expecting a TreeNode";
 				
-		ParseTreeTraverse traverse = new ParseTreeTraverse(new Traverser(this) {
-
-			public Set<Node> processTreeNode(TreeNode treeNode) {
-				Set<Node> offers = new HashSet<Node>();
-				for (Node n : treeNode.children) 
-					offers.add(n);
-				return offers;
-			}
-
-			public void processLeafNode(LeafNode leafNode) throws ASTConstructException {
-				List<Object> modifiers = getModifiers();
-				if (modifiers == null) {
-					modifiers = new ArrayList<Object>();
-					addChild(MODIFIERS, modifiers);
-				}
-				
-				Modifier modifier = stringToModifier(leafNode.token.getKind().toUpperCase());
-				modifiers.add(modifier);
-				logger.fine("Modifier added: " + modifier.name());
-			}
-		    
-		});
+		ParseTreeTraverse traverse = new ParseTreeTraverse(this);
 
 		traverse.traverse(modifiersNode);
 	}
@@ -66,5 +44,26 @@ public class Modifiers extends ASTNode {
 	 */
 	public List<Object> getModifiers() throws ChildTypeUnmatchException {
 		return this.getChildByDescriptor(MODIFIERS);
+	}
+
+	@Override
+	public Set<Node> processTreeNode(TreeNode treeNode) throws Exception {
+		Set<Node> offers = new HashSet<Node>();
+		for (Node n : treeNode.children) 
+			offers.add(n);
+		return offers;
+	}
+
+	@Override
+	public void processLeafNode(LeafNode leafNode) throws Exception {
+		List<Object> modifiers = getModifiers();
+		if (modifiers == null) {
+			modifiers = new ArrayList<Object>();
+			addChild(MODIFIERS, modifiers);
+		}
+		
+		Modifier modifier = stringToModifier(leafNode.token.getKind().toUpperCase());
+		modifiers.add(modifier);
+		logger.fine("Modifier added: " + modifier.name());
 	}
 }
