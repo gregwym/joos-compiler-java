@@ -19,7 +19,6 @@ public class LocalVariableDeclaration extends VariableDeclaration {
 	 */
 	public LocalVariableDeclaration(Node node, ASTNode parent) throws Exception {
 		super(node, parent);
-		// TODO Auto-generated constructor stub
 	}
 
 }

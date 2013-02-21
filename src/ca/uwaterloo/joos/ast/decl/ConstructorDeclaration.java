@@ -14,7 +14,6 @@ public class ConstructorDeclaration extends MethodDeclaration {
 
 	public ConstructorDeclaration(Node node, ASTNode parent) throws Exception {
 		super(node, parent);
-		// TODO Auto-generated constructor stub
 	}
 
 }

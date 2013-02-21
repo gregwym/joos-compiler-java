@@ -14,7 +14,6 @@ public abstract class VariableDeclaration extends BodyDeclaration {
 
 	public VariableDeclaration(Node node, ASTNode parent) throws Exception {
 		super(node, parent);
-		// TODO Auto-generated constructor stub
 	}
 
 	/*
