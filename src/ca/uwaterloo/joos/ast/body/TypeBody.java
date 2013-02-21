@@ -12,6 +12,10 @@ import ca.uwaterloo.joos.ast.decl.ConstructorDeclaration;
 import ca.uwaterloo.joos.ast.decl.FieldDeclaration;
 import ca.uwaterloo.joos.ast.decl.MethodDeclaration;
 import ca.uwaterloo.joos.ast.visitor.ASTVisitor;
+import ca.uwaterloo.joos.parser.ParseTree.LeafNode;
+import ca.uwaterloo.joos.parser.ParseTree.Node;
+import ca.uwaterloo.joos.parser.ParseTree.TreeNode;
+import ca.uwaterloo.joos.parser.ParseTreeTraverse;
 
 /**
  * @author Greg Wang
@@ -19,13 +23,16 @@ import ca.uwaterloo.joos.ast.visitor.ASTVisitor;
  */
 @SuppressWarnings("unchecked")
 public abstract class TypeBody extends ASTNode {
-	protected Set<BodyDeclaration> members;
 	/**
+	 * @throws Exception 
 	 *
 	 */
-	public TypeBody(ASTNode parent) {
+	public TypeBody(Node node, ASTNode parent) throws Exception {
 		super(parent);
-		this.members = new HashSet<BodyDeclaration>();
+		
+		ParseTreeTraverse traverse = new ParseTreeTraverse(this);
+
+		traverse.traverse(node);
 	}
 
 	public Set<MethodDeclaration> getMethods() {
@@ -48,16 +55,13 @@ public abstract class TypeBody extends ASTNode {
 		return members;
 	}
 	
-	/* (non-Javadoc)
-	 * @see ca.uwaterloo.joos.ast.ASTNode#accept(ca.uwaterloo.joos.ast.ASTVisitor)
-	 */
 	@Override
-	public void accept(ASTVisitor visitor) throws Exception{
-		visitor.willVisit(this);
-		if(visitor.visit(this)) {
-			for(BodyDeclaration member: this.members)
-				member.accept(visitor);
-		}
-		visitor.didVisit(this);
+	public Set<Node> processTreeNode(TreeNode treeNode) throws Exception {
+		return null;
+	}
+
+	@Override
+	public void processLeafNode(LeafNode leafNode) throws Exception {
+		
 	}
 }

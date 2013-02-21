@@ -15,7 +15,6 @@ import ca.uwaterloo.joos.ast.descriptor.ChildListDescriptor;
 import ca.uwaterloo.joos.parser.ParseTree.LeafNode;
 import ca.uwaterloo.joos.parser.ParseTree.Node;
 import ca.uwaterloo.joos.parser.ParseTree.TreeNode;
-import ca.uwaterloo.joos.parser.ParseTreeTraverse;
 
 public class FileUnit extends ASTNode {
 	protected static final ChildDescriptor PACKAGE = new ChildDescriptor(PackageDeclaration.class);
@@ -23,22 +22,16 @@ public class FileUnit extends ASTNode {
 	protected static final ChildDescriptor TYPE = new ChildDescriptor(TypeDeclaration.class);
 
 	public FileUnit(Node node, String fileName, ASTNode parent) throws Exception {
-		super(parent);
-		this.setIdentifier(fileName);
-
-		assert node instanceof TreeNode : "FileUnit is expecting a TreeNode";
-		
-		ParseTreeTraverse traverse = new ParseTreeTraverse(this);
-		
-		traverse.traverse(node);
+		super(node, parent);
 	}
 	
 	public PackageDeclaration getPackageDeclaration() throws ChildTypeUnmatchException{
 		return (PackageDeclaration) this.getChildByDescriptor(FileUnit.PACKAGE);
 	}
 	
-	public List<ASTNode> getImportDeclarations() throws ChildTypeUnmatchException{
-		return this.getChildByDescriptor(FileUnit.IMPORTS);
+	@SuppressWarnings("unchecked")
+	public List<ImportDeclaration> getImportDeclarations() throws ChildTypeUnmatchException{
+		return (List<ImportDeclaration>) this.getChildByDescriptor(FileUnit.IMPORTS);
 	}
 	
 	public TypeDeclaration getTypeDeclaration() throws ChildTypeUnmatchException{
@@ -53,9 +46,9 @@ public class FileUnit extends ASTNode {
 			addChild(PACKAGE, packageDeclaration);
 			logger.fine("Added PackageDecl: " + packageDeclaration);
 		} else if (treeNode.productionRule.getLefthand().equals("importdecls")) {
-			List<ASTNode> imports = getImportDeclarations();
+			List<ImportDeclaration> imports = getImportDeclarations();
 			if(imports == null) {
-				imports = new ArrayList<ASTNode>();
+				imports = new ArrayList<ImportDeclaration>();
 				addChild(IMPORTS, imports);
 			}
 			ImportDeclaration importDeclaration = new ImportDeclaration(treeNode, this);

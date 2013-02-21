@@ -11,7 +11,6 @@ import ca.uwaterloo.joos.ast.descriptor.SimpleListDescriptor;
 import ca.uwaterloo.joos.parser.ParseTree.LeafNode;
 import ca.uwaterloo.joos.parser.ParseTree.Node;
 import ca.uwaterloo.joos.parser.ParseTree.TreeNode;
-import ca.uwaterloo.joos.parser.ParseTreeTraverse;
 
 public class Modifiers extends ASTNode {
 	
@@ -21,14 +20,8 @@ public class Modifiers extends ASTNode {
 		ABSTRACT, FINAL, NATIVE, PUBLIC, PROTECTED, STATIC
 	}
 
-	public Modifiers(Node modifiersNode, ASTNode parent) throws Exception {
-		super(parent);
-		
-		assert modifiersNode instanceof TreeNode : "Modifiers is expecting a TreeNode";
-				
-		ParseTreeTraverse traverse = new ParseTreeTraverse(this);
-
-		traverse.traverse(modifiersNode);
+	public Modifiers(Node node, ASTNode parent) throws Exception {
+		super(node, parent);
 	}
 	
 	private Modifier stringToModifier(String name) throws ASTConstructException {
@@ -42,8 +35,9 @@ public class Modifiers extends ASTNode {
 	 * @return the modifiers
 	 * @throws ChildTypeUnmatchException 
 	 */
-	public List<Object> getModifiers() throws ChildTypeUnmatchException {
-		return this.getChildByDescriptor(MODIFIERS);
+	@SuppressWarnings("unchecked")
+	public List<Modifier> getModifiers() throws ChildTypeUnmatchException {
+		return (List<Modifier>) this.getChildByDescriptor(MODIFIERS);
 	}
 
 	@Override
@@ -56,9 +50,9 @@ public class Modifiers extends ASTNode {
 
 	@Override
 	public void processLeafNode(LeafNode leafNode) throws Exception {
-		List<Object> modifiers = getModifiers();
+		List<Modifier> modifiers = getModifiers();
 		if (modifiers == null) {
-			modifiers = new ArrayList<Object>();
+			modifiers = new ArrayList<Modifier>();
 			addChild(MODIFIERS, modifiers);
 		}
 		
