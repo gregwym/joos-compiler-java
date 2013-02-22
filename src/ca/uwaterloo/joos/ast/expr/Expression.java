@@ -36,16 +36,24 @@ public abstract class Expression extends ASTNode {
 		@Override
 		public List<Node> processTreeNode(TreeNode treeNode) throws Exception {
 			int numOfChild = treeNode.children.size();
+			String kind = treeNode.getKind();
 			if (numOfChild == 3) {
-				String kind = treeNode.getKind();
 				if (kind.equals("assign")) {
 					node = new AssignmentExpression(treeNode, parent);
 				} else if (InfixExpression.getAcceptingKinds().contains(kind)) {
 					node = new InfixExpression(treeNode, parent);
 				}
-			} else if (treeNode.getKind().equals("classcreateexpr")) {
+			} else if (kind.contains("unaryexpr") && numOfChild == 2) {
+				node = new UnaryExpression(treeNode, parent);
+			} else if (kind.equals("primary")) {
+//				node = Primary.newPrimary(treeNode, parent);
+			} else if (kind.equals("simplename")) {
+//				node = new SimpleName(treeNode, parent);
+			} else if (kind.equals("qualifiedname")) {
+//				node = new QualifiedName(treeNode, parent);
+			} else if (kind.equals("classcreateexpr")) {
 				node = new ClassCreateExpression(treeNode, parent);
-			} else if (treeNode.getKind().equals("methodinvoke")) {
+			} else if (kind.equals("methodinvoke")) {
 				node = new MethodInvokeExpression(treeNode, parent);
 			} else {
 				List<Node> offers = new ArrayList<Node>();
