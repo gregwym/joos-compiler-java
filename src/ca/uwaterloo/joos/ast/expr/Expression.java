@@ -43,6 +43,10 @@ public abstract class Expression extends ASTNode {
 			Node first = treeNode.children.get(0);
 			if (first.getKind().equals("assign")) {
 				node = new AssignmentExpression(first, parent);
+			} else if (first.getKind().equals("classcreateexpr")) {
+				node = new ClassCreateExpression(first, parent);
+			} else if (first.getKind().equals("methodinvoke")) {
+				node = new MethodInvokeExpression(first, parent);
 			} else {
 				List<Node> offers = new ArrayList<Node>();
 				offers.addAll(treeNode.children);

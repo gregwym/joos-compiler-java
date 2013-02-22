@@ -12,32 +12,28 @@ import ca.uwaterloo.joos.parser.ParseTree.LeafNode;
 import ca.uwaterloo.joos.parser.ParseTree.Node;
 import ca.uwaterloo.joos.parser.ParseTree.TreeNode;
 
-public class AssignmentExpression extends Expression {
-	
-	public static final ChildDescriptor LEFTHAND = new ChildDescriptor(Lefthand.class);
-	public static final ChildDescriptor EXPR = new ChildDescriptor(Expression.class);
-	
-	public AssignmentExpression(Node node, ASTNode parent) throws Exception {
+public class MethodInvokeExpression extends Expression {
+
+	public static final ChildDescriptor NAME = new ChildDescriptor(Name.class);
+	public static final ChildDescriptor PRIMARY = new ChildDescriptor(Primary.class);
+
+	public MethodInvokeExpression(Node node, ASTNode parent) throws Exception {
 		super(node, parent);
 	}
-	
+
 	@Override
 	public List<Node> processTreeNode(TreeNode treeNode) throws Exception {
 		if (treeNode.getKind().equals("simplename")) {
 			Name name = new SimpleName(treeNode, this);
-			this.addChild(LEFTHAND, name);
+			this.addChild(NAME, name);
 		} else if (treeNode.getKind().equals("qualifiedname")) {
 			Name name = new QualifiedName(treeNode, this);
-			this.addChild(LEFTHAND, name);
-		} else if (treeNode.getKind().equals("arrayaccess") || 
-				treeNode.getKind().equals("fieldaccess")) {
-			// TODO Turn of after expr finished
-//			Lefthand primary = (Lefthand) Primary.newPrimary(treeNode, this);
-//			this.addChild(LEFTHAND, primary);
-		} else if (treeNode.getKind().equals("assignexpr")) {
-			// TODO Turn of after expr finished
-//			Expression expr = Expression.newExpression(treeNode, this);
-//			this.addChild(EXPR, expr);
+			this.addChild(NAME, name);
+		} else if (treeNode.getKind().equals("primary")) {
+			Primary primary = Primary.newPrimary(treeNode, this);
+			this.addChild(PRIMARY, primary);
+		} else if (treeNode.getKind().equals("methodinvoke")) {
+
 		} else {
 			List<Node> offers = new ArrayList<Node>();
 			offers.addAll(treeNode.children);
