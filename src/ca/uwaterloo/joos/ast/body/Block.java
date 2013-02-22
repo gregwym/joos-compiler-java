@@ -3,13 +3,11 @@
  */
 package ca.uwaterloo.joos.ast.body;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import ca.uwaterloo.joos.ast.ASTNode;
 import ca.uwaterloo.joos.ast.decl.LocalVariableDeclaration;
 import ca.uwaterloo.joos.ast.descriptor.ChildDescriptor;
-import ca.uwaterloo.joos.parser.ParseTree.LeafNode;
 import ca.uwaterloo.joos.parser.ParseTree.Node;
 import ca.uwaterloo.joos.parser.ParseTree.TreeNode;
 
@@ -41,21 +39,15 @@ public class Block extends ASTNode {
 
 	@Override
 	public List<Node> processTreeNode(TreeNode treeNode) throws Exception {
-		List<Node> offers = new ArrayList<Node>();
 		if (treeNode.productionRule.getLefthand().equals("localvardecl")) {
 			LocalVariableDeclaration decl = new LocalVariableDeclaration(treeNode, this);
 			this.addChild(Block.LOCAL_VAR, decl);
 		} else if (treeNode.productionRule.getLefthand().equals("stmnt")) {
 			// TODO Implement Statement
 		} else {
-			for (Node n : treeNode.children)
-				offers.add(n);
+			return super.processTreeNode(treeNode);
 		}
-		return offers;
-	}
-
-	@Override
-	public void processLeafNode(LeafNode leafNode) throws Exception {
+		return null;
 	}
 
 }

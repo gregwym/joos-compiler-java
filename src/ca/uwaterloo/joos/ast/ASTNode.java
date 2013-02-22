@@ -15,7 +15,9 @@ import ca.uwaterloo.joos.ast.descriptor.Descriptor;
 import ca.uwaterloo.joos.ast.descriptor.SimpleDescriptor;
 import ca.uwaterloo.joos.ast.descriptor.SimpleListDescriptor;
 import ca.uwaterloo.joos.ast.visitor.ASTVisitor;
+import ca.uwaterloo.joos.parser.ParseTree.LeafNode;
 import ca.uwaterloo.joos.parser.ParseTree.Node;
+import ca.uwaterloo.joos.parser.ParseTree.TreeNode;
 import ca.uwaterloo.joos.parser.ParseTreeTraverse;
 import ca.uwaterloo.joos.parser.ParseTreeTraverse.Traverser;
 
@@ -154,5 +156,17 @@ public abstract class ASTNode implements Traverser {
 		if (this.parent != null)
 			str += " parent: " + this.parent.getClass().getSimpleName();
 		return str;
+	}
+	
+	@Override
+	public List<Node> processTreeNode(TreeNode treeNode) throws Exception {
+		List<Node> offers = new ArrayList<Node>();
+		offers.addAll(treeNode.children);
+		return offers;
+	}
+	
+	@Override
+	public void processLeafNode(LeafNode leafNode) throws Exception {
+
 	}
 }

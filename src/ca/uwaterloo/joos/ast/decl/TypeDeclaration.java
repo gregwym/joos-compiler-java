@@ -1,6 +1,5 @@
 package ca.uwaterloo.joos.ast.decl;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import ca.uwaterloo.joos.ast.ASTNode;
@@ -39,7 +38,6 @@ public abstract class TypeDeclaration extends ASTNode {
 
 	@Override
 	public List<Node> processTreeNode(TreeNode treeNode) throws Exception {
-		List<Node> offers = new ArrayList<Node>();
 		if (treeNode.productionRule.getLefthand().equals("modifiers")) {
 			Modifiers modifiers = new Modifiers(treeNode, this);
 			addChild(MODIFIERS, modifiers);
@@ -49,9 +47,9 @@ public abstract class TypeDeclaration extends ASTNode {
 			ClassBody body = new ClassBody(treeNode, this);
 			addChild(BODY, body);
 		} else {
-			offers.addAll(treeNode.children);
+			return super.processTreeNode(treeNode);
 		}
-		return offers;
+		return null;
 	}
 
 	@Override
