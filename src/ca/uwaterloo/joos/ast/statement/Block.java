@@ -15,7 +15,7 @@ import ca.uwaterloo.joos.parser.ParseTree.TreeNode;
  * @author Greg Wang
  *
  */
-public class Block extends ASTNode {
+public class Block extends Statement {
 
 	public static final ChildDescriptor LOCAL_VAR = new ChildDescriptor(LocalVariableDeclaration.class);
 //	public static final ChildListDescriptor STATEMENTS = new ChildListDescriptor(Statement.class);
