@@ -1,4 +1,4 @@
-package ca.uwaterloo.joos.ast.name;
+package ca.uwaterloo.joos.ast.expr.name;
 
 import java.util.List;
 
