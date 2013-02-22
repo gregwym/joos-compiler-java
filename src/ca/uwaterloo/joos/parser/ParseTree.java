@@ -16,6 +16,7 @@ public class ParseTree {
 
 	public interface Node {
 		public String toString(int level);
+		public String getKind();
 	}
 
 	public static class TreeNode implements Node {
@@ -42,6 +43,11 @@ public class ParseTree {
 			for(Node node: this.children) str += node.toString(level + 1);
 			return str;
 		}
+
+		@Override
+		public String getKind() {
+			return this.productionRule.getLefthand();
+		}
 	}
 
 	public static class LeafNode implements Node {
@@ -64,6 +70,11 @@ public class ParseTree {
 
 			str += this.token + "\n";
 			return str;
+		}
+
+		@Override
+		public String getKind() {
+			return this.token.getKind();
 		}
 	}
 
