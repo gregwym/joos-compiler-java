@@ -1,7 +1,7 @@
 /**
  *
  */
-package ca.uwaterloo.joos.ast.body;
+package ca.uwaterloo.joos.ast.statement;
 
 import java.util.List;
 
