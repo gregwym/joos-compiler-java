@@ -5,9 +5,10 @@ import java.util.List;
 
 import ca.uwaterloo.joos.ast.ASTNode;
 import ca.uwaterloo.joos.ast.descriptor.ChildDescriptor;
-import ca.uwaterloo.joos.ast.name.Name;
-import ca.uwaterloo.joos.ast.name.QualifiedName;
-import ca.uwaterloo.joos.ast.name.SimpleName;
+import ca.uwaterloo.joos.ast.expr.name.Name;
+import ca.uwaterloo.joos.ast.expr.name.QualifiedName;
+import ca.uwaterloo.joos.ast.expr.name.SimpleName;
+import ca.uwaterloo.joos.ast.expr.primary.Primary;
 import ca.uwaterloo.joos.parser.ParseTree.LeafNode;
 import ca.uwaterloo.joos.parser.ParseTree.Node;
 import ca.uwaterloo.joos.parser.ParseTree.TreeNode;

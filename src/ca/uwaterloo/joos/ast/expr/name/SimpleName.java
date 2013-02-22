@@ -1,4 +1,4 @@
-package ca.uwaterloo.joos.ast.name;
+package ca.uwaterloo.joos.ast.expr.name;
 
 import ca.uwaterloo.joos.ast.ASTNode;
 import ca.uwaterloo.joos.ast.descriptor.SimpleDescriptor;
