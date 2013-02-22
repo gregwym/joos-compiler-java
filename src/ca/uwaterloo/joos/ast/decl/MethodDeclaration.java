@@ -1,6 +1,5 @@
 package ca.uwaterloo.joos.ast.decl;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import ca.uwaterloo.joos.ast.ASTNode;
