@@ -1,13 +1,15 @@
 package ca.uwaterloo.joos.ast.expr;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import ca.uwaterloo.joos.ast.ASTNode;
 import ca.uwaterloo.joos.ast.descriptor.ChildDescriptor;
 import ca.uwaterloo.joos.parser.ParseTree.Node;
 import ca.uwaterloo.joos.parser.ParseTree.TreeNode;
 
-public class ParenPrimary extends Primary {
+public class ExpressionPrimary extends Primary {
 	
 	public static final ChildDescriptor EXPRSSION = new ChildDescriptor(Expression.class);
 	
@@ -15,13 +17,23 @@ public class ParenPrimary extends Primary {
 		return (Expression) this.getChildByDescriptor(EXPRSSION);
 	}
 
-	public ParenPrimary(Node node, ASTNode parent) throws Exception {
+	public ExpressionPrimary(Node node, ASTNode parent) throws Exception {
 		super(node, parent);
+	}
+	
+	public static Set<String> getAcceptingKinds() {
+		Set<String> acceptingKinds = new HashSet<String>();
+
+		acceptingKinds.add("expr");
+		acceptingKinds.add("classcreateexpr");
+		acceptingKinds.add("methodinvoke");
+		
+		return acceptingKinds;
 	}
 
 	@Override
 	public List<Node> processTreeNode(TreeNode treeNode) throws Exception {
-		if (treeNode.getKind().equals("expr")) {
+		if (ExpressionPrimary.getAcceptingKinds().contains(treeNode.getKind())) {
 			Expression expr = Expression.newExpression(treeNode, this);
 			this.addChild(EXPRSSION, expr);
 		} else {

@@ -27,24 +27,19 @@ public abstract class Primary extends ASTNode {
 
 		@Override
 		public List<Node> processTreeNode(TreeNode treeNode) throws Exception {
-			if (treeNode.productionRule.getLefthand().equals("literal")) {
+			String kind = treeNode.productionRule.getLefthand();
+			if (kind.equals("literal")) {
 				node = new LiteralPrimary(treeNode, parent);
-			} else if (treeNode.productionRule.getLefthand().equals("expr")) {
-				node = new ParenPrimary(treeNode, parent);
-			} else if (treeNode.productionRule.getLefthand().equals("arraycreate")) {
+			} else if (ExpressionPrimary.getAcceptingKinds().contains(kind)) {
+				node = new ExpressionPrimary(treeNode, parent);
+			} else if (kind.equals("arraycreate")) {
 //				node = new ArrayCreate(treeNode, parent);
-			} else if (treeNode.productionRule.getLefthand().equals("arrayaccess")) {
+			} else if (kind.equals("arrayaccess")) {
 //				node = new ArrayAccess(treeNode, parent);
 				// TODO part of lefthand
-			} else if (treeNode.productionRule.getLefthand().equals("classcreateexpr")) {
-//				node = new ClassCreateExpr(treeNode, parent);
-				// TODO part of statement expr
-			} else if (treeNode.productionRule.getLefthand().equals("fieldaccess")) {
+			} else if (kind.equals("fieldaccess")) {
 //				node = new FieldAccess(treeNode, parent);
 				// TODO part of lefthand
-			} else if (treeNode.productionRule.getLefthand().equals("methodinvoke")) {
-//				node = new MethodInvoke(treeNode, parent);
-				// TODO part of statement expr
 			} else {
 				List<Node> offers = new ArrayList<Node>();
 				offers.addAll(treeNode.children);

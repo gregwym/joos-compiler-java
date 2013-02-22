@@ -36,8 +36,8 @@ public class AssignmentExpression extends Expression {
 //			this.addChild(LEFTHAND, primary);
 		} else if (treeNode.getKind().equals("assignexpr")) {
 			// TODO Turn of after expr finished
-//			Expression expr = Expression.newExpression(treeNode, this);
-//			this.addChild(EXPR, expr);
+			Expression expr = Expression.newExpression(treeNode, this);
+			this.addChild(EXPR, expr);
 		} else {
 			List<Node> offers = new ArrayList<Node>();
 			offers.addAll(treeNode.children);
