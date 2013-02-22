@@ -36,14 +36,18 @@ public class Expression extends ASTNode {
 
 		@Override
 		public List<Node> processTreeNode(TreeNode treeNode) throws Exception {
-			if (treeNode.productionRule.getLefthand().equals("assignexpr")) {
-//				node = new AssignmentExpression(treeNode, parent);
-			} else {
-				List<Node> offers = new ArrayList<Node>();
-				offers.addAll(treeNode.children);
-				return offers;
+			if(treeNode.children.size() == 0) {
+				return null;
 			}
-			return null;
+			
+			Node first = treeNode.children.get(0);
+			if (treeNode.getKind().equals("assignexpr") && first.getKind().equals("assign")) {
+				node = new AssignmentExpression(treeNode, parent);
+			}
+			
+			List<Node> offers = new ArrayList<Node>();
+			offers.addAll(treeNode.children);
+			return offers;
 		}
 
 		@Override
