@@ -17,7 +17,7 @@ import ca.uwaterloo.joos.parser.ParseTree.TreeNode;
 
 /**
  * @author Greg Wang
- * 
+ *
  */
 @SuppressWarnings("unchecked")
 public abstract class TypeBody extends ASTNode {
@@ -28,7 +28,7 @@ public abstract class TypeBody extends ASTNode {
 
 	/**
 	 * @throws Exception
-	 * 
+	 *
 	 */
 	public TypeBody(Node node, ASTNode parent) throws Exception {
 		super(node, parent);
@@ -50,29 +50,15 @@ public abstract class TypeBody extends ASTNode {
 	public List<Node> processTreeNode(TreeNode treeNode) throws Exception {
 		List<Node> offers = new ArrayList<Node>();
 		if (treeNode.productionRule.getLefthand().equals("constructordecl")) {
-			List<ConstructorDeclaration> decls = getConstructors();
-			if (decls == null) {
-				decls = new ArrayList<ConstructorDeclaration>();
-				addChild(TypeBody.CONSTRUCTORS, decls);
-			}
 			ConstructorDeclaration decl = new ConstructorDeclaration(treeNode, this);
-			decls.add(decl);
-		} else if (treeNode.productionRule.getLefthand().equals("absmethoddecl") || treeNode.productionRule.getLefthand().equals("methoddecl")) {
-			List<MethodDeclaration> decls = getMethods();
-			if (decls == null) {
-				decls = new ArrayList<MethodDeclaration>();
-				addChild(TypeBody.METHODS, decls);
-			}
+			addChild(TypeBody.CONSTRUCTORS, decl);
+		} else if (treeNode.productionRule.getLefthand().equals("absmethoddecl") ||
+		           treeNode.productionRule.getLefthand().equals("methoddecl")) {
 			MethodDeclaration decl = new MethodDeclaration(treeNode, this);
-			decls.add(decl);
+			addChild(TypeBody.METHODS, decl);
 		} else if (treeNode.productionRule.getLefthand().equals("fielddecl")) {
-			List<FieldDeclaration> decls = getFields();
-			if (decls == null) {
-				decls = new ArrayList<FieldDeclaration>();
-				addChild(TypeBody.FIELDS, decls);
-			}
 			FieldDeclaration decl = new FieldDeclaration(treeNode, this);
-			decls.add(decl);
+			addChild(TypeBody.FIELDS, decl);
 		} else {
 			for (Node n : treeNode.children)
 				offers.add(n);

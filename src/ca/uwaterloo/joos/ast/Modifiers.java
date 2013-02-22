@@ -46,13 +46,7 @@ public class Modifiers extends ASTNode {
 
 	@Override
 	public void processLeafNode(LeafNode leafNode) throws Exception {
-		List<Modifier> modifiers = getModifiers();
-		if (modifiers == null) {
-			modifiers = new ArrayList<Modifier>();
-			addChild(MODIFIERS, modifiers);
-		}
-
 		Modifier modifier = stringToModifier(leafNode.token.getKind().toUpperCase());
-		modifiers.add(modifier);
+		addChild(MODIFIERS, modifier);
 	}
 }

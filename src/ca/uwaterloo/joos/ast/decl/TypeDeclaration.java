@@ -44,13 +44,7 @@ public abstract class TypeDeclaration extends ASTNode {
 			Modifiers modifiers = new Modifiers(treeNode, this);
 			addChild(MODIFIERS, modifiers);
 		} else if (treeNode.productionRule.getLefthand().equals("interfaces")) {
-//			List<InterfaceType> interfaces = getInterfaces();
-//			if (interfaces == null) {
-//				interfaces = new ArrayList<InterfaceType>();
-//				addChild(INTERFACES, interfaces);
-//			}
-//			InterfaceType interfaceType = new InterfaceType(this);
-//			interfaces.add(interfaceType);
+			// TODO Add interfaces types
 		} else if (treeNode.productionRule.getLefthand().equals("classbody")) {
 			ClassBody body = new ClassBody(treeNode, this);
 			addChild(BODY, body);
