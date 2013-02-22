@@ -22,8 +22,7 @@ public class ExpressionStatement extends Statement {
 	
 	@Override
 	public List<Node> processTreeNode(TreeNode treeNode) throws Exception {
-		// TODO enable `expr` for return statement after all statements are implemented
-		if (treeNode.getKind().equals("stmntexpr") /*|| treeNode.getKind().equals("expr")*/) {
+		if (treeNode.getKind().equals("stmntexpr") || treeNode.getKind().equals("expr")) {
 			Expression expr = Expression.newExpression(treeNode, this);
 			this.addChild(EXPRSSION, expr);
 		} else {
