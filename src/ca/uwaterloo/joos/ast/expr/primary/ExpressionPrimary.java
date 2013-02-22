@@ -1,4 +1,4 @@
-package ca.uwaterloo.joos.ast.expr;
+package ca.uwaterloo.joos.ast.expr.primary;
 
 import java.util.HashSet;
 import java.util.List;
@@ -6,6 +6,7 @@ import java.util.Set;
 
 import ca.uwaterloo.joos.ast.ASTNode;
 import ca.uwaterloo.joos.ast.descriptor.ChildDescriptor;
+import ca.uwaterloo.joos.ast.expr.Expression;
 import ca.uwaterloo.joos.parser.ParseTree.Node;
 import ca.uwaterloo.joos.parser.ParseTree.TreeNode;
 
