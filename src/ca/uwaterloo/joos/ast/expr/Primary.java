@@ -18,7 +18,7 @@ public abstract class Primary extends ASTNode {
 	}
 	
 	private static class PrimaryTraverser implements Traverser {
-		public ASTNode node;
+		public Primary node;
 		private ASTNode parent;
 		
 		public PrimaryTraverser(ASTNode parent) {
@@ -30,7 +30,7 @@ public abstract class Primary extends ASTNode {
 			if (treeNode.productionRule.getLefthand().equals("literal")) {
 				node = new LiteralPrimary(treeNode, parent);
 			} else if (treeNode.productionRule.getLefthand().equals("expr")) {
-				node = new Expression(treeNode, parent);
+				node = new ParenPrimary(treeNode, parent);
 			} else if (treeNode.productionRule.getLefthand().equals("arraycreate")) {
 //				node = new ArrayCreate(treeNode, parent);
 			} else if (treeNode.productionRule.getLefthand().equals("arrayaccess")) {
@@ -61,7 +61,7 @@ public abstract class Primary extends ASTNode {
 		}
 	}
 	
-	public static ASTNode newPrimary(Node node, ASTNode parent) throws Exception {
+	public static Primary newPrimary(Node node, ASTNode parent) throws Exception {
 		
 		PrimaryTraverser traverser = new PrimaryTraverser(parent);
 		ParseTreeTraverse traverse = new ParseTreeTraverse(traverser);

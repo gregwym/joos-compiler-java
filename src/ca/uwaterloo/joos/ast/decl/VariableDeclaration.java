@@ -26,8 +26,9 @@ public abstract class VariableDeclaration extends BodyDeclaration {
 	@Override
 	public List<Node> processTreeNode(TreeNode treeNode) throws Exception {
 		if (treeNode.productionRule.getLefthand().equals("expr")) {
-			Expression initial = new Expression(treeNode, this);
-			this.addChild(INITIAL, initial);
+			// TODO enable initial expression after implemented all expressions
+//			Expression initial = Expression.newExpression(treeNode, this);
+//			this.addChild(INITIAL, initial);
 		} else {
 			return super.processTreeNode(treeNode);
 		}

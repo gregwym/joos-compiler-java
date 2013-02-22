@@ -18,7 +18,7 @@ import ca.uwaterloo.joos.parser.ParseTreeTraverse.Traverser;
  * @author Greg Wang
  *
  */
-public class Expression extends ASTNode {
+public abstract class Expression extends ASTNode {
 
 	public Expression(Node node, ASTNode parent) throws Exception {
 		super(node, parent);
@@ -27,7 +27,7 @@ public class Expression extends ASTNode {
 	
 
 	private static class ExpressionTraverser implements Traverser {
-		public ASTNode node;
+		public Expression node;
 		private ASTNode parent;
 		
 		public ExpressionTraverser(ASTNode parent) {
@@ -41,13 +41,14 @@ public class Expression extends ASTNode {
 			}
 			
 			Node first = treeNode.children.get(0);
-			if (treeNode.getKind().equals("assignexpr") && first.getKind().equals("assign")) {
-				node = new AssignmentExpression(treeNode, parent);
+			if (first.getKind().equals("assign")) {
+				node = new AssignmentExpression(first, parent);
+			} else {
+				List<Node> offers = new ArrayList<Node>();
+				offers.addAll(treeNode.children);
+				return offers;
 			}
-			
-			List<Node> offers = new ArrayList<Node>();
-			offers.addAll(treeNode.children);
-			return offers;
+			return null;
 		}
 
 		@Override
@@ -56,14 +57,14 @@ public class Expression extends ASTNode {
 		}
 	}
 	
-	public static ASTNode newExpression(Node node, ASTNode parent) throws Exception {
+	public static Expression newExpression(Node node, ASTNode parent) throws Exception {
 		
 		ExpressionTraverser traverser = new ExpressionTraverser(parent);
 		ParseTreeTraverse traverse = new ParseTreeTraverse(traverser);
 		traverse.traverse(node);
 		
 		if (traverser.node == null) {
-			throw new ASTConstructException(node + " is not / does not contain a primary");
+			throw new ASTConstructException(node + " is not / does not contain an expression");
 		}
 		
 		return traverser.node;
