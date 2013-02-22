@@ -18,7 +18,7 @@ public abstract class Statement extends ASTNode {
 	}
 
 	private static class StatementTraverser implements Traverser {
-		public ASTNode node;
+		public Statement node;
 		private ASTNode parent;
 
 		public StatementTraverser(ASTNode parent) {
@@ -27,23 +27,25 @@ public abstract class Statement extends ASTNode {
 
 		@Override
 		public List<Node> processTreeNode(TreeNode treeNode) throws Exception {
-			if (treeNode.productionRule.getLefthand().equals("block")) {
+			if (treeNode.getKind().equals("block")) {
 				node = new Block(treeNode, parent);
-			} else if (treeNode.productionRule.getLefthand().equals("for") || 
-					treeNode.productionRule.getLefthand().equals("fornoshort")) {
+			} else if (treeNode.getKind().equals("for") || 
+					treeNode.getKind().equals("fornoshort")) {
 
-			} else if (treeNode.productionRule.getLefthand().equals("ifthen")) {
+			} else if (treeNode.getKind().equals("ifthen")) {
 
-			} else if (treeNode.productionRule.getLefthand().equals("ifthenelse") || 
-					treeNode.productionRule.getLefthand().equals("ifthenelsenoshort")) {
+			} else if (treeNode.getKind().equals("ifthenelse") || 
+					treeNode.getKind().equals("ifthenelsenoshort")) {
 
-			} else if (treeNode.productionRule.getLefthand().equals("while") || 
-					treeNode.productionRule.getLefthand().equals("whilenoshort")) {
+			} else if (treeNode.getKind().equals("while") || 
+					treeNode.getKind().equals("whilenoshort")) {
 
-			} else if (treeNode.productionRule.getLefthand().equals("retstmnt")) {
+			} else if (treeNode.getKind().equals("retstmnt")) {
+				node = new ReturnStatement(treeNode, parent);
+			} else if (treeNode.getKind().equals("emptystmnt")) {
 
-			} else if (treeNode.productionRule.getLefthand().equals("emptystmnt")) {
-
+			} else if (treeNode.getKind().equals("exprstmnt")) {
+				node = new ExpressionStatement(treeNode, parent);
 			} else {
 				List<Node> offers = new ArrayList<Node>();
 				offers.addAll(treeNode.children);
@@ -58,7 +60,7 @@ public abstract class Statement extends ASTNode {
 		}
 	}
 
-	public static ASTNode newStatement(Node node, ASTNode parent) throws Exception {
+	public static Statement newStatement(Node node, ASTNode parent) throws Exception {
 
 		StatementTraverser traverser = new StatementTraverser(parent);
 		ParseTreeTraverse traverse = new ParseTreeTraverse(traverser);
