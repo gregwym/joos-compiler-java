@@ -3,10 +3,13 @@
  */
 package ca.uwaterloo.joos.weeder;
 
+import java.util.List;
+
 import ca.uwaterloo.joos.ast.ASTNode;
 import ca.uwaterloo.joos.ast.FileUnit;
 import ca.uwaterloo.joos.ast.body.TypeBody;
 import ca.uwaterloo.joos.ast.decl.ClassDeclaration;
+import ca.uwaterloo.joos.ast.decl.ConstructorDeclaration;
 import ca.uwaterloo.joos.ast.decl.TypeDeclaration;
 import ca.uwaterloo.joos.ast.visitor.ASTVisitor;
 import ca.uwaterloo.joos.weeder.Weeder.WeedException;
@@ -42,7 +45,8 @@ public class TypeDeclarationChecker extends ASTVisitor {
 			if (node instanceof ClassDeclaration) {
 				TypeDeclaration typeDecl = (TypeDeclaration) node;
 				TypeBody typeBody = typeDecl.getBody();
-				if (typeBody.getConstructors().size() < 1) {
+				List<ConstructorDeclaration> constructors = typeBody.getConstructors();
+				if (constructors == null || constructors.size() < 1) {
 					throw new WeedException("Class body must contain at least one constructor");
 				}
 			}
