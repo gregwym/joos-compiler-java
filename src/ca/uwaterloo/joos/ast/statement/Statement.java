@@ -43,7 +43,8 @@ public abstract class Statement extends ASTNode {
 			} else if (treeNode.getKind().equals("retstmnt")) {
 				node = new ReturnStatement(treeNode, parent);
 			} else if (treeNode.getKind().equals("emptystmnt")) {
-
+				// Empty statement can be an Expression Statement without expression
+				node = new ExpressionStatement(treeNode, parent);
 			} else if (treeNode.getKind().equals("exprstmnt")) {
 				node = new ExpressionStatement(treeNode, parent);
 			} else {
