@@ -11,7 +11,7 @@ import ca.uwaterloo.joos.parser.ParseTree.TreeNode;
 import ca.uwaterloo.joos.parser.ParseTreeTraverse;
 import ca.uwaterloo.joos.parser.ParseTreeTraverse.Traverser;
 
-public abstract class Primary extends ASTNode {
+public abstract class Primary extends Expression {
 
 	public Primary(Node node, ASTNode parent) throws Exception {
 		super(node, parent);

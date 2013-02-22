@@ -8,6 +8,8 @@ import java.util.List;
 
 import ca.uwaterloo.joos.ast.AST.ASTConstructException;
 import ca.uwaterloo.joos.ast.ASTNode;
+import ca.uwaterloo.joos.ast.name.QualifiedName;
+import ca.uwaterloo.joos.ast.name.SimpleName;
 import ca.uwaterloo.joos.parser.ParseTree.LeafNode;
 import ca.uwaterloo.joos.parser.ParseTree.Node;
 import ca.uwaterloo.joos.parser.ParseTree.TreeNode;
@@ -45,12 +47,14 @@ public abstract class Expression extends ASTNode {
 				}
 			} else if (kind.contains("unaryexpr") && numOfChild == 2) {
 				node = new UnaryExpression(treeNode, parent);
+			} else if (kind.equals("castexpr")) {
+				node = new CastExpression(treeNode, parent);
 			} else if (kind.equals("primary")) {
-//				node = Primary.newPrimary(treeNode, parent);
+				node = Primary.newPrimary(treeNode, parent);
 			} else if (kind.equals("simplename")) {
-//				node = new SimpleName(treeNode, parent);
+				node = new SimpleName(treeNode, parent);
 			} else if (kind.equals("qualifiedname")) {
-//				node = new QualifiedName(treeNode, parent);
+				node = new QualifiedName(treeNode, parent);
 			} else if (kind.equals("classcreateexpr")) {
 				node = new ClassCreateExpression(treeNode, parent);
 			} else if (kind.equals("methodinvoke")) {
