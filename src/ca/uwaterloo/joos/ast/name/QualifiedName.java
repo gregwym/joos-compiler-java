@@ -1,6 +1,6 @@
 package ca.uwaterloo.joos.ast.name;
 
-import java.util.LinkedList;
+import java.util.ArrayList;
 import java.util.List;
 
 import ca.uwaterloo.joos.ast.ASTNode;
@@ -36,11 +36,11 @@ public class QualifiedName extends Name {
 		if (leafNode.token.getKind().equals("ID")) {
 			List<String> components = this.getComponents();
 			if (components == null) {
-				components = new LinkedList<String>();
+				components = new ArrayList<String>();
 				this.addChild(QualifiedName.COMPONENTS, components);
 			}
 
-			components.add(0, leafNode.token.getLexeme());
+			components.add(leafNode.token.getLexeme());
 		}
 	}
 
