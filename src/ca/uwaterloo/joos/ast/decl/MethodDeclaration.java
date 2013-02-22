@@ -30,7 +30,7 @@ public class MethodDeclaration extends BodyDeclaration {
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see
 	 * ca.uwaterloo.joos.parser.ParseTreeTraverse.Traverser#processTreeNode(
 	 * ca.uwaterloo.joos.parser.ParseTree.TreeNode)
@@ -38,13 +38,8 @@ public class MethodDeclaration extends BodyDeclaration {
 	@Override
 	public List<Node> processTreeNode(TreeNode treeNode) throws Exception {
 		if (treeNode.productionRule.getLefthand().equals("param")) {
-			List<ParameterDeclaration> parameters = this.getParameters();
-			if (parameters == null) {
-				parameters = new ArrayList<ParameterDeclaration>();
-				this.addChild(MethodDeclaration.PARAMETERS, parameters);
-			}
 			ParameterDeclaration parameter = new ParameterDeclaration(treeNode, this);
-			parameters.add(parameter);
+			this.addChild(MethodDeclaration.PARAMETERS, parameter);
 		} else if (treeNode.productionRule.getLefthand().equals("block")) {
 			Block body = new Block(treeNode, this);
 			addChild(BODY, body);

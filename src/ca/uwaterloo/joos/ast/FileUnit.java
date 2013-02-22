@@ -45,14 +45,9 @@ public class FileUnit extends ASTNode {
 			addChild(PACKAGE, packageDeclaration);
 			logger.fine("Added PackageDecl: " + packageDeclaration);
 		} else if (treeNode.productionRule.getLefthand().equals("importdecl")) {
-			List<ImportDeclaration> imports = getImportDeclarations();
-			if (imports == null) {
-				imports = new ArrayList<ImportDeclaration>();
-				addChild(IMPORTS, imports);
-			}
 			ImportDeclaration importDeclaration = ImportDeclaration.newImportDeclaration(treeNode, this);
 			if (importDeclaration != null) {
-				imports.add(importDeclaration);
+				this.addChild(IMPORTS, importDeclaration);
 			}
 			logger.fine("Added ImportDecl: " + importDeclaration);
 		} else if (treeNode.productionRule.getLefthand().equals("classdecl")) {

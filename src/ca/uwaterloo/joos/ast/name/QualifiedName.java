@@ -34,13 +34,7 @@ public class QualifiedName extends Name {
 	@Override
 	public void processLeafNode(LeafNode leafNode) throws Exception {
 		if (leafNode.token.getKind().equals("ID")) {
-			List<String> components = this.getComponents();
-			if (components == null) {
-				components = new ArrayList<String>();
-				this.addChild(QualifiedName.COMPONENTS, components);
-			}
-
-			components.add(leafNode.token.getLexeme());
+			this.addChild(QualifiedName.COMPONENTS, leafNode.token.getLexeme());
 		}
 	}
 
