@@ -1,6 +1,5 @@
 package ca.uwaterloo.joos.ast;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import ca.uwaterloo.joos.ast.decl.ClassDeclaration;
@@ -10,7 +9,6 @@ import ca.uwaterloo.joos.ast.decl.PackageDeclaration;
 import ca.uwaterloo.joos.ast.decl.TypeDeclaration;
 import ca.uwaterloo.joos.ast.descriptor.ChildDescriptor;
 import ca.uwaterloo.joos.ast.descriptor.ChildListDescriptor;
-import ca.uwaterloo.joos.parser.ParseTree.LeafNode;
 import ca.uwaterloo.joos.parser.ParseTree.Node;
 import ca.uwaterloo.joos.parser.ParseTree.TreeNode;
 
@@ -39,7 +37,6 @@ public class FileUnit extends ASTNode {
 
 	@Override
 	public List<Node> processTreeNode(TreeNode treeNode) throws Exception {
-		List<Node> offers = new ArrayList<Node>();
 		if (treeNode.productionRule.getLefthand().equals("packagedecl")) {
 			PackageDeclaration packageDeclaration = new PackageDeclaration(treeNode, this);
 			addChild(PACKAGE, packageDeclaration);
@@ -59,12 +56,8 @@ public class FileUnit extends ASTNode {
 			addChild(TYPE, interfaceDeclaration);
 			logger.fine("Added InterfaceDecl: " + interfaceDeclaration);
 		} else {
-			offers.addAll(treeNode.children);
+			return super.processTreeNode(treeNode);
 		}
-		return offers;
-	}
-
-	@Override
-	public void processLeafNode(LeafNode leafNode) throws Exception {
+		return null;
 	}
 }

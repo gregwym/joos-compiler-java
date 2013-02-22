@@ -3,7 +3,6 @@
  */
 package ca.uwaterloo.joos.ast.body;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import ca.uwaterloo.joos.ast.ASTNode;
@@ -11,7 +10,6 @@ import ca.uwaterloo.joos.ast.decl.ConstructorDeclaration;
 import ca.uwaterloo.joos.ast.decl.FieldDeclaration;
 import ca.uwaterloo.joos.ast.decl.MethodDeclaration;
 import ca.uwaterloo.joos.ast.descriptor.ChildListDescriptor;
-import ca.uwaterloo.joos.parser.ParseTree.LeafNode;
 import ca.uwaterloo.joos.parser.ParseTree.Node;
 import ca.uwaterloo.joos.parser.ParseTree.TreeNode;
 
@@ -48,7 +46,6 @@ public abstract class TypeBody extends ASTNode {
 
 	@Override
 	public List<Node> processTreeNode(TreeNode treeNode) throws Exception {
-		List<Node> offers = new ArrayList<Node>();
 		if (treeNode.productionRule.getLefthand().equals("constructordecl")) {
 			ConstructorDeclaration decl = new ConstructorDeclaration(treeNode, this);
 			addChild(TypeBody.CONSTRUCTORS, decl);
@@ -60,14 +57,8 @@ public abstract class TypeBody extends ASTNode {
 			FieldDeclaration decl = new FieldDeclaration(treeNode, this);
 			addChild(TypeBody.FIELDS, decl);
 		} else {
-			for (Node n : treeNode.children)
-				offers.add(n);
+			return super.processTreeNode(treeNode);
 		}
-		return offers;
-	}
-
-	@Override
-	public void processLeafNode(LeafNode leafNode) throws Exception {
-
+		return null;
 	}
 }

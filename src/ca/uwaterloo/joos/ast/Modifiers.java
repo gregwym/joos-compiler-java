@@ -1,13 +1,11 @@
 package ca.uwaterloo.joos.ast;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import ca.uwaterloo.joos.ast.AST.ASTConstructException;
 import ca.uwaterloo.joos.ast.descriptor.SimpleListDescriptor;
 import ca.uwaterloo.joos.parser.ParseTree.LeafNode;
 import ca.uwaterloo.joos.parser.ParseTree.Node;
-import ca.uwaterloo.joos.parser.ParseTree.TreeNode;
 
 public class Modifiers extends ASTNode {
 
@@ -35,13 +33,6 @@ public class Modifiers extends ASTNode {
 	@SuppressWarnings("unchecked")
 	public List<Modifier> getModifiers() throws ChildTypeUnmatchException {
 		return (List<Modifier>) this.getChildByDescriptor(MODIFIERS);
-	}
-
-	@Override
-	public List<Node> processTreeNode(TreeNode treeNode) throws Exception {
-		List<Node> offers = new ArrayList<Node>();
-		offers.addAll(treeNode.children);
-		return offers;
 	}
 
 	@Override

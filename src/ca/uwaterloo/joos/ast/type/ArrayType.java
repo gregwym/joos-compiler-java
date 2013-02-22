@@ -1,11 +1,9 @@
 package ca.uwaterloo.joos.ast.type;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import ca.uwaterloo.joos.ast.ASTNode;
 import ca.uwaterloo.joos.ast.descriptor.ChildDescriptor;
-import ca.uwaterloo.joos.parser.ParseTree.LeafNode;
 import ca.uwaterloo.joos.parser.ParseTree.Node;
 import ca.uwaterloo.joos.parser.ParseTree.TreeNode;
 
@@ -22,7 +20,6 @@ public class ArrayType extends Type {
 
 	@Override
 	public List<Node> processTreeNode(TreeNode treeNode) throws Exception {
-		List<Node> offers = new ArrayList<Node>();
 		if (treeNode.productionRule.getLefthand().equals("primitivetype")) {
 			Type type = new PrimitiveType(treeNode, this);
 			this.addChild(TYPE, type);
@@ -31,13 +28,8 @@ public class ArrayType extends Type {
 			Type type = new ReferenceType(treeNode, this);
 			this.addChild(TYPE, type);
 		} else {
-			offers.addAll(treeNode.children);
+			return super.processTreeNode(treeNode);
 		}
-		return offers;
-	}
-
-	@Override
-	public void processLeafNode(LeafNode leafNode) throws Exception {
-
+		return null;
 	}
 }

@@ -1,14 +1,10 @@
 package ca.uwaterloo.joos.ast.type;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import ca.uwaterloo.joos.ast.AST.ASTConstructException;
 import ca.uwaterloo.joos.ast.ASTNode;
 import ca.uwaterloo.joos.ast.descriptor.SimpleDescriptor;
 import ca.uwaterloo.joos.parser.ParseTree.LeafNode;
 import ca.uwaterloo.joos.parser.ParseTree.Node;
-import ca.uwaterloo.joos.parser.ParseTree.TreeNode;
 
 public class PrimitiveType extends Type {
 
@@ -32,13 +28,6 @@ public class PrimitiveType extends Type {
 
 	public Primitive getPrimitiveType() throws ChildTypeUnmatchException {
 		return (Primitive) this.getChildByDescriptor(PrimitiveType.TYPE);
-	}
-
-	@Override
-	public List<Node> processTreeNode(TreeNode treeNode) throws Exception {
-		List<Node> offers = new ArrayList<Node>();
-		offers.addAll(treeNode.children);
-		return offers;
 	}
 
 	@Override

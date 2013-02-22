@@ -1,12 +1,10 @@
 package ca.uwaterloo.joos.ast.decl;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import ca.uwaterloo.joos.ast.ASTNode;
 import ca.uwaterloo.joos.ast.descriptor.ChildDescriptor;
 import ca.uwaterloo.joos.ast.name.QualifiedName;
-import ca.uwaterloo.joos.parser.ParseTree.LeafNode;
 import ca.uwaterloo.joos.parser.ParseTree.Node;
 import ca.uwaterloo.joos.parser.ParseTree.TreeNode;
 
@@ -17,8 +15,8 @@ public abstract class ImportDeclaration extends ASTNode {
 		super(node, parent);
 	}
 
-	public static ImportDeclaration newImportDeclaration(Node node, ASTNode parent) throws Exception {
-		if (node instanceof TreeNode) {
+	public static ImportDeclaration newImportDeclaration(TreeNode node, ASTNode parent) throws Exception {
+		if (node.children.size() == 1) {
 			TreeNode childNode = (TreeNode) ((TreeNode) node).children.get(0);
 			if (childNode.productionRule.getLefthand().equals("ondemandimport")) {
 				return new OnDemandImport(childNode,parent);
@@ -32,19 +30,13 @@ public abstract class ImportDeclaration extends ASTNode {
 
 	@Override
 	public List<Node> processTreeNode(TreeNode treeNode) throws Exception {
-		List<Node> offers = new ArrayList<Node>();
 		if (treeNode.productionRule.getLefthand().equals("qualifiedname")) {
 			QualifiedName qualifiedName = new QualifiedName(treeNode, this);
 			addChild(IMPORTNAME, qualifiedName);
 		} else {
-			offers.addAll(treeNode.children);
+			return super.processTreeNode(treeNode);
 		}
-		return offers;
-	}
-
-	@Override
-	public void processLeafNode(LeafNode leafNode) throws Exception {
-
+		return null;
 	}
 
 	public QualifiedName getImportName() throws ChildTypeUnmatchException {
