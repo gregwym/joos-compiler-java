@@ -27,8 +27,8 @@ public class ClassDeclaration extends TypeDeclaration {
 	@Override
 	public List<Node> processTreeNode(TreeNode treeNode) throws Exception {
 		if (treeNode.productionRule.getLefthand().equals("super")) {
-//			ClassType superType = new ClassType(this);
-//			addChild(SUPER, superType);
+			ReferenceType superType = new ReferenceType(treeNode, this);
+			addChild(SUPER, superType);
 		}
 		else {
 			return super.processTreeNode(treeNode);
