@@ -38,17 +38,15 @@ public abstract class Expression extends ASTNode {
 		public List<Node> processTreeNode(TreeNode treeNode) throws Exception {
 			int numOfChild = treeNode.children.size();
 			String kind = treeNode.getKind();
-			if (numOfChild == 3) {
-				if (kind.equals("assign")) {
-					node = new AssignmentExpression(treeNode, parent);
-				} else if (InfixExpression.getAcceptingKinds().contains(kind)) {
-					node = new InfixExpression(treeNode, parent);
-				}
+			if (kind.equals("assign") && numOfChild == 3) {
+				node = new AssignmentExpression(treeNode, parent);
+			} else if (InfixExpression.getAcceptingKinds().contains(kind) && numOfChild == 3) {
+				node = new InfixExpression(treeNode, parent);
 			} else if (kind.contains("unaryexpr") && numOfChild == 2) {
 				node = new UnaryExpression(treeNode, parent);
 			} else if (kind.equals("castexpr")) {
 				node = new CastExpression(treeNode, parent);
-			} else if (kind.equals("primary")) {
+			} else if (Primary.getAcceptingKinds().contains(kind)) {
 				node = Primary.newPrimary(treeNode, parent);
 			} else if (kind.equals("name")) {
 				node = Name.newName(treeNode, parent);
