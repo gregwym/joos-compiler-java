@@ -6,7 +6,6 @@ import ca.uwaterloo.joos.ast.AST.ASTConstructException;
 import ca.uwaterloo.joos.ast.ASTNode;
 import ca.uwaterloo.joos.ast.descriptor.ChildDescriptor;
 import ca.uwaterloo.joos.ast.descriptor.SimpleDescriptor;
-import ca.uwaterloo.joos.parser.ParseTree.LeafNode;
 import ca.uwaterloo.joos.parser.ParseTree.Node;
 import ca.uwaterloo.joos.parser.ParseTree.TreeNode;
 
@@ -54,11 +53,6 @@ public class UnaryExpression extends Expression {
 			throw new ASTConstructException("Unary Expression is expecting a treeNode with valid format");
 		}
 		return null;
-	}
-
-	@Override
-	public void processLeafNode(LeafNode leafNode) throws Exception {
-		
 	}
 
 }

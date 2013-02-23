@@ -15,10 +15,14 @@ import ca.uwaterloo.joos.parser.ParseTree.TreeNode;
 public class AssignmentExpression extends Expression {
 	
 	public static final ChildDescriptor LEFTHAND = new ChildDescriptor(Lefthand.class);
-	public static final ChildDescriptor EXPR = new ChildDescriptor(Expression.class);
+	public static final ChildDescriptor EXPRSSION = new ChildDescriptor(Expression.class);
 	
 	public AssignmentExpression(Node node, ASTNode parent) throws Exception {
 		super(node, parent);
+	}
+	
+	public Expression getExpression() throws ChildTypeUnmatchException {
+		return (Expression) this.getChildByDescriptor(EXPRSSION);
 	}
 	
 	@Override
@@ -35,7 +39,7 @@ public class AssignmentExpression extends Expression {
 			this.addChild(LEFTHAND, primary);
 		} else if (treeNode.getKind().equals("assignexpr")) {
 			Expression expr = Expression.newExpression(treeNode, this);
-			this.addChild(EXPR, expr);
+			this.addChild(EXPRSSION, expr);
 		} else {
 			return super.processTreeNode(treeNode);
 		}
