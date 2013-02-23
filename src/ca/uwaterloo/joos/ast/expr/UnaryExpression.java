@@ -44,11 +44,14 @@ public class UnaryExpression extends Expression {
 			Node first = treeNode.children.get(0);
 			Node second = treeNode.children.get(1);
 			
-			UnaryOperator operator = stringToUnaryOperator(first.getKind().toUpperCase());
-			this.addChild(OPERATOR, operator);
-			
+			UnaryOperator operator = stringToUnaryOperator(first.getKind().toUpperCase());			
 			Expression operand = Expression.newExpression(second, this);
+			
+			this.addChild(OPERATOR, operator);
 			this.addChild(OPERAND, operand);
+		}
+		else {
+			throw new ASTConstructException("Unary Expression is expecting a treeNode with valid format");
 		}
 		return null;
 	}

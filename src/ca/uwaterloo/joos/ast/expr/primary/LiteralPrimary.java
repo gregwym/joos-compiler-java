@@ -1,5 +1,6 @@
 package ca.uwaterloo.joos.ast.expr.primary;
 
+import ca.uwaterloo.joos.ast.AST.ASTConstructException;
 import ca.uwaterloo.joos.ast.ASTNode;
 import ca.uwaterloo.joos.ast.descriptor.SimpleDescriptor;
 import ca.uwaterloo.joos.parser.ParseTree.LeafNode;
@@ -11,27 +12,30 @@ public class LiteralPrimary extends Primary {
 	public static final SimpleDescriptor VALUE = new SimpleDescriptor(String.class);
 
 	public static enum LiteralType {
-		BOOL, CHAR, INT, NULL, STRING
+		BOOLLIT, CHARLIT, INTLIT, NULL, STRINGLIT
 	}
 
 	public LiteralPrimary(Node node, ASTNode parent) throws Exception {
 		super(node, parent);
 	}
+	
+	private LiteralType stringToLiteralType(String name) throws ASTConstructException {
+		for(LiteralType type: LiteralType.values()) {
+			if(type.name().equals(name)) return type;
+		}
+		return null;
+	}
 
 	@Override
 	public void processLeafNode(LeafNode leafNode) throws Exception {
-		if (leafNode.token.getKind().equals("BOOLLIT")) {
-			this.addChild(TYPE, LiteralType.BOOL);
-		} else if (leafNode.token.getKind().equals("CHARLIT")) {
-			this.addChild(TYPE, LiteralType.CHAR);
-		} else if (leafNode.token.getKind().equals("INTLIT")) {
-			this.addChild(TYPE, LiteralType.INT);
-		} else if (leafNode.token.getKind().equals("NULL")) {
-			this.addChild(TYPE, LiteralType.NULL);
-		} else if (leafNode.token.getKind().equals("STRINGLIT")) {
-			this.addChild(TYPE, LiteralType.STRING);
+		LiteralType type = stringToLiteralType(leafNode.token.getKind().toUpperCase());
+		if(type != null) {
+			this.addChild(TYPE, type);
+			this.addChild(VALUE, leafNode.token.getLexeme());
 		}
-		this.addChild(VALUE, leafNode.token.getLexeme());
+		else {
+			throw new ASTConstructException("Literal Primary is expecting one of LiteralType, but got " + leafNode.token.getKind().toUpperCase());
+		}
 	}
 
 }
