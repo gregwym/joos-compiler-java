@@ -27,10 +27,12 @@ public abstract class Statement extends ASTNode {
 
 		@Override
 		public List<Node> processTreeNode(TreeNode treeNode) throws Exception {
+			System.out.println("processTreeNode+"+treeNode.getKind());
 			if (treeNode.getKind().equals("block")) {
 				node = new Block(treeNode, parent);
 			} else if (treeNode.getKind().equals("for") || 
 					treeNode.getKind().equals("fornoshort")) {
+				System.out.println("fornoshort+++++++");
 				node = new ForStatement(treeNode,parent);
 			} else if (treeNode.getKind().equals("ifthen")) {
 

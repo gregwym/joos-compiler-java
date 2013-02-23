@@ -3,6 +3,7 @@
  */
 package ca.uwaterloo.joos.ast.statement;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import ca.uwaterloo.joos.ast.ASTNode;
@@ -33,7 +34,7 @@ public class ForStatement extends Statement {
 	 */
 	public ForStatement(Node node, ASTNode parent) throws Exception {
 		super(node, parent);
-		// TODO Auto-generated constructor stub
+
 	}
 
 	@Override
@@ -41,24 +42,23 @@ public class ForStatement extends Statement {
 		String kind = treeNode.getKind();
 		if (kind.equals("forinit")) {
 			TreeNode child = (TreeNode) treeNode.children.get(0);
-			TreeNode childchild = (TreeNode) child.children.get(0);
-			if (childchild.getKind().equals("assignexpr")) {
-				this.addChild(FORINITEXPR, new AssignmentExpression(child, this));
-			} else if (childchild.getKind().equals("localvardecl")) {
-				this.addChild(FORINITEXPR, new LocalVariableDeclaration(child, this));
+			if (child.getKind().equals("stmntexpr")) {
+				this.addChild(FORTEST, Expression.newExpression(child, this));
 			}
 		} else if (kind.equals("fortest")) {
 			TreeNode child = (TreeNode) treeNode.children.get(0);
-			TreeNode childchild = (TreeNode) child.children.get(0);
-			if (childchild.getKind().equals("assignexpr")) {
-				this.addChild(FORTEST, new AssignmentExpression(child, this));
+			if (child.getKind().equals("expr")) {
+				this.addChild(FORTEST, Expression.newExpression(child, this));
 			}
 		} else if (kind.equals("forupdate")) {
 			TreeNode child = (TreeNode) treeNode.children.get(0);
-			TreeNode childchild = (TreeNode) child.children.get(0);
-			if (childchild.getKind().equals("stmntexpr")) {
-				this.addChild(FORUPDATE, new AssignmentExpression(child, this));
+			if (child.getKind().equals("stmntexpr")) {
+				this.addChild(FORTEST, Expression.newExpression(child, this));
 			}
+		} else {
+			List<Node> offers = new ArrayList<Node>();
+			offers.addAll(treeNode.children);
+			return offers;
 		}
 		return null;
 	}
