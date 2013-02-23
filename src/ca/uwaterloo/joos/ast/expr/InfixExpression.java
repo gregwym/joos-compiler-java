@@ -23,7 +23,6 @@ public class InfixExpression extends Expression {
 
 	public InfixExpression(Node node, ASTNode parent) throws Exception {
 		super(node, parent);
-		// TODO Auto-generated constructor stub
 	}
 	
 	private InfixOperator stringToInfixOperator(String name) throws ASTConstructException {

@@ -8,8 +8,7 @@ import java.util.List;
 
 import ca.uwaterloo.joos.ast.AST.ASTConstructException;
 import ca.uwaterloo.joos.ast.ASTNode;
-import ca.uwaterloo.joos.ast.expr.name.QualifiedName;
-import ca.uwaterloo.joos.ast.expr.name.SimpleName;
+import ca.uwaterloo.joos.ast.expr.name.Name;
 import ca.uwaterloo.joos.ast.expr.primary.Primary;
 import ca.uwaterloo.joos.parser.ParseTree.LeafNode;
 import ca.uwaterloo.joos.parser.ParseTree.Node;
@@ -39,6 +38,7 @@ public abstract class Expression extends ASTNode {
 		public List<Node> processTreeNode(TreeNode treeNode) throws Exception {
 			int numOfChild = treeNode.children.size();
 			String kind = treeNode.getKind();
+			System.out.println("Visiting " + treeNode);
 			if (numOfChild == 3) {
 				if (kind.equals("assign")) {
 					node = new AssignmentExpression(treeNode, parent);
@@ -51,10 +51,8 @@ public abstract class Expression extends ASTNode {
 				node = new CastExpression(treeNode, parent);
 			} else if (kind.equals("primary")) {
 				node = Primary.newPrimary(treeNode, parent);
-			} else if (kind.equals("simplename")) {
-				node = new SimpleName(treeNode, parent);
-			} else if (kind.equals("qualifiedname")) {
-				node = new QualifiedName(treeNode, parent);
+			} else if (kind.equals("name")) {
+				node = Name.newName(treeNode, parent);
 			} else if (kind.equals("classcreateexpr")) {
 				node = new ClassCreateExpression(treeNode, parent);
 			} else if (kind.equals("methodinvoke")) {
