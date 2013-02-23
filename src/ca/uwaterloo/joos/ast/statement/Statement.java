@@ -31,7 +31,7 @@ public abstract class Statement extends ASTNode {
 				node = new Block(treeNode, parent);
 			} else if (treeNode.getKind().equals("for") || 
 					treeNode.getKind().equals("fornoshort")) {
-
+				node = new ForStatement(treeNode,parent);
 			} else if (treeNode.getKind().equals("ifthen")) {
 
 			} else if (treeNode.getKind().equals("ifthenelse") || 
