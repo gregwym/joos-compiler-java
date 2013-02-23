@@ -3,11 +3,9 @@
  */
 package ca.uwaterloo.joos.ast.statement;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import ca.uwaterloo.joos.ast.ASTNode;
-import ca.uwaterloo.joos.ast.ASTNode.ChildTypeUnmatchException;
 import ca.uwaterloo.joos.ast.decl.LocalVariableDeclaration;
 import ca.uwaterloo.joos.ast.descriptor.ChildDescriptor;
 import ca.uwaterloo.joos.ast.expr.Expression;
@@ -34,7 +32,6 @@ public class ForStatement extends Statement {
 
 	public ForStatement(Node node, ASTNode parent) throws Exception {
 		super(node, parent);
-
 	}
 
 	@Override
@@ -52,12 +49,10 @@ public class ForStatement extends Statement {
 			this.addChild(TEST, Expression.newExpression(treeNode, this));
 		} else if (kind.equals("forupdate")) {
 			this.addChild(UPDATE, Expression.newExpression(treeNode, this));
-		} else if (kind.equals("stmnt") | kind.equals("stmntnoshort")) {
+		} else if (kind.equals("stmnt") || kind.equals("stmntnoshort")) {
 			this.addChild(STATEMENT, Statement.newStatement(treeNode, this));
 		} else {
-			List<Node> offers = new ArrayList<Node>();
-			offers.addAll(treeNode.children);
-			return offers;
+			return super.processTreeNode(treeNode);
 		}
 
 		return null;
