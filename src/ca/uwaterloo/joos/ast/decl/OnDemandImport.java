@@ -7,7 +7,6 @@ public class OnDemandImport extends ImportDeclaration {
 
 	public OnDemandImport(Node node, ASTNode parent) throws Exception {
 		super(node, parent);
-		// TODO Auto-generated constructor stub
 	}
 
 }

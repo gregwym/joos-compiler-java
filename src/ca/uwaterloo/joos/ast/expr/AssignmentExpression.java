@@ -8,6 +8,7 @@ import ca.uwaterloo.joos.ast.descriptor.ChildDescriptor;
 import ca.uwaterloo.joos.ast.expr.name.Name;
 import ca.uwaterloo.joos.ast.expr.name.QualifiedName;
 import ca.uwaterloo.joos.ast.expr.name.SimpleName;
+import ca.uwaterloo.joos.ast.expr.primary.Primary;
 import ca.uwaterloo.joos.parser.ParseTree.LeafNode;
 import ca.uwaterloo.joos.parser.ParseTree.Node;
 import ca.uwaterloo.joos.parser.ParseTree.TreeNode;
@@ -31,11 +32,9 @@ public class AssignmentExpression extends Expression {
 			this.addChild(LEFTHAND, name);
 		} else if (treeNode.getKind().equals("arrayaccess") || 
 				treeNode.getKind().equals("fieldaccess")) {
-			// TODO Turn of after expr finished
-//			Lefthand primary = (Lefthand) Primary.newPrimary(treeNode, this);
-//			this.addChild(LEFTHAND, primary);
+			Lefthand primary = (Lefthand) Primary.newPrimary(treeNode, this);
+			this.addChild(LEFTHAND, primary);
 		} else if (treeNode.getKind().equals("assignexpr")) {
-			// TODO Turn of after expr finished
 			Expression expr = Expression.newExpression(treeNode, this);
 			this.addChild(EXPR, expr);
 		} else {
