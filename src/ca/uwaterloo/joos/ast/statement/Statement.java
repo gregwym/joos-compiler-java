@@ -35,10 +35,10 @@ public abstract class Statement extends ASTNode {
 				System.out.println("fornoshort+++++++");
 				node = new ForStatement(treeNode,parent);
 			} else if (treeNode.getKind().equals("ifthen")) {
-
+				node = new IfStatement(treeNode,parent);
 			} else if (treeNode.getKind().equals("ifthenelse") || 
 					treeNode.getKind().equals("ifthenelsenoshort")) {
-
+				node = new IfStatement(treeNode,parent);
 			} else if (treeNode.getKind().equals("while") || 
 					treeNode.getKind().equals("whilenoshort")) {
 
