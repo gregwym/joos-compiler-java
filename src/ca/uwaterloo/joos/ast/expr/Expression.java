@@ -38,7 +38,6 @@ public abstract class Expression extends ASTNode {
 		public List<Node> processTreeNode(TreeNode treeNode) throws Exception {
 			int numOfChild = treeNode.children.size();
 			String kind = treeNode.getKind();
-			System.out.println("Visiting " + treeNode);
 			if (numOfChild == 3) {
 				if (kind.equals("assign")) {
 					node = new AssignmentExpression(treeNode, parent);
