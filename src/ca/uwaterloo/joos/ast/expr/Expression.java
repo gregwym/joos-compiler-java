@@ -25,7 +25,6 @@ public abstract class Expression extends ASTNode {
 
 	public Expression(Node node, ASTNode parent) throws Exception {
 		super(node, parent);
-		// TODO Auto-generated constructor stub
 	}
 
 	private static class ExpressionTraverser implements Traverser {
