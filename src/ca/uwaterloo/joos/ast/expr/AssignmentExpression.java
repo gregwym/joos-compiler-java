@@ -1,6 +1,5 @@
 package ca.uwaterloo.joos.ast.expr;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import ca.uwaterloo.joos.ast.ASTNode;
@@ -38,9 +37,7 @@ public class AssignmentExpression extends Expression {
 			Expression expr = Expression.newExpression(treeNode, this);
 			this.addChild(EXPR, expr);
 		} else {
-			List<Node> offers = new ArrayList<Node>();
-			offers.addAll(treeNode.children);
-			return offers;
+			return super.processTreeNode(treeNode);
 		}
 		return null;
 	}
