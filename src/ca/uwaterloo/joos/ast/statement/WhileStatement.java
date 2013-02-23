@@ -31,16 +31,14 @@ public class WhileStatement extends Statement {
 	}
 	@Override
 	public List<Node> processTreeNode(TreeNode treeNode) throws Exception {
+		String kind = treeNode.getKind();
 
-		TreeNode ifcondition = (TreeNode) treeNode.children.get(2);
-		TreeNode ifstatements = (TreeNode) treeNode.children.get(4);
-
-		if (ifcondition.getKind().equals("expr")) {
-			this.addChild(WHILECONDITION, Expression.newExpression(ifcondition, this));
+		if (kind.equals("expr")) {
+			this.addChild(WHILECONDITION, Expression.newExpression(treeNode, this));
 		}
-		if (ifstatements.getKind().equals("stmntnoshort")|ifstatements.getKind().equals("stmnt")) {
+		if (kind.equals("stmntnoshort")|kind.equals("stmnt")) {
 
-			this.addChild(WHILESTATEMENTS, Statement.newStatement(ifstatements, this));
+			this.addChild(WHILESTATEMENTS, Statement.newStatement(treeNode, this));
 
 		} else {
 			List<Node> offers = new ArrayList<Node>();
