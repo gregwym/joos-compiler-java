@@ -37,7 +37,8 @@ public class ForStatement extends Statement {
 	@Override
 	public List<Node> processTreeNode(TreeNode treeNode) throws Exception {
 		String kind = treeNode.getKind();
-		if (kind.equals("forinit")) {
+		int numOfChild = treeNode.children.size();
+		if (kind.equals("forinit")&&(numOfChild>0)) {
 			TreeNode child = (TreeNode) treeNode.children.get(0);
 			if (child.getKind().equals("stmntexpr")) {
 				this.addChild(INIT, Expression.newExpression(child, this));
@@ -45,9 +46,9 @@ public class ForStatement extends Statement {
 			if (child.getKind().equals("localvardecl")) {
 				this.addChild(INIT, new LocalVariableDeclaration(child, this));
 			}
-		} else if (kind.equals("fortest")) {
+		} else if (kind.equals("fortest")&&(numOfChild>0)) {
 			this.addChild(TEST, Expression.newExpression(treeNode, this));
-		} else if (kind.equals("forupdate")) {
+		} else if (kind.equals("forupdate")&&(numOfChild>0)) {
 			this.addChild(UPDATE, Expression.newExpression(treeNode, this));
 		} else if (kind.equals("stmnt") || kind.equals("stmntnoshort")) {
 			this.addChild(STATEMENT, Statement.newStatement(treeNode, this));
