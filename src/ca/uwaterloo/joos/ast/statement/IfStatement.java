@@ -37,21 +37,21 @@ public class IfStatement extends Statement {
 		if (ifcondition.getKind().equals("expr")) {
 			this.addChild(IFCONDITION, Expression.newExpression(ifcondition, this));
 		}
-		if (ifstatements.getKind().equals("stmntnoshort")|ifstatements.getKind().equals("stmnt")) {
+		if (ifstatements.getKind().equals("stmntnoshort") | ifstatements.getKind().equals("stmnt")) {
 
 			this.addChild(IFSTATEMENTS, Statement.newStatement(ifstatements, this));
 
 		} else {
+			if (treeNode.children.size() == 7) {
+				TreeNode elsestatements = (TreeNode) treeNode.children.get(6);
+				if (elsestatements.getKind().equals("stmnt") | elsestatements.getKind().equals("stmntnoshort")) {
+
+					this.addChild(ELSESTATEMENTS, Statement.newStatement(elsestatements, this));
+				}
+			}
 			List<Node> offers = new ArrayList<Node>();
 			offers.addAll(treeNode.children);
 			return offers;
-		}
-		if (treeNode.children.size() == 7) {
-			TreeNode elsestatements = (TreeNode) treeNode.children.get(6);
-			if (elsestatements.getKind().equals("stmnt")|elsestatements.getKind().equals("stmntnoshort")) {
-
-				this.addChild(ELSESTATEMENTS, Statement.newStatement(elsestatements, this));
-			}
 		}
 
 		return null;

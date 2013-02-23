@@ -20,7 +20,7 @@ import ca.uwaterloo.joos.parser.ParseTreeTraverse.Traverser;
  * @author Greg Wang
  * 
  */
-public abstract class Expression extends ASTNode {
+public abstract class Expression extends ASTNode implements ForInit{
 
 	public Expression(Node node, ASTNode parent) throws Exception {
 		super(node, parent);
