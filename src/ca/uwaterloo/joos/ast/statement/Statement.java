@@ -31,14 +31,15 @@ public abstract class Statement extends ASTNode {
 				node = new Block(treeNode, parent);
 			} else if (treeNode.getKind().equals("for") || 
 					treeNode.getKind().equals("fornoshort")) {
-
+				node = new ForStatement(treeNode,parent);
 			} else if (treeNode.getKind().equals("ifthen")) {
-
+				node = new IfStatement(treeNode,parent);
 			} else if (treeNode.getKind().equals("ifthenelse") || 
 					treeNode.getKind().equals("ifthenelsenoshort")) {
-
+				node = new IfStatement(treeNode,parent);
 			} else if (treeNode.getKind().equals("while") || 
 					treeNode.getKind().equals("whilenoshort")) {
+				node = new WhileStatement(treeNode,parent);
 
 			} else if (treeNode.getKind().equals("retstmnt")) {
 				node = new ReturnStatement(treeNode, parent);
