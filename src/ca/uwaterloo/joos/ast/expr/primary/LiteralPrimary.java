@@ -19,6 +19,14 @@ public class LiteralPrimary extends Primary {
 		super(node, parent);
 	}
 	
+	public LiteralType getType() throws ChildTypeUnmatchException {
+		return (LiteralType) this.getChildByDescriptor(TYPE);
+	}
+	
+	public String getValue() throws ChildTypeUnmatchException {
+		return (String) this.getChildByDescriptor(VALUE);
+	}
+	
 	private LiteralType stringToLiteralType(String name) throws ASTConstructException {
 		for(LiteralType type: LiteralType.values()) {
 			if(type.name().equals(name)) return type;
