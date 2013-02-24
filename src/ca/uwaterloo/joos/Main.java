@@ -83,12 +83,14 @@ public class Main {
 		ParseTree parseTree = null;
 		parseTree = this.parser.parseTokens(tokens);
 		
+//		System.out.println(parseTree);
+		
 		/* AST Constructing */
 		AST ast = new AST(parseTree, source.getName());
 		
-		ToStringVisitor visitor = new ToStringVisitor();
-		ast.getRoot().accept(visitor);
-		System.out.println(visitor.getString());
+//		ToStringVisitor visitor = new ToStringVisitor();
+//		ast.getRoot().accept(visitor);
+//		System.out.println(visitor.getString());
 		
 		/* AST Weeding */
 		this.weeder.weedAst(ast);
