@@ -1,6 +1,6 @@
 #!/bin/bash
 
-java -cp 'bin' ca.uwaterloo.joos.Main $@
+java -cp 'bin:lib/*' ca.uwaterloo.joos.Main $@
 exitcode=$?
 echo "Joos compiler exit with status code $exitcode"
 exit $exitcode
