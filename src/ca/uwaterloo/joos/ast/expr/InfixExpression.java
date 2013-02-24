@@ -9,6 +9,8 @@ import ca.uwaterloo.joos.ast.ASTNode;
 import ca.uwaterloo.joos.ast.descriptor.ChildListDescriptor;
 import ca.uwaterloo.joos.ast.descriptor.SimpleDescriptor;
 import ca.uwaterloo.joos.ast.expr.UnaryExpression.UnaryOperator;
+import ca.uwaterloo.joos.ast.expr.primary.LiteralPrimary;
+import ca.uwaterloo.joos.ast.expr.primary.LiteralPrimary.LiteralType;
 import ca.uwaterloo.joos.parser.ParseTree.Node;
 import ca.uwaterloo.joos.parser.ParseTree.TreeNode;
 
@@ -70,6 +72,12 @@ public class InfixExpression extends Expression {
 			this.addChild(OPERANDS, operand1);
 			this.addChild(OPERATOR, operator);
 			this.addChild(OPERANDS, operand2);
+			
+			if(operator.equals(InfixOperator.INSTANCEOF) && 
+					(operand2 instanceof LiteralPrimary) && 
+					((LiteralPrimary) operand2).getType() == LiteralType.NULL) {
+				throw new ASTConstructException("Cannot execute Instanceof on NULL literal");
+			}
 		}
 		else {
 			throw new ASTConstructException("Infix Expression is expecting a treeNode with valid format");
