@@ -1,7 +1,7 @@
 0
 0
 Start
-34
+37
 LBRACE
 RBRACE
 LPAREN
@@ -9,7 +9,7 @@ RPAREN
 LBRACK
 RBRACK
 ZERO
-NUM
+INTLIT
 ID
 PLUS
 MINUS
@@ -22,7 +22,10 @@ LT
 GT
 BAND
 BOR
+XOR
+NEG
 SEMI
+COLON
 COMMA
 NOT
 LEQ
@@ -31,12 +34,12 @@ EQ
 OR
 AND
 NEQ
-STRING
-CHAR
+STRINGLIT
+CHARLIT
 COMMENT
 BLOCKCOMMENT
 JAVADOC
-63
+77
 Start { LBRACE
 Start } RBRACE
 Start ( LPAREN
@@ -44,7 +47,7 @@ Start ) RPAREN
 Start [ LBRACK
 Start ] RBRACK
 Start 0 ZERO
-Start digit NUM
+Start digit INTLIT
 Start _ ID
 Start alpha ID
 Start + PLUS
@@ -58,34 +61,45 @@ Start < LT
 Start > GT
 Start & BAND
 Start | BOR
+Start ^ XOR
+Start ~ NEG
 Start ; SEMI
+Start : COLON
 Start , COMMA
 Start ! NOT
 Start " "string
 Start ' 'char
-NUM digit NUM
+INTLIT digit INTLIT
 ID alpha ID
 ID digit ID
 ID _ ID
+ID : label
 LT = LEQ
 GT = GEQ
 BECOME = EQ
 BOR | OR
 BAND & AND
 NOT = NEQ
-"string \ sEscape
+"string \ eString
 "string any "string
-sEscape any "string
-"string " STRING
+eString escape "string
+eString octal "string
+"string " STRINGLIT
+'char \ eChar
 'char any char'
-'char \ cEscape
-cEscape any char'
-char' ' CHAR
+eChar escape char'
+eChar 0-3 o2Char
+eChar octal o1Char
+o2Char octal o1Char
+o1Char octal char'
+o2Char ' CHARLIT
+o1Char ' CHARLIT
+char' ' CHARLIT
 SLASH / commentB
 SLASH * blockCommentS
 commentB any commentB
 commentB eol COMMENT
-blockCommentS * javaDocB
+blockCommentS * javaDocS
 blockCommentS any blockCommentB
 blockCommentS eol blockCommentB
 blockCommentB any blockCommentB
@@ -94,13 +108,16 @@ blockCommentB * blockCommentE
 blockCommentE any blockCommentB
 blockCommentE * blockCommentE
 blockCommentE / BLOCKCOMMENT
+javaDocS any javaDocB
+javaDocS eol javaDocB
+javaDocS / BLOCKCOMMENT
 javaDocB any javaDocB
 javaDocB eol javaDocB
 javaDocB * javaDocE
 javaDocE any javaDocB
 javaDocE * javaDocE
 javaDocE / JAVADOC
-51
+52
 abstract ABSTRACT
 default DEFAULT
 if IF
@@ -150,5 +167,6 @@ goto GOTO
 package PACKAGE
 synchronized SYNCHRONIZED
 null NULL
-true TRUE
-false FALSE
+true BOOLLIT
+false BOOLLIT
+0 INTLIT
