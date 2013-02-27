@@ -1,8 +1,9 @@
-package ca.uwaterloo.joos.ast.visitor;
+package ca.uwaterloo.joos.symbolTable;
 
 import ca.uwaterloo.joos.ast.ASTNode;
+import ca.uwaterloo.joos.ast.visitor.ASTVisitor;
 
-public class TopDeclVisitor extends SemanticsVisitor {
+public class SemanticsVisitor extends ASTVisitor {
 
 	@Override
 	public void willVisit(ASTNode node) {
