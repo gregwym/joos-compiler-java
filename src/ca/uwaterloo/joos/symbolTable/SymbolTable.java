@@ -6,6 +6,7 @@ import java.util.logging.Logger;
 
 import ca.uwaterloo.joos.Main;
 import ca.uwaterloo.joos.ast.AST;
+import ca.uwaterloo.joos.ast.visitor.SemanticsVisitor;
 
 public class SymbolTable{
 	static Logger logger = Main.getLogger(Main.class);
@@ -39,7 +40,15 @@ public class SymbolTable{
 	}
 	
 	private void walk(){
+		System.out.println("In Walk");
 		//TODO Test. REMOVE.
+		try {
+			tree.getRoot().accept(new SemanticsVisitor());
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
 	}
 	
 }
