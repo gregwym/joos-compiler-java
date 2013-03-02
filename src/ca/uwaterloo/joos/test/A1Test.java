@@ -73,7 +73,7 @@ public class A1Test {
 		Exception realException = null;
 
 		try {
-			instance.execute(testFile);
+			instance.constructAst(testFile);
 			if (fileException != null) {
 				System.out.println("Expecting: " + fileException.getClass().getSimpleName() + "\t"
 						+ "but got: NoException" + "\t\t"
