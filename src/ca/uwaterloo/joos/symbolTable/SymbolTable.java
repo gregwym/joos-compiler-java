@@ -44,6 +44,7 @@ public class SymbolTable{
 		//TODO Test. REMOVE.
 		try {
 			tree.getRoot().accept(new SemanticsVisitor());
+			System.out.println(tree.getRoot().getIdentifier());
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
