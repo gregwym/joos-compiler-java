@@ -8,28 +8,39 @@ import ca.uwaterloo.joos.ast.body.*;
 import ca.uwaterloo.joos.ast.decl.FieldDeclaration;
 import ca.uwaterloo.joos.ast.decl.LocalVariableDeclaration;
 import ca.uwaterloo.joos.ast.decl.MethodDeclaration;
+import ca.uwaterloo.joos.ast.decl.VariableDeclaration;
 import ca.uwaterloo.joos.ast.expr.AssignmentExpression;
+import ca.uwaterloo.joos.ast.expr.Expression;
 import ca.uwaterloo.joos.ast.expr.primary.ExpressionPrimary;
 import ca.uwaterloo.joos.ast.statement.Block;
 import ca.uwaterloo.joos.ast.statement.Statement;
+import ca.uwaterloo.joos.symbolTable.SymbolTable;
 
 public class SemanticsVisitor extends ASTVisitor {
+	static SymbolTable st = null;			//SYMBOLTABLE - Link to the global SymbolTable
 	
+	
+	public SemanticsVisitor(SymbolTable ist){
+		st = ist;
+	}
 	
 	public boolean visit(MethodDeclaration node){
 		
 		return true;
 	}
 	
-	@SuppressWarnings("unchecked")
 	public boolean visit(ASTNode node) throws ChildTypeUnmatchException{
+		//Processes a single node in the AST tree
 		if (node instanceof ClassBody){
 			System.out.println("SemanticsVisitor.visit: Class Body found!");
 			List<FieldDeclaration> tst = ((ClassBody) node).getFields();
 			
+			for (int i = 0; i < tst.size(); i++){
+				System.out.println(tst.get(i).getIdentifier().toString());
+			}
 		}
 		
-		else if (node instanceof MethodDeclaration){
+		/*if (node instanceof MethodDeclaration){
 			MethodDeclaration nodeMD = (MethodDeclaration) node;
 			System.out.println("SemanticsVisitor.visit: Method Declaration found! " + nodeMD.getName().toString());
 			Block tst = ((MethodDeclaration) node).getBody();
@@ -39,20 +50,27 @@ public class SemanticsVisitor extends ASTVisitor {
 			List<Statement> stmnt = (List<Statement>) tst.getChildByDescriptor(tst.STATEMENTS);
 			for (int i = 0; i < vars.size(); i++){
 				System.out.println(vars.get(i));
-//				System.out.println(yolo.get(i).getType().);
-			}
-			
-			for (int i = 0; i < stmnt.size(); i++){
-//				System.out.println(stmnt.get(i));
-//				System.out.println(yolo.get(i).getType().);
+				System.out.println("WHAT: " + vars.get(i).getInitial().toString());
+//				System.out.println(stmnt.get(0));			//IE IF statement
 			}
 			
 		}
-		
-		else if (node instanceof ExpressionPrimary){
-			ExpressionPrimary nodeAE = (ExpressionPrimary) node;
+		*/
+		if (node instanceof Block){
+			Block nodeB = (Block)node;
+//			System.out.println("Block: " + node.toString());
+			List<LocalVariableDeclaration> lv = nodeB.getLocalVariable();
 			
-			System.out.println(nodeAE.getExpression().toString());
+			for (int i = 0; i < lv.size(); i++){
+				System.out.println(lv.get(i).toString());
+				
+				if (lv.get(i).getInitial() instanceof ExpressionPrimary){
+				ExpressionPrimary ep = (ExpressionPrimary) lv.get(i).getInitial();
+				System.out.println(ep.getExpression());
+				}
+				//System.out.println(lv.get(i).getInitial().toString());
+			}
+			
 		}
 		
 		return true;
