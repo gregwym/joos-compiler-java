@@ -34,35 +34,26 @@ public class IntegerChecker extends IntegerVisitor {
 	protected void visitInteger(LiteralPrimary node) throws Exception {
 		String intPositiveThreshold = "2147483647";
 		String intNegThreshold = "2147483648";
-		Set<String> expressionTokenKinds = new HashSet<String>();
-		expressionTokenKinds.add("INTLIT");
-		expressionTokenKinds.add("RPAREN");
-		if(node.getParent().getClass().getSimpleName().equals("UnaryExpression"))
-		{
-			checkIntRange(node.getValue(),intNegThreshold);
+		if (node.getParent().getClass().getSimpleName().equals("UnaryExpression")) {
+			checkIntRange(node.getValue(), intNegThreshold);
+		} else {
+			checkIntRange(node.getValue(), intPositiveThreshold);
 		}
-		else
-	   {
-			checkIntRange(node.getValue(),intPositiveThreshold);
-		}
-		
+
 	}
-	private void checkIntRange(String intString,String intergerThreshold)throws Exception{
-		
-		
-		if(intString.length() == intergerThreshold.length())
-		{
-		   for(int i = 0;i<intergerThreshold.length();i++)
-		   {
-			   if((int)intString.charAt(i)>(int)intergerThreshold.charAt(i)){
-				  
+
+	private void checkIntRange(String intString, String intergerThreshold) throws Exception {
+
+		if (intString.length() == intergerThreshold.length()) {
+			for (int i = 0; i < intergerThreshold.length(); i++) {
+				if ((int) intString.charAt(i) > (int) intergerThreshold.charAt(i)) {
+
 					throw new Exception("Interger out of Range");
-			   }
-		   }
+				}
+			}
 		}
-		if(intString.length() > intergerThreshold.length())
-		{  
-			throw new Exception("Interger out of Range");	
+		if (intString.length() > intergerThreshold.length()) {
+			throw new Exception("Interger out of Range");
 		}
 	}
 }
