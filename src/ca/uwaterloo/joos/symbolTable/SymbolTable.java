@@ -6,6 +6,7 @@ package ca.uwaterloo.joos.symbolTable;
 
 //Proposal
 import java.util.HashMap;
+import java.util.Map;
 import java.util.logging.Logger;
 
 import ca.uwaterloo.joos.Main;
@@ -14,7 +15,6 @@ import ca.uwaterloo.joos.ast.ASTNode;
 import ca.uwaterloo.joos.ast.statement.Block;
 import ca.uwaterloo.joos.ast.visitor.SemanticsVisitor;
 import ca.uwaterloo.joos.ast.visitor.TopDeclVisitor;
-
 
 
 public class SymbolTable{
@@ -30,17 +30,10 @@ public class SymbolTable{
 	static Logger 		logger = Main.getLogger(Main.class);
 	
 	
-	static private int 	level = 0;													//INT 		- Represents the current block level
-	private AST 		tree = null;												//AST 		- Link to an AST to scan. Updated in walk()
-	HashMap<String, TableEntry> SymbolTable = null;									//HASHMAP 	- 
-	
-	public void openScope(){
-		level++;
-	}
-	
-	public void closeScope(){
-		level--;
-	}
+	private String 					name		= null;									//	Represents the name of the current scope
+	private AST 					tree 		= null;									//	Link to an AST to scan. Updated in walk()
+	Map<String, ASTNode> 			SymbolTable = null;									//	A map mapping identifiers to their related ASTNode
+	static Map<String, SymbolTable>Scopes 		= new HashMap<String, SymbolTable>(); 	//	Links each Scope together
 	
 	//Constructs a symbol table
 	//An AST is generated at this point, walk it.
@@ -52,22 +45,36 @@ public class SymbolTable{
 	
 	private class TableEntry{
 		//An entry mapped to in the symboltable hashmap
+		//TODO remove.
 		String 		value;
 		TableEntry 	prevVal;
 		TableEntry 	chain;
+		int			scope;	
 		Object		attributes;
 		
 	}
 	
-	public SymbolTable(AST ast){
-		//TODO 
-		//	-init table
-		
-		SymbolTable = new HashMap<String, TableEntry>();
-		this.tree = ast;
+	public void setName(String iname){
+		this.name = iname;
+		System.out.println("SymbolTable.setName() Setting Name to " + iname);
 	}
 	
+	public String getName(){
+		return name;
+	}
+	public SymbolTable(){
+		//TODO 
+		//	-init table
+		this.SymbolTable = new HashMap<String, ASTNode>();
+	}
 	
+	public void addEntry(String key, ASTNode value){
+		SymbolTable.put(key, value);
+	}
+	
+	public boolean isEmpty(String key){
+		return (SymbolTable.get(key) == null);
+	}
 	private void constructTable(){
 		//TODO REMOVE
 		//Walks the AST and constructs a table holding declarations 
@@ -81,14 +88,13 @@ public class SymbolTable{
 		
 	}
 	
-	public void constructTable(ASTNode ast){
-		//Calls the AST's accept method with visitor type SemanticsVisitor
-		processNode(tree.getRoot());
-		
+	public void addScope(){
+		this.Scopes.put(this.name, this);
 	}
-
-	private void processNode(ASTNode root) {
-		if (root instanceof )
+	
+	public void constructTable(ASTNode ast) throws Exception{
+		//Calls the AST's accept method with visitor type SemanticsVisitor
+		ast.accept(new TopDeclVisitor(this));
 		
 	}
 	
