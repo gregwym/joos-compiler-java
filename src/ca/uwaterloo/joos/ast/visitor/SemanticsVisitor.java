@@ -5,9 +5,12 @@ import java.util.List;
 import ca.uwaterloo.joos.ast.ASTNode;
 import ca.uwaterloo.joos.ast.ASTNode.ChildTypeUnmatchException;
 import ca.uwaterloo.joos.ast.body.*;
+import ca.uwaterloo.joos.ast.decl.*;
+import ca.uwaterloo.joos.ast.FileUnit;
 import ca.uwaterloo.joos.ast.decl.FieldDeclaration;
 import ca.uwaterloo.joos.ast.decl.LocalVariableDeclaration;
 import ca.uwaterloo.joos.ast.decl.MethodDeclaration;
+import ca.uwaterloo.joos.ast.decl.PackageDeclaration;
 import ca.uwaterloo.joos.ast.decl.VariableDeclaration;
 import ca.uwaterloo.joos.ast.expr.AssignmentExpression;
 import ca.uwaterloo.joos.ast.expr.Expression;
@@ -24,20 +27,22 @@ public class SemanticsVisitor extends ASTVisitor {
 		st = ist;
 	}
 	
-	public boolean visit(MethodDeclaration node){
-		
-		return true;
-	}
 	
 	public boolean visit(ASTNode node) throws ChildTypeUnmatchException{
 		//Processes a single node in the AST tree
+		
+		
 		if (node instanceof ClassBody){
 			System.out.println("SemanticsVisitor.visit: Class Body found!");
-			List<FieldDeclaration> tst = ((ClassBody) node).getFields();
+			/*List<FieldDeclaration> tst = ((ClassBody) node).getFields();
 			
 			for (int i = 0; i < tst.size(); i++){
 				System.out.println(tst.get(i).getIdentifier().toString());
-			}
+			}*/
+		}
+		
+		if (node instanceof VariableDeclaration){
+			System.out.println("SemanticsVisitor.visit: VarDecl Found!");
 		}
 		
 		/*if (node instanceof MethodDeclaration){
@@ -58,8 +63,8 @@ public class SemanticsVisitor extends ASTVisitor {
 		*/
 		if (node instanceof Block){
 			Block nodeB = (Block)node;
-//			System.out.println("Block: " + node.toString());
-			List<LocalVariableDeclaration> lv = nodeB.getLocalVariable();
+			System.out.println("SemanticsVisitor.visit(): Block: " + node.toString());
+			/*List<LocalVariableDeclaration> lv = nodeB.getLocalVariable();
 			
 			for (int i = 0; i < lv.size(); i++){
 				System.out.println(lv.get(i).toString());
@@ -69,7 +74,7 @@ public class SemanticsVisitor extends ASTVisitor {
 				System.out.println(ep.getExpression());
 				}
 				//System.out.println(lv.get(i).getInitial().toString());
-			}
+			}*/
 			
 		}
 		
@@ -77,7 +82,11 @@ public class SemanticsVisitor extends ASTVisitor {
 	}
 	@Override
 	public void willVisit(ASTNode node) {
-		// TODO Auto-generated method stub
+		//What happens for each node type initially
+		
+		if (node instanceof ClassBody){
+			
+		}
 
 	}
 
