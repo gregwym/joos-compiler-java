@@ -14,6 +14,11 @@ public class PackageDeclaration extends ASTNode {
 		super(node, parent);
 	}
 
+	public String getPackageName() throws ChildTypeUnmatchException{
+		ASTNode ret = this.getChildByDescriptor(PACKAGENAME);
+		if (ret == null) return "default_package";
+		else return ret.getIdentifier();
+	}
 	@Override
 	public List<Node> processTreeNode(TreeNode treeNode) throws Exception {
 		if (treeNode.productionRule.getLefthand().equals("qualifiedname")) {
