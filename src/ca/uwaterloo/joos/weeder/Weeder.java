@@ -31,6 +31,7 @@ public class Weeder {
 		this.checkers = new ArrayList<ASTVisitor>();
 		this.checkers.add(new TypeDeclarationChecker());
 		this.checkers.add(new ModifiersChecker());
+		this.checkers.add(new IntegerChecker());
 	}
 
 	public void weedAst(AST ast) throws Exception {
