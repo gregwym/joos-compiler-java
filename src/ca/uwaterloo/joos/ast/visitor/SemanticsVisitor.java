@@ -28,7 +28,7 @@ public class SemanticsVisitor extends ASTVisitor {
 	}
 	
 	
-	public boolean visit(ASTNode node) throws ChildTypeUnmatchException{
+	public boolean visit(ASTNode node) throws ChildTypeUnmatchException, Exception{
 		//Processes a single node in the AST tree
 		
 		

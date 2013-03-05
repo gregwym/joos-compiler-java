@@ -33,9 +33,10 @@ public class TopDeclVisitor extends SemanticsVisitor {
 		if (node instanceof FieldDeclaration){
 			try {
 				String key = this.st.getName() + "." + ((FieldDeclaration) node).getName().getName(); 
-//				System.out.println("TopDeclVisitor.visit(): Found Field: " + key);
-				if (st.isEmpty(key)) st.addEntry(key, node);
+//				System.out.println("TopDeclVisitor.visit(): Found Field: " + key + " Empty??" + st.isEmpty(key));
+				if (!st.hasField(key)) st.addField(key, node);
 				else{
+//					st.g
 					System.err.println("TopDeclVisitor.visit(): Multiple Field Declarations with same name. Exit with -1");
 					System.exit(-1);
 				}
@@ -46,11 +47,12 @@ public class TopDeclVisitor extends SemanticsVisitor {
 		}
 		
 		if (node instanceof MethodDeclaration){
+			//TODO check signatures
 			MethodDeclaration Mnode = (MethodDeclaration) node;
 			try {
 //				System.out.println("TopDeclVisitor.visit(): Found Method: " + this.st.getName() + "." + Mnode.getName().getName());
-				String key = this.st.getName() + "." + ((MethodDeclaration) node).getName().getName(); 
-				this.st.addEntry(key, node);
+				String key = this.st.getName() + "." + ((MethodDeclaration) node).getName().getName();
+				if (!st.hasMethod(key))st.addMethod(key, node);
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();

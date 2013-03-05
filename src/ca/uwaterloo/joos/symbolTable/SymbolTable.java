@@ -7,12 +7,14 @@ package ca.uwaterloo.joos.symbolTable;
 //Proposal
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Stack;
 import java.util.logging.Logger;
 
 import ca.uwaterloo.joos.Main;
 import ca.uwaterloo.joos.ast.AST;
 import ca.uwaterloo.joos.ast.ASTNode;
 import ca.uwaterloo.joos.ast.statement.Block;
+import ca.uwaterloo.joos.ast.visitor.DeepDeclVisitor;
 import ca.uwaterloo.joos.ast.visitor.SemanticsVisitor;
 import ca.uwaterloo.joos.ast.visitor.TopDeclVisitor;
 
@@ -33,7 +35,8 @@ public class SymbolTable{
 	private String 					name		= null;									//	Represents the name of the current scope
 	private AST 					tree 		= null;									//	Link to an AST to scan. Updated in walk()
 	Map<String, ASTNode> 			SymbolTable = null;									//	A map mapping identifiers to their related ASTNode
-	static Map<String, SymbolTable>Scopes 		= new HashMap<String, SymbolTable>(); 	//	Links each Scope together
+	static Map<String, SymbolTable> Scopes 		= new HashMap<String, SymbolTable>(); 	//	Links each Scope together
+	private static Stack<SymbolTable>view		= new Stack<SymbolTable>();
 	
 	//Constructs a symbol table
 	//An AST is generated at this point, walk it.
@@ -54,6 +57,18 @@ public class SymbolTable{
 		
 	}
 	
+	public Stack getView(){
+		return view;
+	}
+	
+	public void openScope(String st){
+		view.push(Scopes.get(st));
+	}
+	
+	public void closeScope(){
+		view.pop();
+	}
+	
 	public void setName(String iname){
 		this.name = iname;
 		System.out.println("SymbolTable.setName() Setting Name to " + iname);
@@ -68,26 +83,23 @@ public class SymbolTable{
 		this.SymbolTable = new HashMap<String, ASTNode>();
 	}
 	
-	public void addEntry(String key, ASTNode value){
+	public void addField(String key, ASTNode value){
 		SymbolTable.put(key, value);
 	}
 	
-	public boolean isEmpty(String key){
-		return (SymbolTable.get(key) == null);
-	}
-	private void constructTable(){
-		//TODO REMOVE
-		//Walks the AST and constructs a table holding declarations 
-		//Right now the symbols are stored in a hash table for quick lookup time
-		
-		//Check that:
-		//	-No two fields in the same class have the same name
-		//	-No two local variables with overlapping scope have the same name
-		//	-No two classes or interfaces have the same name
-		
-		
+	public void addMethod(String key, ASTNode value){
+		SymbolTable.put(key + "()", value);
 	}
 	
+	public boolean hasField(String key){
+		//if false, no field exists and we can add it
+		return (SymbolTable.containsKey(key));
+	}
+	
+	public boolean hasMethod(String key){
+		//If false, no Method exists and we can add it
+		return (SymbolTable.containsKey(key + "()"));
+	}
 	public void addScope(){
 		this.Scopes.put(this.name, this);
 	}
@@ -95,7 +107,11 @@ public class SymbolTable{
 	public void constructTable(ASTNode ast) throws Exception{
 		//Calls the AST's accept method with visitor type SemanticsVisitor
 		ast.accept(new TopDeclVisitor(this));
-		
+		ast.accept(new DeepDeclVisitor(this));
+	}
+	
+	public void constructScope(ASTNode ast) throws Exception{
+		ast.accept(new DeepDeclVisitor(this));
 	}
 	
 }
