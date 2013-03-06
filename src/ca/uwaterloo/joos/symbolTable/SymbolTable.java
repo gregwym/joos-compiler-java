@@ -16,6 +16,8 @@ import java.util.logging.Logger;
 import ca.uwaterloo.joos.Main;
 import ca.uwaterloo.joos.ast.AST;
 import ca.uwaterloo.joos.ast.ASTNode;
+import ca.uwaterloo.joos.ast.decl.MethodDeclaration;
+import ca.uwaterloo.joos.ast.decl.ParameterDeclaration;
 import ca.uwaterloo.joos.ast.visitor.ASTVisitor;
 import ca.uwaterloo.joos.ast.visitor.DeepDeclVisitor;
 import ca.uwaterloo.joos.ast.visitor.TopDeclVisitor;
@@ -124,8 +126,13 @@ public class SymbolTable{
 		symbolTable.put(key, te);
 		
 	}
-	public void addMethod(String key, ASTNode node){
-		symbolTable.put(key + "()", new TableEntry(node));
+	public void addMethod(MethodDeclaration node) throws Exception{
+		String name = this.name + "." + node.getName().getName() + "(";
+		for(ParameterDeclaration parameter: node.getParameters()) {
+			name += parameter.getType().getIdentifier();
+		}
+		name += ")";
+		symbolTable.put(name, new TableEntry(node));
 	}
 	
 	public TableEntry getMethod(String key){
@@ -146,10 +153,20 @@ public class SymbolTable{
 		return (symbolTable.containsKey(key));
 	}
 	
-	public boolean hasMethod(String key){
+	public boolean hasMethod(MethodDeclaration method) throws Exception{
 		//If false, no Method exists and we can add it
-		return (symbolTable.containsKey(key + "()"));
+		String name = this.name + "." + method.getName().getName() + "(";
+		for(ParameterDeclaration parameter: method.getParameters()) {
+			name += parameter.getType().getIdentifier();
+		}
+		name += ")";
+		return (symbolTable.containsKey(name));
 	}
+	
+	public static boolean hasClass(String key) {
+		return SymbolTable.Scopes.containsKey(key);
+	}
+	
 	public void addScope(){
 		SymbolTable.Scopes.put(this.name, this);
 	}

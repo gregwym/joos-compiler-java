@@ -32,4 +32,15 @@ public class ArrayType extends Type {
 		}
 		return null;
 	}
+	
+	@Override
+	public String getIdentifier() {
+		String name = null;
+		try {
+			name = this.getType().getIdentifier() + "[]";
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return name;
+	}
 }
