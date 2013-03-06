@@ -16,7 +16,7 @@ import ca.uwaterloo.joos.parser.ParseTree;
 import ca.uwaterloo.joos.scanner.DFA;
 import ca.uwaterloo.joos.scanner.Scanner;
 import ca.uwaterloo.joos.scanner.Token;
-import ca.uwaterloo.joos.symbolTable.SymbolTable;
+import ca.uwaterloo.joos.symboltable.SymbolTable;
 import ca.uwaterloo.joos.weeder.Weeder;
 
 /**

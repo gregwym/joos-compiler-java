@@ -2,7 +2,7 @@
 //TODO 
 //	-JAVADOC
 //	-Define Table
-package ca.uwaterloo.joos.symbolTable;
+package ca.uwaterloo.joos.symboltable;
 
 //Proposal
 import java.util.ArrayList;
@@ -23,9 +23,6 @@ import ca.uwaterloo.joos.ast.decl.LocalVariableDeclaration;
 import ca.uwaterloo.joos.ast.decl.MethodDeclaration;
 import ca.uwaterloo.joos.ast.decl.ParameterDeclaration;
 import ca.uwaterloo.joos.ast.decl.VariableDeclaration;
-import ca.uwaterloo.joos.ast.visitor.DeepDeclVisitor;
-import ca.uwaterloo.joos.ast.visitor.TopDeclVisitor;
-//import ca.uwaterloo.joos.ast.ASTNode;
 
 
 public class SymbolTable{

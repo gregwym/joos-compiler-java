@@ -1,4 +1,4 @@
-package ca.uwaterloo.joos.ast.visitor;
+package ca.uwaterloo.joos.symboltable;
 
 import java.util.Stack;
 
@@ -6,7 +6,7 @@ import ca.uwaterloo.joos.ast.ASTNode;
 import ca.uwaterloo.joos.ast.ASTNode.ChildTypeUnmatchException;
 import ca.uwaterloo.joos.ast.decl.VariableDeclaration;
 import ca.uwaterloo.joos.ast.statement.Block;
-import ca.uwaterloo.joos.symbolTable.SymbolTable;
+import ca.uwaterloo.joos.ast.visitor.ASTVisitor;
 
 public class BlockVisitor extends SemanticsVisitor {
 	private int level = 0;

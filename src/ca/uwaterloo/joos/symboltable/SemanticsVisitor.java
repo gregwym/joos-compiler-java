@@ -1,4 +1,4 @@
-package ca.uwaterloo.joos.ast.visitor;
+package ca.uwaterloo.joos.symboltable;
 
 import java.util.Stack;
 import java.util.logging.Level;
@@ -10,7 +10,7 @@ import ca.uwaterloo.joos.ast.ASTNode.ChildTypeUnmatchException;
 import ca.uwaterloo.joos.ast.body.ClassBody;
 import ca.uwaterloo.joos.ast.decl.VariableDeclaration;
 import ca.uwaterloo.joos.ast.statement.Block;
-import ca.uwaterloo.joos.symbolTable.SymbolTable;
+import ca.uwaterloo.joos.ast.visitor.ASTVisitor;
 
 public abstract class SemanticsVisitor extends ASTVisitor {
 	// SYMBOLTABLE - Link to the global SymbolTable
