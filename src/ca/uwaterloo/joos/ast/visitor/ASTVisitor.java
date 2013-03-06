@@ -23,5 +23,7 @@ public abstract class ASTVisitor {
 		return true;
 	}
 	
+	
+	
 	public abstract void didVisit(ASTNode node);
 }

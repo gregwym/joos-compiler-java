@@ -23,6 +23,12 @@ public abstract class VariableDeclaration extends BodyDeclaration {
 	 * ca.uwaterloo.joos.parser.ParseTreeTraverse.Traverser#processTreeNode(
 	 * ca.uwaterloo.joos.parser.ParseTree.TreeNode)
 	 */
+	
+	
+	public Expression getInitial() throws ChildTypeUnmatchException{
+		return (Expression) this.getChildByDescriptor(INITIAL);
+	}
+	
 	@Override
 	public List<Node> processTreeNode(TreeNode treeNode) throws Exception {
 		if (treeNode.productionRule.getLefthand().equals("expr")) {
