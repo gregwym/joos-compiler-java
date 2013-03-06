@@ -1,4 +1,4 @@
-package ca.uwaterloo.joos.ast.visitor;
+package ca.uwaterloo.joos.symbolTable;
 
 import ca.uwaterloo.joos.ast.ASTNode;
 import ca.uwaterloo.joos.ast.ASTNode.ChildTypeUnmatchException;
@@ -7,7 +7,6 @@ import ca.uwaterloo.joos.ast.decl.FieldDeclaration;
 import ca.uwaterloo.joos.ast.decl.MethodDeclaration;
 import ca.uwaterloo.joos.ast.decl.PackageDeclaration;
 import ca.uwaterloo.joos.ast.decl.TypeDeclaration;
-import ca.uwaterloo.joos.symbolTable.SymbolTable;
 
 public class TopDeclVisitor extends SemanticsVisitor {
 

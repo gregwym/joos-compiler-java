@@ -1,4 +1,4 @@
-package ca.uwaterloo.joos.ast.visitor;
+package ca.uwaterloo.joos.symbolTable;
 
 import java.util.List;
 
@@ -11,7 +11,7 @@ import ca.uwaterloo.joos.ast.decl.OnDemandImport;
 import ca.uwaterloo.joos.ast.decl.PackageDeclaration;
 import ca.uwaterloo.joos.ast.decl.SingleImport;
 import ca.uwaterloo.joos.ast.decl.TypeDeclaration;
-import ca.uwaterloo.joos.symbolTable.SymbolTable;
+import ca.uwaterloo.joos.ast.visitor.ASTVisitor;
 
 public class DeepDeclVisitor extends SemanticsVisitor {
 

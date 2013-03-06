@@ -23,9 +23,6 @@ import ca.uwaterloo.joos.ast.decl.LocalVariableDeclaration;
 import ca.uwaterloo.joos.ast.decl.MethodDeclaration;
 import ca.uwaterloo.joos.ast.decl.ParameterDeclaration;
 import ca.uwaterloo.joos.ast.decl.VariableDeclaration;
-import ca.uwaterloo.joos.ast.visitor.DeepDeclVisitor;
-import ca.uwaterloo.joos.ast.visitor.TopDeclVisitor;
-//import ca.uwaterloo.joos.ast.ASTNode;
 
 
 public class SymbolTable{
