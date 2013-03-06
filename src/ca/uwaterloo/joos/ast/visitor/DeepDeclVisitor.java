@@ -10,6 +10,7 @@ import ca.uwaterloo.joos.ast.decl.OnDemandImport;
 import ca.uwaterloo.joos.ast.decl.VariableDeclaration;
 import ca.uwaterloo.joos.ast.decl.ClassDeclaration;
 import ca.uwaterloo.joos.ast.decl.PackageDeclaration;
+import ca.uwaterloo.joos.ast.statement.Block;
 import ca.uwaterloo.joos.symbolTable.SymbolTable;
 
 public class DeepDeclVisitor extends SemanticsVisitor {
@@ -25,7 +26,17 @@ public class DeepDeclVisitor extends SemanticsVisitor {
 		
 		if (node instanceof ImportDeclaration){
 			ImportDeclaration INode = (ImportDeclaration) node;
+			try {
+				System.out.println("IMPORT: " + INode.getImportName().getName());
+			} catch (ChildTypeUnmatchException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 			//NOTE: import is a file given on the command line
+			catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
 		
 		
@@ -68,6 +79,10 @@ public class DeepDeclVisitor extends SemanticsVisitor {
 	}
 	
 	public boolean visit(ASTNode node) throws ChildTypeUnmatchException, Exception {
+		
+		if (node instanceof Block){
+			System.out.println("BLOCK");
+		}
 		if (node instanceof OnDemandImport){
 			OnDemandImport INode = (OnDemandImport) node;
 			System.out.println("IMPORT: " + INode.getImportName());

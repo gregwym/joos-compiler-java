@@ -94,6 +94,15 @@ public class SymbolTable{
 		SymbolTable.put(key + "()", new TableEntry(value));
 	}
 	
+	public TableEntry getMethod(String key){
+		return this.SymbolTable.get(key+"()");
+		
+	}
+	
+	public TableEntry getField(String key){
+		return this.SymbolTable.get(key);
+	}
+	
 	public boolean hasField(String key){
 		//if false, no field exists and we can add it
 		return (SymbolTable.containsKey(key));

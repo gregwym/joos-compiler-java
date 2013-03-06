@@ -17,6 +17,7 @@ import ca.uwaterloo.joos.parser.ParseTree;
 import ca.uwaterloo.joos.scanner.DFA;
 import ca.uwaterloo.joos.scanner.Scanner;
 import ca.uwaterloo.joos.scanner.Token;
+import ca.uwaterloo.joos.symbolTable.SymbolTable;
 import ca.uwaterloo.joos.weeder.Weeder;
 
 /**
@@ -109,7 +110,7 @@ public class Main {
 		for(String arg: args) {
 			System.out.println("Source: " + arg);
 		}
-
+		SymbolTable st;
 		Main instance = new Main();
 
 		try {
@@ -117,6 +118,12 @@ public class Main {
 			for(String arg: args) {
 				asts.add(instance.constructAst(new File(arg)));
 			}
+			
+			st = new SymbolTable();
+			st.build(asts);
+//			st.listScopes();
+//			System.out.println(st.getMethod("default_package.J1_01.test").getNode().getIdentifier());
+			
 		} catch (Exception e) {
 			System.err.println("ERROR: " + e.getLocalizedMessage() + " " + e.getClass().getName());
 			e.printStackTrace();
