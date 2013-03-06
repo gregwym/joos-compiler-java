@@ -5,6 +5,7 @@ import java.util.List;
 import ca.uwaterloo.joos.ast.ASTNode;
 import ca.uwaterloo.joos.ast.Modifiers;
 import ca.uwaterloo.joos.ast.body.ClassBody;
+import ca.uwaterloo.joos.ast.body.InterfaceBody;
 import ca.uwaterloo.joos.ast.body.TypeBody;
 import ca.uwaterloo.joos.ast.descriptor.ChildDescriptor;
 import ca.uwaterloo.joos.ast.descriptor.ChildListDescriptor;
@@ -16,7 +17,7 @@ import ca.uwaterloo.joos.parser.ParseTree.TreeNode;
 public abstract class TypeDeclaration extends ASTNode {
 
 	protected static final ChildDescriptor MODIFIERS = new ChildDescriptor(Modifiers.class);
-	protected static final ChildListDescriptor INTERFACES = new ChildListDescriptor(ReferenceType.class);
+	protected static final ChildListDescriptor IMPLEMNTS = new ChildListDescriptor(ReferenceType.class);
 	protected static final ChildDescriptor BODY = new ChildDescriptor(TypeBody.class);
 
 	public TypeDeclaration(Node node, ASTNode parent) throws Exception {
@@ -29,7 +30,7 @@ public abstract class TypeDeclaration extends ASTNode {
 
 	@SuppressWarnings("unchecked")
 	public List<ReferenceType> getInterfaces() throws ChildTypeUnmatchException {
-		return (List<ReferenceType>) this.getChildByDescriptor(TypeDeclaration.INTERFACES);
+		return (List<ReferenceType>) this.getChildByDescriptor(TypeDeclaration.IMPLEMNTS);
 	}
 
 	public TypeBody getBody() throws ChildTypeUnmatchException {
@@ -41,12 +42,17 @@ public abstract class TypeDeclaration extends ASTNode {
 		if (treeNode.productionRule.getLefthand().equals("modifiers")) {
 			Modifiers modifiers = new Modifiers(treeNode, this);
 			addChild(MODIFIERS, modifiers);
-		} else if (treeNode.productionRule.getLefthand().equals("interface")) {
-			// TODO interface declaration do not use interface as keyword
-			ReferenceType interfaceType = new ReferenceType(treeNode, this);
-			addChild(INTERFACES, interfaceType);
-		} else if (treeNode.productionRule.getLefthand().equals("classbody")) {
+		}
+		// else if (treeNode.productionRule.getLefthand().equals("interface")) {
+		// // TODO interface declaration do not use interface as keyword
+		// ReferenceType interfaceType = new ReferenceType(treeNode, this);
+		// addChild(INTERFACES, interfaceType);
+		// }
+		else if (treeNode.productionRule.getLefthand().equals("classbody")) {
 			ClassBody body = new ClassBody(treeNode, this);
+			addChild(BODY, body);
+		} else if (treeNode.productionRule.getLefthand().equals("interfacebody")) {
+			InterfaceBody body = new InterfaceBody(treeNode, this);
 			addChild(BODY, body);
 		} else {
 			return super.processTreeNode(treeNode);
