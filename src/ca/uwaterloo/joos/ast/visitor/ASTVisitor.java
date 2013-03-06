@@ -17,7 +17,7 @@ public abstract class ASTVisitor {
 	public ASTVisitor() {
 	}
 	
-	public abstract void willVisit(ASTNode node);
+	public abstract void willVisit(ASTNode node) throws Exception;
 
 	public boolean visit(ASTNode node) throws Exception {
 		return true;
@@ -25,5 +25,5 @@ public abstract class ASTVisitor {
 	
 	
 	
-	public abstract void didVisit(ASTNode node);
+	public abstract void didVisit(ASTNode node) throws Exception;
 }

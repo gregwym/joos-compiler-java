@@ -6,6 +6,7 @@ package ca.uwaterloo.joos.symbolTable;
 
 //Proposal
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -39,7 +40,7 @@ public class SymbolTable{
 	
 	private String name = null;	// Represents the name of the current scope
 	private Map<String, TableEntry> symbolTable = null;	// A map mapping identifiers to their related ASTNode
-	private static Map<String, SymbolTable> Scopes = new HashMap<String, SymbolTable>();	// Links each Scope together
+	private static Map<String, SymbolTable> scopes = new HashMap<String, SymbolTable>();	// Links each Scope together
 	private static Stack<SymbolTable>view = new Stack<SymbolTable>();	// The Current Scope
 	
 	//Constructs a symbol table
@@ -50,6 +51,23 @@ public class SymbolTable{
 	//	-Add the symbol to the table at some index and put that index into the AST
 	//	-Associate each package...
 	
+	public SymbolTable(String name){
+		this.symbolTable = new HashMap<String, TableEntry>();
+		this.name = name;
+		SymbolTable.scopes.put(name, this);
+	}
+	
+	public static SymbolTable getScope(String name) {
+		SymbolTable table = SymbolTable.scopes.get(name);
+		if(table == null) {
+			table = new SymbolTable(name);
+		}
+		return table;
+	}
+	
+	public static boolean containScope(String name) {
+		return SymbolTable.scopes.containsKey(name);
+	}
 	
 	public List<String> appendScope(SymbolTable st, int blocks, int level){
 		//ONLY CALLED FROM BLOCK VISITOR
@@ -83,26 +101,15 @@ public class SymbolTable{
 	}
 	
 	public void openScope(String st){
-		view.push(Scopes.get(st));
+		view.push(scopes.get(st));
 	}
 	
 	public void closeScope(){
 		view.pop();
 	}
 	
-	public void setName(String name){
-//		System.out.println("Setting name to: " + iname);
-		this.name = name;
-	}
-	
 	public String getName(){
 		return name;
-	}
-	
-	public SymbolTable(){
-		//TODO 
-		//	-init table
-		this.symbolTable = new HashMap<String, TableEntry>();
 	}
 	
 	public void addField(String key, ASTNode node){
@@ -113,7 +120,7 @@ public class SymbolTable{
 	public void addClass(String key, ASTNode node){
 		TableEntry te = new TableEntry(node);
 		te.setLevel(0);
-		symbolTable.put(key + "{}", te);
+		symbolTable.put(key, te);
 	}
 	
 	public TableEntry getClass(String key){
@@ -163,41 +170,42 @@ public class SymbolTable{
 		return (symbolTable.containsKey(name));
 	}
 	
-	public static boolean hasClass(String key) {
-		return SymbolTable.Scopes.containsKey(key);
-	}
-	
-	public void addScope(){
-		SymbolTable.Scopes.put(this.name, this);
-	}
-	
 	public void build(ASTVisitor visitor, ASTNode astNode) throws Exception {
 		//Called whenever a visitor wants to build a new table
 		astNode.accept(visitor);
 	}
 	
-	public void build(List<AST> asts) throws Exception{
+	public static void build(List<AST> asts) throws Exception{
 		logger.setLevel(Level.FINE);
 		logger.fine("Building SymbolTable");
 		//Called from main
-		for (AST iast: asts){
-			iast.getRoot().accept(new TopDeclVisitor(this));
-			iast.getRoot().accept(new DeepDeclVisitor(this));
+		for (AST ast: asts){
+			ast.getRoot().accept(new TopDeclVisitor());
 		}
+		
+//		for (AST iast: asts){
+//			iast.getRoot().accept(new DeepDeclVisitor());
+//		}
 	}
 
 	public static void listScopes() {
 		System.out.println("Listing Scopes");
-		for (String key : Scopes.keySet()){
-			System.out.println(Scopes.get(key).getName());
-			Scopes.get(key).listSymbols();
+		List<String> keys = new ArrayList<String>(scopes.keySet());
+		Collections.sort(keys);
+		for (String key : keys){
+			System.out.println(scopes.get(key).getName());
+			scopes.get(key).listSymbols();
 		}
 	}
 	
 	public void listSymbols(){
 		for (String key: this.symbolTable.keySet()){
-			System.out.println("	" + key + "    " + this.symbolTable.get(key).getNode() + "   Level: " + this.symbolTable.get(key).getLevel());
+			System.out.println("\t" + key + "\t" + this.symbolTable.get(key).getNode() + "\tLevel: " + this.symbolTable.get(key).getLevel());
 		}
 		System.out.println();
+	}
+	
+	public String toString() {
+		return "<" + this.getClass().getSimpleName() + "> " + this.name;
 	}
 }
