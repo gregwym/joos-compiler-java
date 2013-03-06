@@ -28,8 +28,9 @@ public class TopDeclVisitor extends SemanticsVisitor {
 		if (node instanceof ClassDeclaration){
 			//TODO check if class has already been defined
 			String tname = ((ClassDeclaration) node).getIdentifier();
-			st.setName(st.getName() + "." + tname);
+			st.setName(st.getName() + "." + tname + "{}");
 			st.addScope();//Adds the current symbol table to the static symbol table map.
+			st.addClass(st.getName() + "." + tname, node);
 		}
 		
 		if (node instanceof FieldDeclaration){

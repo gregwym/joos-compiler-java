@@ -5,11 +5,14 @@
 package ca.uwaterloo.joos.symbolTable;
 
 //Proposal
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.Stack;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import ca.uwaterloo.joos.Main;
@@ -34,12 +37,12 @@ public class SymbolTable{
 	 * namespace.
 	 * 
 	 */
-	static Logger 		logger = Main.getLogger(Main.class);
+	static Logger 		logger = Main.getLogger(SymbolTable.class);
 	
 	
 	private String 					name		= null;									//	Represents the name of the current scope
 	private AST 					tree 		= null;									//	Link to an AST to scan. Updated in walk()
-	Map<String, TableEntry> 		SymbolTable = null;									//	A map mapping identifiers to their related ASTNode
+	private Map<String, TableEntry> 		symbolTable = null;							//	A map mapping identifiers to their related ASTNode
 	static Map<String, SymbolTable> Scopes 		= new HashMap<String, SymbolTable>(); 	//	Links each Scope together
 	private static Stack<SymbolTable>view		= new Stack<SymbolTable>();				//	The Current Scope
 	
@@ -52,7 +55,34 @@ public class SymbolTable{
 	//	-Associate each package...
 	
 	
+	public List<String> appendScope(SymbolTable st, int blocks, int level){
+		System.out.println("LEVEL: " + level);
+		//ONLY CALLED FROM BLOCK VISITOR
+		List<String> tmp = new ArrayList<String>();
+		
+		for (String key : st.symbolTable.keySet()) {
+			if (st.symbolTable.get(key).getLevel() <= level){
+				String lkey = key.substring(0, key.lastIndexOf("."));
+				String rkey = key.substring(key.lastIndexOf(".") + 1);
+				logger.info("Append Scope: "+ lkey + "." + blocks + "Block." + rkey);
+				this.symbolTable.put(lkey + "." + blocks + "Block." + rkey, st.symbolTable.get(key));
+				tmp.add(lkey + "." + blocks + "Block." + rkey);
+			}
+		}
+		
+		return tmp;
+		
+	}
 	
+	public void unAppendScope(int blocks, List<String> tmp){
+		//ONLY CALLED FROM BLOCK VISITOR
+		List<String> keys = tmp;
+		for (String key: keys){
+			this.symbolTable.remove(key);
+			
+		}
+		
+	}
 	public Stack getView(){
 		return view;
 	}
@@ -76,51 +106,69 @@ public class SymbolTable{
 	public SymbolTable(){
 		//TODO 
 		//	-init table
-		this.SymbolTable = new HashMap<String, TableEntry>();
+		this.symbolTable = new HashMap<String, TableEntry>();
 	}
 	
-	public void addField(String key, ASTNode value){
+	public void addField(String key, ASTNode node){
 		//Add a field
-		SymbolTable.put(key, new TableEntry(value));
+		symbolTable.put(key, new TableEntry(node));
 	}
 	
-	public void addDeclaration(String key, ASTNode value, int level){
-		TableEntry te = new TableEntry(value);
+	public void addClass(String key, ASTNode node){
+		TableEntry te = new TableEntry(node);
+		te.setLevel(0);
+		symbolTable.put(key + "{}", te);
+	}
+	
+	public TableEntry getClass(String key){
+		return symbolTable.get(key + "{");
+	}
+	
+	public void addDeclaration(String key, ASTNode node, int level){
+		TableEntry te = new TableEntry(node);
 		te.setLevel(level);
-		SymbolTable.put(key, te);
+		symbolTable.put(key, te);
 		
 	}
-	public void addMethod(String key, ASTNode value){
-		SymbolTable.put(key + "()", new TableEntry(value));
+	public void addMethod(String key, ASTNode node){
+		symbolTable.put(key + "()", new TableEntry(node));
 	}
 	
 	public TableEntry getMethod(String key){
-		return this.SymbolTable.get(key+"()");
+		return this.symbolTable.get(key+"()");
 		
 	}
 	
 	public TableEntry getField(String key){
-		return this.SymbolTable.get(key);
+		return this.symbolTable.get(key);
 	}
 	
 	public boolean hasField(String key){
+		logger.info("KEY: "+key);
 		//if false, no field exists and we can add it
-		return (SymbolTable.containsKey(key));
+		//Currently this just checks the immediate scope for any overlap
+		//a nested block has it's parent's scope pushed into it during processing
+		//and is removed after...
+		return (symbolTable.containsKey(key));
 	}
 	
 	public boolean hasMethod(String key){
 		//If false, no Method exists and we can add it
-		return (SymbolTable.containsKey(key + "()"));
+		return (symbolTable.containsKey(key + "()"));
 	}
 	public void addScope(){
 		this.Scopes.put(this.name, this);
 	}
 	
-	public void build(ASTVisitor visitor, ASTNode ast) throws Exception {
-		ast.accept(visitor);
+	public void build(ASTVisitor visitor, ASTNode astNode) throws Exception {
+		//Called whenever a visitor wants to build a new table
+		astNode.accept(visitor);
 	}
 	
 	public void build(List<AST> asts) throws Exception{
+		logger.setLevel(Level.FINE);
+		logger.fine("Building SymbolTable");
+		//Called from main
 		for (AST iast: asts){
 			iast.getRoot().accept(new TopDeclVisitor(this));
 			iast.getRoot().accept(new DeepDeclVisitor(this));
@@ -137,8 +185,9 @@ public class SymbolTable{
 	}
 	
 	public void ListSymbols(){
-		for (String key: this.SymbolTable.keySet()){
-			System.out.println("	" + key + "    " + this.SymbolTable.get(key).getNode() + "   Level: " + this.SymbolTable.get(key).getLevel());
+		for (String key: this.symbolTable.keySet()){
+			System.out.println("	" + key + "    " + this.symbolTable.get(key).getNode() + "   Level: " + this.symbolTable.get(key).getLevel());
 		}
+		System.out.println();
 	}
 }

@@ -20,7 +20,7 @@ import ca.uwaterloo.joos.ast.statement.Statement;
 import ca.uwaterloo.joos.symbolTable.SymbolTable;
 
 public class SemanticsVisitor extends ASTVisitor {
-	static SymbolTable st = null;			//SYMBOLTABLE - Link to the global SymbolTable
+	SymbolTable st = null;			//SYMBOLTABLE - Link to the global SymbolTable
 	
 	
 	public SemanticsVisitor(SymbolTable ist){
