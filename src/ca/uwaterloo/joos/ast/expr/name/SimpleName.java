@@ -17,6 +17,11 @@ public class SimpleName extends Name {
 	public String getName() throws ChildTypeUnmatchException {
 		return (String) this.getChildByDescriptor(NAME);
 	}
+	
+	@Override
+	public String getSimpleName() throws Exception {
+		return this.getName();
+	}
 
 	@Override
 	public void processLeafNode(LeafNode leafNode) throws Exception {
