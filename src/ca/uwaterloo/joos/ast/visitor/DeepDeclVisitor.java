@@ -48,7 +48,7 @@ public class DeepDeclVisitor extends SemanticsVisitor {
 			name = name + "." + CNode.getIdentifier();
 //			System.out.println("METHOD FOUND CONSTRUCTING SYMBOL TABLE WITH NAME: " + name);
 			SymbolTable nst = new SymbolTable();
-			nst.setName(name);
+			nst.setName(name + "()");
 			nst.openScope(nst.getName());
 			nst.addScope();		//Adds the new block symboltable to the global hash of tables
 			try {
