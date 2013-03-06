@@ -7,10 +7,8 @@ package ca.uwaterloo.joos.symbolTable;
 //Proposal
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.Stack;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -18,13 +16,10 @@ import java.util.logging.Logger;
 import ca.uwaterloo.joos.Main;
 import ca.uwaterloo.joos.ast.AST;
 import ca.uwaterloo.joos.ast.ASTNode;
-//import ca.uwaterloo.joos.ast.ASTNode;
-import ca.uwaterloo.joos.ast.statement.Block;
 import ca.uwaterloo.joos.ast.visitor.ASTVisitor;
-import ca.uwaterloo.joos.ast.visitor.BlockVisitor;
 import ca.uwaterloo.joos.ast.visitor.DeepDeclVisitor;
-import ca.uwaterloo.joos.ast.visitor.SemanticsVisitor;
 import ca.uwaterloo.joos.ast.visitor.TopDeclVisitor;
+//import ca.uwaterloo.joos.ast.ASTNode;
 
 
 public class SymbolTable{
@@ -40,11 +35,10 @@ public class SymbolTable{
 	static Logger 		logger = Main.getLogger(SymbolTable.class);
 	
 	
-	private String 					name		= null;									//	Represents the name of the current scope
-	private AST 					tree 		= null;									//	Link to an AST to scan. Updated in walk()
-	private Map<String, TableEntry> 		symbolTable = null;							//	A map mapping identifiers to their related ASTNode
-	static Map<String, SymbolTable> Scopes 		= new HashMap<String, SymbolTable>(); 	//	Links each Scope together
-	private static Stack<SymbolTable>view		= new Stack<SymbolTable>();				//	The Current Scope
+	private String name = null;	// Represents the name of the current scope
+	private Map<String, TableEntry> symbolTable = null;	// A map mapping identifiers to their related ASTNode
+	private static Map<String, SymbolTable> Scopes = new HashMap<String, SymbolTable>();	// Links each Scope together
+	private static Stack<SymbolTable>view = new Stack<SymbolTable>();	// The Current Scope
 	
 	//Constructs a symbol table
 	//An AST is generated at this point, walk it.
@@ -56,7 +50,6 @@ public class SymbolTable{
 	
 	
 	public List<String> appendScope(SymbolTable st, int blocks, int level){
-		System.out.println("LEVEL: " + level);
 		//ONLY CALLED FROM BLOCK VISITOR
 		List<String> tmp = new ArrayList<String>();
 		
@@ -83,7 +76,7 @@ public class SymbolTable{
 		}
 		
 	}
-	public Stack getView(){
+	public Stack<SymbolTable> getView(){
 		return view;
 	}
 	
@@ -95,14 +88,15 @@ public class SymbolTable{
 		view.pop();
 	}
 	
-	public void setName(String iname){
+	public void setName(String name){
 //		System.out.println("Setting name to: " + iname);
-		this.name = iname;
+		this.name = name;
 	}
 	
 	public String getName(){
 		return name;
 	}
+	
 	public SymbolTable(){
 		//TODO 
 		//	-init table
@@ -121,7 +115,7 @@ public class SymbolTable{
 	}
 	
 	public TableEntry getClass(String key){
-		return symbolTable.get(key + "{");
+		return symbolTable.get(key + "{}");
 	}
 	
 	public void addDeclaration(String key, ASTNode node, int level){
@@ -144,7 +138,7 @@ public class SymbolTable{
 	}
 	
 	public boolean hasField(String key){
-		logger.info("KEY: "+key);
+		logger.fine("KEY: "+key);
 		//if false, no field exists and we can add it
 		//Currently this just checks the immediate scope for any overlap
 		//a nested block has it's parent's scope pushed into it during processing
@@ -157,7 +151,7 @@ public class SymbolTable{
 		return (symbolTable.containsKey(key + "()"));
 	}
 	public void addScope(){
-		this.Scopes.put(this.name, this);
+		SymbolTable.Scopes.put(this.name, this);
 	}
 	
 	public void build(ASTVisitor visitor, ASTNode astNode) throws Exception {
@@ -179,12 +173,11 @@ public class SymbolTable{
 		System.out.println("Listing Scopes");
 		for (String key : Scopes.keySet()){
 			System.out.println(Scopes.get(key).getName());
-			Scopes.get(key).ListSymbols();
-			
+			Scopes.get(key).listSymbols();
 		}
 	}
 	
-	public void ListSymbols(){
+	public void listSymbols(){
 		for (String key: this.symbolTable.keySet()){
 			System.out.println("	" + key + "    " + this.symbolTable.get(key).getNode() + "   Level: " + this.symbolTable.get(key).getLevel());
 		}
