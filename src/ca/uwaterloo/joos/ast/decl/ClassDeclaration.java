@@ -4,7 +4,6 @@ import java.util.List;
 
 import ca.uwaterloo.joos.ast.ASTNode;
 import ca.uwaterloo.joos.ast.descriptor.ChildDescriptor;
-import ca.uwaterloo.joos.ast.descriptor.ChildListDescriptor;
 import ca.uwaterloo.joos.ast.type.ReferenceType;
 import ca.uwaterloo.joos.parser.ParseTree.Node;
 import ca.uwaterloo.joos.parser.ParseTree.TreeNode;
@@ -32,7 +31,7 @@ public class ClassDeclaration extends TypeDeclaration {
 			ReferenceType superType = new ReferenceType(treeNode, this);
 			addChild(SUPER, superType);
 		}
-		else if(treeNode.productionRule.getLefthand().equals("interfaces")&&(treeNode.children.size()!=0)){
+		else if(treeNode.productionRule.getLefthand().equals("interface")){
 			ReferenceType implementType = new ReferenceType(treeNode, this);
 			addChild(IMPLEMNTS, implementType);
 		}
