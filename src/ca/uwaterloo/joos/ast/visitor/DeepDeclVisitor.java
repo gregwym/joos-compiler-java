@@ -1,9 +1,15 @@
 package ca.uwaterloo.joos.ast.visitor;
 
+import java.util.List;
+
 import ca.uwaterloo.joos.ast.ASTNode;
 import ca.uwaterloo.joos.ast.ASTNode.ChildTypeUnmatchException;
+import ca.uwaterloo.joos.ast.FileUnit;
+import ca.uwaterloo.joos.ast.decl.ImportDeclaration;
 import ca.uwaterloo.joos.ast.decl.MethodDeclaration;
+import ca.uwaterloo.joos.ast.decl.OnDemandImport;
 import ca.uwaterloo.joos.ast.decl.PackageDeclaration;
+import ca.uwaterloo.joos.ast.decl.SingleImport;
 import ca.uwaterloo.joos.ast.decl.TypeDeclaration;
 import ca.uwaterloo.joos.symbolTable.SymbolTable;
 
@@ -36,6 +42,27 @@ public class DeepDeclVisitor extends SemanticsVisitor {
 			SymbolTable table = SymbolTable.getScope(name);
 			
 			table.appendScope(currentScope);
+			
+			List<ImportDeclaration> imports = ((FileUnit) node.getParent()).getImportDeclarations();
+			for(ImportDeclaration anImport: imports) {
+				if(anImport instanceof SingleImport) {
+					SymbolTable importTable = SymbolTable.getScope(anImport.getImportName().getName() + "{}");
+					if(importTable != null) {
+						table.addPublicMembers(importTable);
+					}
+					else {
+						throw new Exception("Unknown Single Import " + anImport.getIdentifier());
+					}
+				} else if(anImport instanceof OnDemandImport) {
+					SymbolTable importTable = SymbolTable.getScope(anImport.getImportName().getName());
+					if(importTable != null) {
+						table.addPublicMembers(importTable);
+					}
+					else {
+						throw new Exception("Unknown Single Import " + anImport.getIdentifier());
+					}
+				}
+			}
 			
 			// Push current scope into the view stack
 			this.pushScope(table);

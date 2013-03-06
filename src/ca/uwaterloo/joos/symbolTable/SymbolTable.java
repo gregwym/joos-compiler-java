@@ -200,7 +200,9 @@ public class SymbolTable{
 	}
 	
 	public void listSymbols(){
-		for (String key: this.symbolTable.keySet()){
+		List<String> keys = new ArrayList<String>(this.symbolTable.keySet());
+		Collections.sort(keys);
+		for (String key: keys){
 			System.out.println("\t" + key + "\t" + this.symbolTable.get(key).getNode() + "\tLevel: " + this.symbolTable.get(key).getLevel());
 		}
 		System.out.println();
