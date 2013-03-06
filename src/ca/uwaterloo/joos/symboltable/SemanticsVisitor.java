@@ -1,4 +1,4 @@
-package ca.uwaterloo.joos.symbolTable;
+package ca.uwaterloo.joos.symboltable;
 
 import java.util.Stack;
 import java.util.logging.Level;

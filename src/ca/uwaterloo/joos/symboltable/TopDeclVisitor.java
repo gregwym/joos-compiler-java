@@ -1,4 +1,4 @@
-package ca.uwaterloo.joos.symbolTable;
+package ca.uwaterloo.joos.symboltable;
 
 import ca.uwaterloo.joos.ast.ASTNode;
 import ca.uwaterloo.joos.ast.ASTNode.ChildTypeUnmatchException;

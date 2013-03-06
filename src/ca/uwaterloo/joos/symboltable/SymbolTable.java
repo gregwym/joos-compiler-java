@@ -2,7 +2,7 @@
 //TODO 
 //	-JAVADOC
 //	-Define Table
-package ca.uwaterloo.joos.symbolTable;
+package ca.uwaterloo.joos.symboltable;
 
 //Proposal
 import java.util.ArrayList;
