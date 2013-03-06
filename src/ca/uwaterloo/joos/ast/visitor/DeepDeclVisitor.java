@@ -38,7 +38,8 @@ public class DeepDeclVisitor extends SemanticsVisitor {
 
 		if (node instanceof ClassDeclaration) {
 			ClassDeclaration CNode = (ClassDeclaration) node;
-			name = name + "." + CNode.getIdentifier();
+			name = name + "." + CNode.getIdentifier() + "{}";
+			st.setName(name);
 		}
 	}
 
