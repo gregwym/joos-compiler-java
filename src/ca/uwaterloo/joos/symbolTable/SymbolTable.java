@@ -10,17 +10,19 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Stack;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import ca.uwaterloo.joos.Main;
 import ca.uwaterloo.joos.ast.AST;
 import ca.uwaterloo.joos.ast.ASTNode;
+import ca.uwaterloo.joos.ast.ASTNode.ChildTypeUnmatchException;
+import ca.uwaterloo.joos.ast.Modifiers.Modifier;
+import ca.uwaterloo.joos.ast.decl.BodyDeclaration;
+import ca.uwaterloo.joos.ast.decl.LocalVariableDeclaration;
 import ca.uwaterloo.joos.ast.decl.MethodDeclaration;
 import ca.uwaterloo.joos.ast.decl.ParameterDeclaration;
 import ca.uwaterloo.joos.ast.decl.VariableDeclaration;
-import ca.uwaterloo.joos.ast.visitor.ASTVisitor;
 import ca.uwaterloo.joos.ast.visitor.DeepDeclVisitor;
 import ca.uwaterloo.joos.ast.visitor.TopDeclVisitor;
 //import ca.uwaterloo.joos.ast.ASTNode;
@@ -42,7 +44,6 @@ public class SymbolTable{
 	private String name = null;	// Represents the name of the current scope
 	private Map<String, TableEntry> symbolTable = null;	// A map mapping identifiers to their related ASTNode
 	private static Map<String, SymbolTable> scopes = new HashMap<String, SymbolTable>();	// Links each Scope together
-	private static Stack<SymbolTable>view = new Stack<SymbolTable>();	// The Current Scope
 	
 	//Constructs a symbol table
 	//An AST is generated at this point, walk it.
@@ -70,43 +71,26 @@ public class SymbolTable{
 		return SymbolTable.scopes.containsKey(name);
 	}
 	
-	public List<String> appendScope(SymbolTable st, int blocks, int level){
+	public void appendScope(SymbolTable table){
 		//ONLY CALLED FROM BLOCK VISITOR
-		List<String> tmp = new ArrayList<String>();
 		
-		for (String key : st.symbolTable.keySet()) {
-			if (st.symbolTable.get(key).getLevel() <= level){
-				String lkey = key.substring(0, key.lastIndexOf("."));
-				String rkey = key.substring(key.lastIndexOf(".") + 1);
-				logger.info("Append Scope: "+ lkey + "." + blocks + "Block." + rkey);
-				this.symbolTable.put(lkey + "." + blocks + "Block." + rkey, st.symbolTable.get(key));
-				tmp.add(lkey + "." + blocks + "Block." + rkey);
+		for (String key : table.symbolTable.keySet()) {
+			TableEntry entry = table.symbolTable.get(key);
+			this.symbolTable.put(key, entry);
+		}
+	}
+	
+	public void addPublicMembers(SymbolTable table) throws ChildTypeUnmatchException {
+		for(String key: table.symbolTable.keySet()) {
+			TableEntry entry = table.symbolTable.get(key);
+			
+			if(entry.getNode() instanceof BodyDeclaration) {
+				BodyDeclaration node = (BodyDeclaration) entry.getNode();
+				if(node.getModifiers().getModifiers().contains(Modifier.PUBLIC)) {
+					this.symbolTable.put(key, entry);
+				}
 			}
 		}
-		
-		return tmp;
-		
-	}
-	
-	public void unAppendScope(int blocks, List<String> tmp){
-		//ONLY CALLED FROM BLOCK VISITOR
-		List<String> keys = tmp;
-		for (String key: keys){
-			this.symbolTable.remove(key);
-			
-		}
-		
-	}
-	public Stack<SymbolTable> getView(){
-		return view;
-	}
-	
-	public void openScope(String st){
-		view.push(scopes.get(st));
-	}
-	
-	public void closeScope(){
-		view.pop();
 	}
 	
 	public String getName(){
@@ -154,6 +138,21 @@ public class SymbolTable{
 		String name = this.getName() + "." + field.getName().getName();
 		return name;
 	}
+	
+	public boolean containVariableName(VariableDeclaration varDecl) throws Exception {
+		String simpleName = varDecl.getName().getSimpleName();
+		for(String key: this.symbolTable.keySet()) {
+			TableEntry entry = this.symbolTable.get(key);
+			ASTNode node = entry.getNode(); 
+			
+			if((node instanceof LocalVariableDeclaration || 
+					node instanceof ParameterDeclaration) && 
+					((BodyDeclaration) node).getName().getSimpleName().equals(simpleName)) {
+				return true;
+			}
+		}
+		return false;
+	}
 
 	public void addVariableDecl(VariableDeclaration node) throws Exception{
 		//Add a field
@@ -164,16 +163,15 @@ public class SymbolTable{
 		//Add a field
 		TableEntry entry = new TableEntry(node);
 		entry.setLevel(level);
-		symbolTable.put(this.nameForDecl(node), entry);
+		String name = this.nameForDecl(node);
+		
+//		if(name.substring(name.lastIndexOf("."), name.length()));
+		
+		symbolTable.put(name, entry);
 	}
 
 	public TableEntry getVariableDecl(VariableDeclaration node) throws Exception{
 		return this.symbolTable.get(this.nameForDecl(node));
-	}
-	
-	public void build(ASTVisitor visitor, ASTNode astNode) throws Exception {
-		//Called whenever a visitor wants to build a new table
-		astNode.accept(visitor);
 	}
 	
 	public static void build(List<AST> asts) throws Exception{
