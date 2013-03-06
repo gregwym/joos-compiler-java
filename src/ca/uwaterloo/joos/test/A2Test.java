@@ -102,13 +102,9 @@ public class A2Test {
 		} catch (Exception e) {
 			realException = e;
 			if (fileException == null) {
-				System.out.println("Expecting: NoException" + "\t" + "but got: " + realException.getClass().getSimpleName()+realException.getMessage() + "\t\t" + "[" + testFileList.getName() + "]");
+				System.out.println("Expecting: NoException" + "\t" + "but got: " + realException.getClass().getSimpleName() + realException.getMessage() + "\t\t" + "[" + testFileList.getName() + "]");
 			} else if (!realException.getClass().getSimpleName().equals(fileException.getClass().getSimpleName())) {
-				// System.out.println("Expecting: " +
-				// fileException.getClass().getSimpleName() + "\t"
-				// + "but got: " + realException.getClass().getSimpleName() +
-				// "\t\t"
-				// + "[" + testFile.getName() + "]");
+
 			}
 		}
 
@@ -119,43 +115,7 @@ public class A2Test {
 		}
 	}
 
-	// private Exception extractFileError(String directory) {
-	// File file = new File(directory);
-	// Exception fileExcpetion = null;
-	// try {
-	// BufferedReader br = new BufferedReader(new FileReader(file));
-	// String errorMessage = new String();
-	//
-	// while (errorMessage != null && !errorMessage.contains("JOOS1:")) {
-	// errorMessage = br.readLine();
-	// }
-	//
-	// if (errorMessage != null)
-	// fileExcpetion = extractError(errorMessage);
-	// if (fileExcpetion == null && file.getName().contains("Je")) {
-	// fileExcpetion = new Exception();
-	// }
-	// br.close();
-	//
-	// } catch (Exception e) {
-	// e.printStackTrace();
-	// }
-	// return fileExcpetion;
-	// }
-
-	// public Exception extractError(String errorMessage) {
-	// if (errorMessage.contains("LEXER_EXCEPTION")) {
-	// return new Scanner.ScanException("");
-	// } else if (errorMessage.contains("PARSER_EXCEPTION") ||
-	// errorMessage.contains("SYNTAX_ERROR")) {
-	// return new LR1Parser.ParseException("");
-	// }
-	//
-	// return null;
-	// }
-
 	private void extractFiles(File file) {
-		// String path = testFileList.;
 
 		File folder = file;
 		File[] listOfFiles = folder.listFiles();
@@ -166,7 +126,7 @@ public class A2Test {
 				if (listOfFiles[i].getName().endsWith(".java")) {
 					testFiles.add(listOfFiles[i].getPath());
 				}
-				// System.out.println(listOfFiles[i].getPath());
+
 			} else {
 				extractFiles(listOfFiles[i]);
 			}
