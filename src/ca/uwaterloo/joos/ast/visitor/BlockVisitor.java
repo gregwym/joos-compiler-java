@@ -1,7 +1,5 @@
 package ca.uwaterloo.joos.ast.visitor;
 
-import java.util.List;
-
 import ca.uwaterloo.joos.ast.ASTNode;
 import ca.uwaterloo.joos.ast.ASTNode.ChildTypeUnmatchException;
 import ca.uwaterloo.joos.ast.decl.LocalVariableDeclaration;
@@ -12,43 +10,40 @@ public class BlockVisitor extends SemanticsVisitor {
 	private int level = -1;
 	private int blocks = -1;
 
-	public BlockVisitor(SymbolTable ist) {
-		super(ist);
-
+	public BlockVisitor(SymbolTable scope) {
+		super();
+		this.pushScope(scope);
 	}
 
 	public boolean visit(ASTNode node) throws ChildTypeUnmatchException, Exception {
-
+		SymbolTable currentScope = this.getCurrentScope();
 		if (node instanceof LocalVariableDeclaration) {
-
-			// TODO Check for multiple definitions
 			// if name is not already in view
 			LocalVariableDeclaration LNode = (LocalVariableDeclaration) node;
 
-			if (st.hasField(st.getName() + "." + LNode.getName().getName())) {
-				System.err.println("Overlapping Declarations Exit 42");
-				System.exit(42);
+			if (currentScope.getVariableDecl(LNode) != null) {
+				throw new Exception("Overlapping Declarations Exit 42");
 			}
 			level++;
-			st.addDeclaration(st.getName() + "." + LNode.getName().getName(), node, level);
+			currentScope.addVariableDecl(LNode, level);
 			return false;
 		} else if (node instanceof Block) {
 			if (blocks == -1) { // Then this is the block we are reading
 				blocks++;
 			} else {
-				// Level is 0 so we found a nested block
-				// TODO
-				// Make a new scope
-				// Add it to the Scopes
-				SymbolTable nst = new SymbolTable();
-				blocks++;
-				// Add new symbol table to the global scope hash
-				nst.addScope();
-				// Add the LOCAL SCOPE to the nested block
-				List<String> tmp = nst.appendScope(st, blocks, this.level);
-				nst.setName(st.getName() + "." + blocks + "Block");
-				nst.build(new BlockVisitor(nst), node);
-				nst.unAppendScope(blocks, tmp);
+//				// Level is 0 so we found a nested block
+//				// TODO
+//				// Make a new scope
+//				// Add it to the Scopes
+//				SymbolTable nst = new SymbolTable();
+//				blocks++;
+//				// Add new symbol table to the global scope hash
+//				nst.addScope();
+//				// Add the LOCAL SCOPE to the nested block
+//				List<String> tmp = nst.appendScope(st, blocks, this.level);
+//				nst.setName(st.getName() + "." + blocks + "Block");
+//				nst.build(new BlockVisitor(nst), node);
+//				nst.unAppendScope(blocks, tmp);
 				return false;
 			}
 		}

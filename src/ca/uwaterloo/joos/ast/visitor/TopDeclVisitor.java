@@ -19,15 +19,14 @@ public class TopDeclVisitor extends SemanticsVisitor {
 	public boolean visit(ASTNode node) throws Exception {
 		if (node instanceof FieldDeclaration) {
 			SymbolTable currentScope = this.getCurrentScope();
-			String name = currentScope.getName() + "." + ((FieldDeclaration) node).getName().getName();
-			if (!currentScope.hasField(name))
-				currentScope.addField(name, node);
+			if (currentScope.getVariableDecl((FieldDeclaration) node) == null)
+				currentScope.addVariableDecl((FieldDeclaration) node);
 			else {
 				throw new Exception("TopDeclVisitor.visit(): Multiple Field Declarations with same name. Exiting with 42");
 			}
 		} else if (node instanceof MethodDeclaration) {
 			SymbolTable currentScope = this.getCurrentScope();
-			if (!currentScope.hasMethod((MethodDeclaration) node)) {
+			if (currentScope.getMethod((MethodDeclaration) node) == null) {
 				currentScope.addMethod((MethodDeclaration) node);
 			}
 			else {

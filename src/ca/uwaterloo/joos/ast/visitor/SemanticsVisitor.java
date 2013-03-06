@@ -34,7 +34,7 @@ public abstract class SemanticsVisitor extends ASTVisitor {
 	
 	protected SymbolTable popScope() {
 		SymbolTable scope = this.viewStack.pop();
-		logger.finer("Popping scope " + scope.toString());
+		logger.finer("Popping scope " + scope);
 		return scope;
 	}
 
