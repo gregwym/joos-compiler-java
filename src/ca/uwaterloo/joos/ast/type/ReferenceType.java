@@ -14,6 +14,8 @@ import ca.uwaterloo.joos.parser.ParseTree.TreeNode;
 public class ReferenceType extends Type {
 
 	public static final ChildDescriptor NAME = new ChildDescriptor(Name.class);
+	
+	public String fullyQualifedTypeName;
 
 	public ReferenceType(Node node, ASTNode parent) throws Exception {
 		super(node, parent);

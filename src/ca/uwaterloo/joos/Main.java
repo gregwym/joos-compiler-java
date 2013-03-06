@@ -17,6 +17,7 @@ import ca.uwaterloo.joos.scanner.DFA;
 import ca.uwaterloo.joos.scanner.Scanner;
 import ca.uwaterloo.joos.scanner.Token;
 import ca.uwaterloo.joos.symboltable.SymbolTable;
+import ca.uwaterloo.joos.typelinker.TypeLinker;
 import ca.uwaterloo.joos.weeder.Weeder;
 
 /**
@@ -117,10 +118,15 @@ public class Main {
 				asts.add(instance.constructAst(new File(arg)));
 			}
 			
-			SymbolTable.build(asts);
-			SymbolTable.listScopes();
-//			System.out.println(st.getMethod("default_package.J1_01.test").getNode().getIdentifier());
+			SymbolTable table = new SymbolTable();
+			table.build(asts);
+			table.listScopes();
 			
+			TypeLinker linker = new TypeLinker(table);
+			
+			for(AST ast: asts) {
+				ast.getRoot().accept(linker);
+			}
 		} catch (Exception e) {
 			System.err.println("ERROR: " + e.getLocalizedMessage() + " " + e.getClass().getName());
 			e.printStackTrace();

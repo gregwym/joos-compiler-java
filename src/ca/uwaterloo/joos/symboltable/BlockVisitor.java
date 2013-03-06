@@ -13,19 +13,19 @@ public class BlockVisitor extends SemanticsVisitor {
 	private int blocks = 0;
 	private int stackMin = 0;
 
-	public BlockVisitor(Stack<SymbolTable> viewStack) {
-		super();
+	public BlockVisitor(Stack<Scope> viewStack, SymbolTable table) {
+		super(table);
 		this.viewStack = viewStack;
 		this.stackMin = viewStack.size(); 
 	}
 	
-	public BlockVisitor(Stack<SymbolTable> viewStack, int level) {
-		this(viewStack);
+	public BlockVisitor(Stack<Scope> viewStack, int level, SymbolTable table) {
+		this(viewStack, table);
 		this.level = level;
 	}
 
 	public boolean visit(ASTNode node) throws ChildTypeUnmatchException, Exception {
-		SymbolTable currentScope = this.getCurrentScope();
+		Scope currentScope = this.getCurrentScope();
 		if (node instanceof VariableDeclaration) {
 			// if name is not already in view
 			VariableDeclaration LNode = (VariableDeclaration) node;
@@ -42,7 +42,7 @@ public class BlockVisitor extends SemanticsVisitor {
 				this.blocks++;
 			}
 			else {
-				ASTVisitor blockVisitor = new BlockVisitor(this.viewStack, this.level);
+				ASTVisitor blockVisitor = new BlockVisitor(this.viewStack, this.level, this.table);
 				node.accept(blockVisitor);
 				
 				return false;
@@ -57,7 +57,7 @@ public class BlockVisitor extends SemanticsVisitor {
 		if (blocks > 0 && node instanceof Block) {
 			// Make a new symbol table which builds
 			String name = this.getCurrentScope().getName() + "." + this.blocks + "Block";
-			SymbolTable scope = SymbolTable.getScope(name);
+			Scope scope = this.table.getScope(name);
 			
 			scope.appendScope(this.getCurrentScope());
 			

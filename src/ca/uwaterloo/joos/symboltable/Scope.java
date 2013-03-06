@@ -10,11 +10,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
-import ca.uwaterloo.joos.Main;
-import ca.uwaterloo.joos.ast.AST;
 import ca.uwaterloo.joos.ast.ASTNode;
 import ca.uwaterloo.joos.ast.ASTNode.ChildTypeUnmatchException;
 import ca.uwaterloo.joos.ast.Modifiers.Modifier;
@@ -25,7 +21,7 @@ import ca.uwaterloo.joos.ast.decl.ParameterDeclaration;
 import ca.uwaterloo.joos.ast.decl.VariableDeclaration;
 
 
-public class SymbolTable{
+public class Scope{
 	/**
 	 * Symbol Table
 	 * 
@@ -35,12 +31,9 @@ public class SymbolTable{
 	 * namespace.
 	 * 
 	 */
-	static Logger 		logger = Main.getLogger(SymbolTable.class);
-	
 	
 	private String name = null;	// Represents the name of the current scope
 	private Map<String, TableEntry> symbolTable = null;	// A map mapping identifiers to their related ASTNode
-	private static Map<String, SymbolTable> scopes = new HashMap<String, SymbolTable>();	// Links each Scope together
 	
 	//Constructs a symbol table
 	//An AST is generated at this point, walk it.
@@ -50,25 +43,13 @@ public class SymbolTable{
 	//	-Add the symbol to the table at some index and put that index into the AST
 	//	-Associate each package...
 	
-	public SymbolTable(String name){
+	public Scope(String name){
 		this.symbolTable = new HashMap<String, TableEntry>();
 		this.name = name;
-		SymbolTable.scopes.put(name, this);
+//		Scope.scopes.put(name, this);
 	}
 	
-	public static SymbolTable getScope(String name) {
-		SymbolTable table = SymbolTable.scopes.get(name);
-		if(table == null) {
-			table = new SymbolTable(name);
-		}
-		return table;
-	}
-	
-	public static boolean containScope(String name) {
-		return SymbolTable.scopes.containsKey(name);
-	}
-	
-	public void appendScope(SymbolTable table){
+	public void appendScope(Scope table){
 		//ONLY CALLED FROM BLOCK VISITOR
 		
 		for (String key : table.symbolTable.keySet()) {
@@ -77,7 +58,7 @@ public class SymbolTable{
 		}
 	}
 	
-	public void addPublicMembers(SymbolTable table) throws ChildTypeUnmatchException {
+	public void addPublicMembers(Scope table) throws ChildTypeUnmatchException {
 		for(String key: table.symbolTable.keySet()) {
 			TableEntry entry = table.symbolTable.get(key);
 			
@@ -162,38 +143,11 @@ public class SymbolTable{
 		entry.setLevel(level);
 		String name = this.nameForDecl(node);
 		
-//		if(name.substring(name.lastIndexOf("."), name.length()));
-		
 		symbolTable.put(name, entry);
 	}
 
 	public TableEntry getVariableDecl(VariableDeclaration node) throws Exception{
 		return this.symbolTable.get(this.nameForDecl(node));
-	}
-	
-	public static void build(List<AST> asts) throws Exception{
-		logger.setLevel(Level.FINE);
-		logger.fine("Building SymbolTable");
-		//Called from main
-		for (AST ast: asts){
-			ast.getRoot().accept(new TopDeclVisitor());
-		}
-		
-		logger.info("Pass 1 Finished");
-		
-		for (AST iast: asts){
-			iast.getRoot().accept(new DeepDeclVisitor());
-		}
-	}
-
-	public static void listScopes() {
-		System.out.println("Listing Scopes");
-		List<String> keys = new ArrayList<String>(scopes.keySet());
-		Collections.sort(keys);
-		for (String key : keys){
-			System.out.println(scopes.get(key).getName());
-			scopes.get(key).listSymbols();
-		}
 	}
 	
 	public void listSymbols(){
