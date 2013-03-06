@@ -121,7 +121,7 @@ public class Main {
 			
 			st = new SymbolTable();
 			st.build(asts);
-//			st.listScopes();
+			st.listScopes();
 //			System.out.println(st.getMethod("default_package.J1_01.test").getNode().getIdentifier());
 			
 		} catch (Exception e) {

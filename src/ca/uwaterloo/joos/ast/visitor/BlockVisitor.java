@@ -8,6 +8,7 @@ import ca.uwaterloo.joos.symbolTable.SymbolTable;
 
 public class BlockVisitor extends SemanticsVisitor{
 	private int level = -1;
+	private int blocks = -1;
 	private int blocklevel;
 	public BlockVisitor(SymbolTable ist) {
 		super(ist);
@@ -26,24 +27,30 @@ public class BlockVisitor extends SemanticsVisitor{
 				System.err.println("Overlapping Declarations Exit 42");
 				System.exit(42);
 			}
-			st.addDeclaration(LNode.getName().getName(), node, level);
 			level++;
+			st.addDeclaration(st.getName()+"."+LNode.getName().getName(), node, level);			
 			return false;
 		}
 		
 		if (node instanceof Block){
-			if (level == -1) {
-				level++;
+			if (blocks == -1) {//Then this is the block we are reading
+				blocks++;
 			}
-			
+
 			else {//Level is 0 so we found a nested block
 				//TODO
 				//	Make a new scope
 				//	Add it to the Scopes 
 				//	
+				SymbolTable nst = new SymbolTable();
+				blocks++;
+				nst.addScope();//Add new symbol table to the global scope hash
+				nst.setName(st.getName()+"."+blocks+"Block");
+				nst.build(new BlockVisitor(nst), node);
+				return false;
+				
 			}
 		}
-		
 		
 		return true;
 	}

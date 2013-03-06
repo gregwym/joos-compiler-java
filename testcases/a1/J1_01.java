@@ -1,6 +1,12 @@
 // PARSER_WEEDER,CODE_GENERATION
-public class J1_01 {
+package ca.test;
+
+import J1_char.ca;
+
+public class J1_01 implements J1_char {
+	public int field;
     public J1_01() {}
+
     public static int test() {
 	int r1 = J1_01.m0(0);
 	int r2 = J1_01.m0(1);
@@ -8,12 +14,12 @@ public class J1_01 {
 	int r4 = J1_01.m1(0);
 	int r5 = J1_01.m1(1);
 	int r6 = J1_01.m1(100);
-
-	int r = 0;
 	if (r1==9) r=r+1;
+	{
+		int r1;
+	}
 	if (r2==6) r=r+1;
 	if (r3==6) r=r+1;
-
 	if (r4==6) r=r+1;
 	if (r5==9) r=r+1;
 	if (r6==6) r=r+1;

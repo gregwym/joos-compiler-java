@@ -30,6 +30,7 @@ public class TopDeclVisitor extends SemanticsVisitor {
 			String tname = ((ClassDeclaration) node).getIdentifier();
 			st.setName(st.getName() + "." + tname);
 			st.addScope();//Adds the current symbol table to the static symbol table map.
+			st.addClass(tname, node);
 		}
 		
 		if (node instanceof FieldDeclaration){

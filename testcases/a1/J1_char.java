@@ -1,4 +1,6 @@
 // PARSER_WEEDER
+package ca.test;
+
 public class J1_char {
     public J1_char() {}
     protected char x = (char)123;
