@@ -28,7 +28,12 @@ public class TopDeclVisitor extends SemanticsVisitor {
 			String tname = ((ClassDeclaration) node).getIdentifier();
 			st.setName(st.getName() + "." + tname + "{}");
 			// Adds the current symbol table to the static symbol table map
-			st.addScope();
+			if(!SymbolTable.hasClass(st.getName())) {
+				st.addScope();
+			}
+			else {
+				throw new Exception("Duplicate declaration of class");
+			}
 			st.addClass(st.getName() + "." + tname, node);
 		} else if (node instanceof FieldDeclaration) {
 			String key = this.st.getName() + "." + ((FieldDeclaration) node).getName().getName();
@@ -40,10 +45,12 @@ public class TopDeclVisitor extends SemanticsVisitor {
 			}
 		} else if (node instanceof MethodDeclaration) {
 			// TODO: check signatures
-
-			String key = this.st.getName() + "." + ((MethodDeclaration) node).getName().getName();
-			if (!st.hasMethod(key))
-				st.addMethod(key, node);
+			if (!st.hasMethod((MethodDeclaration) node)) {
+				st.addMethod((MethodDeclaration) node);
+			}
+			else {
+				throw new Exception("Duplicate declaratio of method");
+			}
 		}
 
 		return !(node instanceof BodyDeclaration);
