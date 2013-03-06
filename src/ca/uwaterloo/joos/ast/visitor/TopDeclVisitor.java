@@ -2,51 +2,33 @@ package ca.uwaterloo.joos.ast.visitor;
 
 import ca.uwaterloo.joos.ast.ASTNode;
 import ca.uwaterloo.joos.ast.decl.BodyDeclaration;
-import ca.uwaterloo.joos.ast.decl.ClassDeclaration;
 import ca.uwaterloo.joos.ast.decl.FieldDeclaration;
 import ca.uwaterloo.joos.ast.decl.MethodDeclaration;
 import ca.uwaterloo.joos.ast.decl.PackageDeclaration;
+import ca.uwaterloo.joos.ast.decl.TypeDeclaration;
 import ca.uwaterloo.joos.symbolTable.SymbolTable;
 
 public class TopDeclVisitor extends SemanticsVisitor {
 
 	private String name = null;
 
-	public TopDeclVisitor(SymbolTable st) {
-		super(st);
+	public TopDeclVisitor() {
+		super();
 	}
 
 	public boolean visit(ASTNode node) throws Exception {
-		// TODO: Interface Declaration
-
-		if (node instanceof PackageDeclaration) {
-			PackageDeclaration PNode = (PackageDeclaration) node;
-			name = PNode.getPackageName();
-			st.setName(name);
-		} else if (node instanceof ClassDeclaration) {
-			// TODO: check if class has already been defined
-			String tname = ((ClassDeclaration) node).getIdentifier();
-			st.setName(st.getName() + "." + tname + "{}");
-			// Adds the current symbol table to the static symbol table map
-			if(!SymbolTable.hasClass(st.getName())) {
-				st.addScope();
-			}
+		if (node instanceof FieldDeclaration) {
+			SymbolTable currentScope = this.getCurrentScope();
+			String name = currentScope.getName() + "." + ((FieldDeclaration) node).getName().getName();
+			if (!currentScope.hasField(name))
+				currentScope.addField(name, node);
 			else {
-				throw new Exception("Duplicate declaration of class");
-			}
-			st.addClass(st.getName() + "." + tname, node);
-		} else if (node instanceof FieldDeclaration) {
-			String key = this.st.getName() + "." + ((FieldDeclaration) node).getName().getName();
-			if (!st.hasField(key))
-				st.addField(key, node);
-			else {
-				System.err.println("TopDeclVisitor.visit(): Multiple Field Declarations with same name. Exiting with 42");
-				System.exit(42);
+				throw new Exception("TopDeclVisitor.visit(): Multiple Field Declarations with same name. Exiting with 42");
 			}
 		} else if (node instanceof MethodDeclaration) {
-			// TODO: check signatures
-			if (!st.hasMethod((MethodDeclaration) node)) {
-				st.addMethod((MethodDeclaration) node);
+			SymbolTable currentScope = this.getCurrentScope();
+			if (!currentScope.hasMethod((MethodDeclaration) node)) {
+				currentScope.addMethod((MethodDeclaration) node);
 			}
 			else {
 				throw new Exception("Duplicate declaratio of method");
@@ -57,11 +39,44 @@ public class TopDeclVisitor extends SemanticsVisitor {
 	}
 
 	@Override
-	public void willVisit(ASTNode node) {
+	public void willVisit(ASTNode node) throws Exception {
+		if (node instanceof PackageDeclaration) {
+			PackageDeclaration PNode = (PackageDeclaration) node;
+			name = PNode.getPackageName();
+			
+			// Get the symbol table for the given package 
+			// Create one if not exists
+			SymbolTable table = SymbolTable.getScope(name);
+			
+			// Push current scope into the view stack
+			this.pushScope(table);
+		} else if (node instanceof TypeDeclaration) {
+			SymbolTable currentScope = this.getCurrentScope();
+			String name = ((TypeDeclaration) node).getIdentifier();
+			name = currentScope.getName() + "." + name + "{}";
+			
+			// First: check duplicate class
+			if(SymbolTable.containScope(name)) {
+				throw new Exception("Duplicate declaration of class");
+			}
+			
+			// Second: get the class description scope
+			SymbolTable table = SymbolTable.getScope(name);
+			
+			// Third: add type declaration as package member
+			currentScope.addClass(name, node);
+			
+			// Push current scope into the view stack
+			this.pushScope(table);
+		}
 	}
 
 	@Override
 	public void didVisit(ASTNode node) {
+		if (node instanceof TypeDeclaration) {
+//			SymbolTable typeScope = 
+					this.popScope();
+		}
 	}
 
 }
