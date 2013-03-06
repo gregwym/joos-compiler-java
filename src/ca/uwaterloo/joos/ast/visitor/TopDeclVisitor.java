@@ -9,6 +9,7 @@ import ca.uwaterloo.joos.symbolTable.SymbolTable;
 
 public class TopDeclVisitor extends SemanticsVisitor {
 
+	private String name = null;
 	public TopDeclVisitor(SymbolTable ist) {
 		super(ist);
 		// TODO Auto-generated constructor stub
@@ -18,27 +19,26 @@ public class TopDeclVisitor extends SemanticsVisitor {
 		//TODO Interface Declaration
 		
 		if (node instanceof PackageDeclaration){
-			String tname = ((PackageDeclaration) node).getPackageName();
-			st.setName(tname);
+			PackageDeclaration PNode = (PackageDeclaration) node;
+			name = PNode.getPackageName();
+			st.setName(name);
 			return true;
 		}
 		
 		if (node instanceof ClassDeclaration){
+			//TODO check if class has already been defined
 			String tname = ((ClassDeclaration) node).getIdentifier();
 			st.setName(st.getName() + "." + tname);
-//			System.out.println("TopDeclVisitor.visit(): Class Found: " + st.getName());
 			st.addScope();//Adds the current symbol table to the static symbol table map.
 		}
 		
 		if (node instanceof FieldDeclaration){
 			try {
 				String key = this.st.getName() + "." + ((FieldDeclaration) node).getName().getName(); 
-//				System.out.println("TopDeclVisitor.visit(): Found Field: " + key + " Empty??" + st.isEmpty(key));
 				if (!st.hasField(key)) st.addField(key, node);
 				else{
-//					st.g
-					System.err.println("TopDeclVisitor.visit(): Multiple Field Declarations with same name. Exit with -1");
-					System.exit(-1);
+					System.err.println("TopDeclVisitor.visit(): Multiple Field Declarations with same name. Exiting with 42");
+					System.exit(42);
 				}
 			} catch (Exception e) {
 				e.printStackTrace();
@@ -48,9 +48,8 @@ public class TopDeclVisitor extends SemanticsVisitor {
 		
 		if (node instanceof MethodDeclaration){
 			//TODO check signatures
-			MethodDeclaration Mnode = (MethodDeclaration) node;
+
 			try {
-//				System.out.println("TopDeclVisitor.visit(): Found Method: " + this.st.getName() + "." + Mnode.getName().getName());
 				String key = this.st.getName() + "." + ((MethodDeclaration) node).getName().getName();
 				if (!st.hasMethod(key))st.addMethod(key, node);
 			} catch (Exception e) {

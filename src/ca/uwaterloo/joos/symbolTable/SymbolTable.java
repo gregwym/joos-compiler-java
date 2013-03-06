@@ -6,6 +6,8 @@ package ca.uwaterloo.joos.symbolTable;
 
 //Proposal
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Stack;
 import java.util.logging.Logger;
@@ -13,7 +15,10 @@ import java.util.logging.Logger;
 import ca.uwaterloo.joos.Main;
 import ca.uwaterloo.joos.ast.AST;
 import ca.uwaterloo.joos.ast.ASTNode;
+//import ca.uwaterloo.joos.ast.ASTNode;
 import ca.uwaterloo.joos.ast.statement.Block;
+import ca.uwaterloo.joos.ast.visitor.ASTVisitor;
+import ca.uwaterloo.joos.ast.visitor.BlockVisitor;
 import ca.uwaterloo.joos.ast.visitor.DeepDeclVisitor;
 import ca.uwaterloo.joos.ast.visitor.SemanticsVisitor;
 import ca.uwaterloo.joos.ast.visitor.TopDeclVisitor;
@@ -34,28 +39,19 @@ public class SymbolTable{
 	
 	private String 					name		= null;									//	Represents the name of the current scope
 	private AST 					tree 		= null;									//	Link to an AST to scan. Updated in walk()
-	Map<String, ASTNode> 			SymbolTable = null;									//	A map mapping identifiers to their related ASTNode
+	Map<String, TableEntry> 		SymbolTable = null;									//	A map mapping identifiers to their related ASTNode
 	static Map<String, SymbolTable> Scopes 		= new HashMap<String, SymbolTable>(); 	//	Links each Scope together
-	private static Stack<SymbolTable>view		= new Stack<SymbolTable>();
+	private static Stack<SymbolTable>view		= new Stack<SymbolTable>();				//	The Current Scope
 	
 	//Constructs a symbol table
 	//An AST is generated at this point, walk it.
 	
 	//First task is to build the environment
-	//	-Replace each symbol declaration with a reference to the Symbol table
+	//	-Replace each symbol declaration with a reference to the Symbol table.
 	//	-Add the symbol to the table at some index and put that index into the AST
 	//	-Associate each package...
 	
-	private class TableEntry{
-		//An entry mapped to in the symboltable hashmap
-		//TODO remove.
-		String 		value;
-		TableEntry 	prevVal;
-		TableEntry 	chain;
-		int			scope;	
-		Object		attributes;
-		
-	}
+	
 	
 	public Stack getView(){
 		return view;
@@ -70,8 +66,8 @@ public class SymbolTable{
 	}
 	
 	public void setName(String iname){
+//		System.out.println("Setting name to: " + iname);
 		this.name = iname;
-		System.out.println("SymbolTable.setName() Setting Name to " + iname);
 	}
 	
 	public String getName(){
@@ -80,15 +76,22 @@ public class SymbolTable{
 	public SymbolTable(){
 		//TODO 
 		//	-init table
-		this.SymbolTable = new HashMap<String, ASTNode>();
+		this.SymbolTable = new HashMap<String, TableEntry>();
 	}
 	
 	public void addField(String key, ASTNode value){
-		SymbolTable.put(key, value);
+		//Add a field
+		SymbolTable.put(key, new TableEntry(value));
 	}
 	
+	public void addDeclaration(String key, ASTNode value, int level){
+		TableEntry te = new TableEntry(value);
+		te.setLevel(level);
+		SymbolTable.put(key, te);
+		
+	}
 	public void addMethod(String key, ASTNode value){
-		SymbolTable.put(key + "()", value);
+		SymbolTable.put(key + "()", new TableEntry(value));
 	}
 	
 	public boolean hasField(String key){
@@ -104,14 +107,29 @@ public class SymbolTable{
 		this.Scopes.put(this.name, this);
 	}
 	
-	public void constructTable(ASTNode ast) throws Exception{
-		//Calls the AST's accept method with visitor type SemanticsVisitor
-		ast.accept(new TopDeclVisitor(this));
-		ast.accept(new DeepDeclVisitor(this));
+	public void build(ASTVisitor visitor, ASTNode ast) throws Exception {
+		ast.accept(visitor);
 	}
 	
-	public void constructScope(ASTNode ast) throws Exception{
-		ast.accept(new DeepDeclVisitor(this));
+	public void build(List<AST> asts) throws Exception{
+		for (AST iast: asts){
+			iast.getRoot().accept(new TopDeclVisitor(this));
+			iast.getRoot().accept(new DeepDeclVisitor(this));
+		}
+	}
+
+	public static void listScopes() {
+		System.out.println("Listing Scopes");
+		for (String key : Scopes.keySet()){
+			System.out.println(Scopes.get(key).getName());
+			Scopes.get(key).ListSymbols();
+			
+		}
 	}
 	
+	public void ListSymbols(){
+		for (String key: this.SymbolTable.keySet()){
+			System.out.println("	" + key + "    " + this.SymbolTable.get(key).getNode() + "   Level: " + this.SymbolTable.get(key).getLevel());
+		}
+	}
 }

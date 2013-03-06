@@ -6,27 +6,53 @@ import ca.uwaterloo.joos.ast.ASTNode;
 import ca.uwaterloo.joos.ast.ASTNode.ChildTypeUnmatchException;
 import ca.uwaterloo.joos.ast.decl.ImportDeclaration;
 import ca.uwaterloo.joos.ast.decl.MethodDeclaration;
+import ca.uwaterloo.joos.ast.decl.OnDemandImport;
 import ca.uwaterloo.joos.ast.decl.VariableDeclaration;
 import ca.uwaterloo.joos.ast.decl.ClassDeclaration;
 import ca.uwaterloo.joos.ast.decl.PackageDeclaration;
 import ca.uwaterloo.joos.symbolTable.SymbolTable;
 
 public class DeepDeclVisitor extends SemanticsVisitor {
-
+	
 	private String name = null;
 	public DeepDeclVisitor(SymbolTable ist) {
 		super(ist);
 		String lookup = null;
-		// TODO Auto-generated constructor stub
 	}
 	
 	public void willVisit(ASTNode node){
+		
+		
+		if (node instanceof ImportDeclaration){
+			ImportDeclaration INode = (ImportDeclaration) node;
+			//NOTE: import is a file given on the command line
+		}
+		
+		
 		if (node instanceof MethodDeclaration){
+			
+			//Make a new symbol table which builds 
 			MethodDeclaration CNode = (MethodDeclaration) node;
+//			System.out.println("METHOD NAME: " + CNode.getIdentifier());
 			name = name + "." + CNode.getIdentifier();
-			System.out.println(name);
-			st.openScope(name);
-//			st.
+//			System.out.println("METHOD FOUND CONSTRUCTING SYMBOL TABLE WITH NAME: " + name);
+			SymbolTable nst = new SymbolTable();
+			nst.setName(name);
+			nst.openScope(nst.getName());
+			nst.addScope();		//Adds the new block symboltable to the global hash of tables
+			try {
+				//visit the blocks within the method
+				nst.build(new BlockVisitor(nst), node);
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
+		
+		if (node instanceof ClassDeclaration){
+			ClassDeclaration CNode = (ClassDeclaration) node;
+//			System.out.println("CLASS NAME: " + CNode.getIdentifier());
+			name = name + "." + CNode.getIdentifier();
+//			st.openScope(name);
 		}
 	}
 	
@@ -35,47 +61,33 @@ public class DeepDeclVisitor extends SemanticsVisitor {
 			MethodDeclaration CNode = (MethodDeclaration) node;
 			st.closeScope();
 			name = name.substring(0, name.lastIndexOf("."));
-			System.out.println("DONE BODY: " + name);
-			System.out.println(name);
+//			System.out.println("DONE BODY: " + name);
+//			System.out.println(name);
 			
 		}
 	}
 	
 	public boolean visit(ASTNode node) throws ChildTypeUnmatchException, Exception {
-		if (node instanceof PackageDeclaration){
-			PackageDeclaration PNode = (PackageDeclaration) node;
-//			System.out.println("Packagename: " + PNode.getPackageName());
-			name = PNode.getPackageName();
+		if (node instanceof OnDemandImport){
+			OnDemandImport INode = (OnDemandImport) node;
+			System.out.println("IMPORT: " + INode.getImportName());
 		}
 		
-		if (node instanceof ClassDeclaration){
-			
-//			System.out.println("SCOPESIZE: " + st.getView().size());
-			
+		if (node instanceof PackageDeclaration){
+			PackageDeclaration PNode = (PackageDeclaration) node;
+			name = PNode.getPackageName();
+			st.setName(name);
+		}
+		
+		if (node instanceof ClassDeclaration){	
 			
 		}
 		
 		if (node instanceof MethodDeclaration){
 			//open a new symboltable at Package.classname.Methodname
-			MethodDeclaration Mnode = (MethodDeclaration) node;
-			SymbolTable nst = new SymbolTable();
-			nst.setName(name);
-			nst.addScope();
+			
 //			nst.constructScope(node);
-//			return false;
-		}
-		
-		if (node instanceof VariableDeclaration){
-			//check upper scope for previous definitions
-			//How to get decl name...
-			
-			VariableDeclaration VNode = (VariableDeclaration)node;
-			
-//			System.out.println("DeepDeclVisitor.visit(): declarationname: " + VNode.getName().getName());
-			Stack<SymbolTable> scview = st.getView();
-			for (int i = scview.size() - 1; i >= 0; i--){
-//				if (scview.get(i).isEmpty(VNode.getName().getName())) System.exit(9);
-			}
+			return false;
 		}
 		
 		return true;
