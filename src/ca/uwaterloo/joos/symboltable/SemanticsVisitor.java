@@ -16,24 +16,26 @@ public abstract class SemanticsVisitor extends ASTVisitor {
 	// SYMBOLTABLE - Link to the global SymbolTable
 	
 	protected static Logger logger = Main.getLogger(SemanticsVisitor.class);
-	protected Stack<SymbolTable> viewStack;
+	protected Stack<Scope> viewStack;
+	protected SymbolTable table;
 
-	public SemanticsVisitor() {
-		this.viewStack = new Stack<SymbolTable>();
+	public SemanticsVisitor(SymbolTable table) {
+		this.viewStack = new Stack<Scope>();
+		this.table = table;
 		logger.setLevel(Level.FINER);
 	}
 	
-	protected SymbolTable getCurrentScope() {
+	protected Scope getCurrentScope() {
 		return this.viewStack.peek();
 	}
 	
-	protected void pushScope(SymbolTable table) {
+	protected void pushScope(Scope table) {
 		logger.finer("Pushing scope " + table.toString());
 		this.viewStack.push(table);
 	}
 	
-	protected SymbolTable popScope() {
-		SymbolTable scope = this.viewStack.pop();
+	protected Scope popScope() {
+		Scope scope = this.viewStack.pop();
 		logger.finer("Popping scope " + scope);
 		return scope;
 	}
