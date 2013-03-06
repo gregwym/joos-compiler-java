@@ -8,5 +8,8 @@ public abstract class Type extends ASTNode {
 	public Type(Node node, ASTNode parent) throws Exception {
 		super(node, parent);
 	}
+	
+	@Override
+	public abstract String getIdentifier();
 
 }

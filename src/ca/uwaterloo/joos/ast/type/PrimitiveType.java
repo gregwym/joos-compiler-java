@@ -35,4 +35,15 @@ public class PrimitiveType extends Type {
 		Primitive type = stringToType(leafNode.token.getKind().toUpperCase());
 		addChild(TYPE, type);
 	}
+	
+	@Override
+	public String getIdentifier() {
+		String name = null;
+		try {
+			name = this.getPrimitiveType().name();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return name;
+	}
 }
