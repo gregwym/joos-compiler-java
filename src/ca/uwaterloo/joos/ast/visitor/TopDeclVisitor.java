@@ -1,6 +1,7 @@
 package ca.uwaterloo.joos.ast.visitor;
 
 import ca.uwaterloo.joos.ast.ASTNode;
+import ca.uwaterloo.joos.ast.ASTNode.ChildTypeUnmatchException;
 import ca.uwaterloo.joos.ast.decl.BodyDeclaration;
 import ca.uwaterloo.joos.ast.decl.FieldDeclaration;
 import ca.uwaterloo.joos.ast.decl.MethodDeclaration;
@@ -71,10 +72,10 @@ public class TopDeclVisitor extends SemanticsVisitor {
 	}
 
 	@Override
-	public void didVisit(ASTNode node) {
+	public void didVisit(ASTNode node) throws ChildTypeUnmatchException {
 		if (node instanceof TypeDeclaration) {
-//			SymbolTable typeScope = 
-					this.popScope();
+			SymbolTable typeScope = this.popScope();
+			this.getCurrentScope().addPublicMembers(typeScope);
 		}
 	}
 

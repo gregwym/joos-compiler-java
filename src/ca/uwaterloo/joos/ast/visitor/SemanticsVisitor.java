@@ -16,7 +16,7 @@ public abstract class SemanticsVisitor extends ASTVisitor {
 	// SYMBOLTABLE - Link to the global SymbolTable
 	
 	protected static Logger logger = Main.getLogger(SemanticsVisitor.class);
-	private Stack<SymbolTable> viewStack;
+	protected Stack<SymbolTable> viewStack;
 
 	public SemanticsVisitor() {
 		this.viewStack = new Stack<SymbolTable>();
