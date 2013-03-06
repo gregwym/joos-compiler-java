@@ -15,15 +15,24 @@ public class MethodDeclChecker extends MethodDeclVisitor {
 	@Override
 	protected void visitMethodDecl(MethodDeclaration node) throws Exception {
 		ASTNode astNode = node;
+		Boolean insideClass = true;
 		if (node.getModifiers().getModifiers().contains(Modifier.ABSTRACT)) {
 			ClassDeclaration classDeclNode = null;
-			while (!(astNode.getParent() instanceof ClassDeclaration)) {
-				astNode = astNode.getParent();
+			while (!(astNode instanceof ClassDeclaration)) {
+				if (astNode.getParent() != null) {
+					astNode = astNode.getParent();
+				} else {
+					insideClass = false;
+					break;
+				}
 			}
-			classDeclNode = (ClassDeclaration) astNode.getParent();
-			if (!(classDeclNode.getModifiers().getModifiers().contains(Modifier.ABSTRACT))) {
-				throw new Exception("class contains abstract Method must be abstract");
+			if (insideClass) {
+				classDeclNode = (ClassDeclaration) astNode;
+				if (!(classDeclNode.getModifiers().getModifiers().contains(Modifier.ABSTRACT))) {
+					throw new Exception("class contains abstract Method must be abstract");
+				}
 			}
+			
 
 		}
 
