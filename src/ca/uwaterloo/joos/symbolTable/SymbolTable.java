@@ -5,11 +5,14 @@
 package ca.uwaterloo.joos.symbolTable;
 
 //Proposal
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.Stack;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import ca.uwaterloo.joos.Main;
@@ -34,12 +37,12 @@ public class SymbolTable{
 	 * namespace.
 	 * 
 	 */
-	static Logger 		logger = Main.getLogger(Main.class);
+	static Logger 		logger = Main.getLogger(SymbolTable.class);
 	
 	
 	private String 					name		= null;									//	Represents the name of the current scope
 	private AST 					tree 		= null;									//	Link to an AST to scan. Updated in walk()
-	Map<String, TableEntry> 		symbolTable = null;									//	A map mapping identifiers to their related ASTNode
+	private Map<String, TableEntry> 		symbolTable = null;							//	A map mapping identifiers to their related ASTNode
 	static Map<String, SymbolTable> Scopes 		= new HashMap<String, SymbolTable>(); 	//	Links each Scope together
 	private static Stack<SymbolTable>view		= new Stack<SymbolTable>();				//	The Current Scope
 	
@@ -52,7 +55,34 @@ public class SymbolTable{
 	//	-Associate each package...
 	
 	
+	public List<String> appendScope(SymbolTable st, int blocks, int level){
+		System.out.println("LEVEL: " + level);
+		//ONLY CALLED FROM BLOCK VISITOR
+		List<String> tmp = new ArrayList<String>();
+		
+		for (String key : st.symbolTable.keySet()) {
+			if (st.symbolTable.get(key).getLevel() <= level){
+				String lkey = key.substring(0, key.lastIndexOf("."));
+				String rkey = key.substring(key.lastIndexOf(".") + 1);
+				logger.info("Append Scope: "+ lkey + "." + blocks + "Block." + rkey);
+				this.symbolTable.put(lkey + "." + blocks + "Block." + rkey, st.symbolTable.get(key));
+				tmp.add(lkey + "." + blocks + "Block." + rkey);
+			}
+		}
+		
+		return tmp;
+		
+	}
 	
+	public void unAppendScope(int blocks, List<String> tmp){
+		//ONLY CALLED FROM BLOCK VISITOR
+		List<String> keys = tmp;
+		for (String key: keys){
+			this.symbolTable.remove(key);
+			
+		}
+		
+	}
 	public Stack getView(){
 		return view;
 	}
@@ -114,7 +144,11 @@ public class SymbolTable{
 	}
 	
 	public boolean hasField(String key){
+		logger.info("KEY: "+key);
 		//if false, no field exists and we can add it
+		//Currently this just checks the immediate scope for any overlap
+		//a nested block has it's parent's scope pushed into it during processing
+		//and is removed after...
 		return (symbolTable.containsKey(key));
 	}
 	
@@ -132,6 +166,8 @@ public class SymbolTable{
 	}
 	
 	public void build(List<AST> asts) throws Exception{
+		logger.setLevel(Level.FINE);
+		logger.fine("Building SymbolTable");
 		//Called from main
 		for (AST iast: asts){
 			iast.getRoot().accept(new TopDeclVisitor(this));
