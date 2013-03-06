@@ -2,13 +2,13 @@ package ca.uwaterloo.joos.ast.visitor;
 
 import ca.uwaterloo.joos.ast.ASTNode;
 import ca.uwaterloo.joos.ast.ASTNode.ChildTypeUnmatchException;
-import ca.uwaterloo.joos.ast.decl.LocalVariableDeclaration;
+import ca.uwaterloo.joos.ast.decl.VariableDeclaration;
 import ca.uwaterloo.joos.ast.statement.Block;
 import ca.uwaterloo.joos.symbolTable.SymbolTable;
 
 public class BlockVisitor extends SemanticsVisitor {
-	private int level = -1;
-	private int blocks = -1;
+	private int level = 0;
+	private int blocks = 0;
 
 	public BlockVisitor(SymbolTable scope) {
 		super();
@@ -17,33 +17,25 @@ public class BlockVisitor extends SemanticsVisitor {
 
 	public boolean visit(ASTNode node) throws ChildTypeUnmatchException, Exception {
 		SymbolTable currentScope = this.getCurrentScope();
-		if (node instanceof LocalVariableDeclaration) {
+		if (node instanceof VariableDeclaration) {
 			// if name is not already in view
-			LocalVariableDeclaration LNode = (LocalVariableDeclaration) node;
+			VariableDeclaration LNode = (VariableDeclaration) node;
 
 			if (currentScope.getVariableDecl(LNode) != null) {
 				throw new Exception("Overlapping Declarations Exit 42");
 			}
-			level++;
 			currentScope.addVariableDecl(LNode, level);
+			this.level++;
+
 			return false;
 		} else if (node instanceof Block) {
-			if (blocks == -1) { // Then this is the block we are reading
-				blocks++;
-			} else {
-//				// Level is 0 so we found a nested block
-//				// TODO
-//				// Make a new scope
-//				// Add it to the Scopes
-//				SymbolTable nst = new SymbolTable();
-//				blocks++;
-//				// Add new symbol table to the global scope hash
-//				nst.addScope();
-//				// Add the LOCAL SCOPE to the nested block
-//				List<String> tmp = nst.appendScope(st, blocks, this.level);
-//				nst.setName(st.getName() + "." + blocks + "Block");
-//				nst.build(new BlockVisitor(nst), node);
-//				nst.unAppendScope(blocks, tmp);
+			if (blocks == 0)  {
+				this.blocks++;
+			}
+			else {
+				ASTVisitor blockVisitor = new BlockVisitor(this.getCurrentScope());
+				node.accept(blockVisitor);
+				
 				return false;
 			}
 		}
@@ -53,12 +45,20 @@ public class BlockVisitor extends SemanticsVisitor {
 
 	@Override
 	public void willVisit(ASTNode node) {
-
+		if (blocks > 0 && node instanceof Block) {
+			// Make a new symbol table which builds
+			String name = this.getCurrentScope().getName() + "." + this.blocks + "Block";
+			SymbolTable scope = SymbolTable.getScope(name);
+			this.pushScope(scope);
+			this.blocks++;
+		}
 	}
 
 	@Override
 	public void didVisit(ASTNode node) {
-
+		if (node instanceof Block) {
+			this.popScope();
+		}
 	}
 
 }
