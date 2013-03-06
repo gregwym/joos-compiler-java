@@ -19,6 +19,7 @@ import ca.uwaterloo.joos.ast.AST;
 import ca.uwaterloo.joos.ast.ASTNode;
 import ca.uwaterloo.joos.ast.decl.MethodDeclaration;
 import ca.uwaterloo.joos.ast.decl.ParameterDeclaration;
+import ca.uwaterloo.joos.ast.decl.VariableDeclaration;
 import ca.uwaterloo.joos.ast.visitor.ASTVisitor;
 import ca.uwaterloo.joos.ast.visitor.DeepDeclVisitor;
 import ca.uwaterloo.joos.ast.visitor.TopDeclVisitor;
@@ -112,11 +113,6 @@ public class SymbolTable{
 		return name;
 	}
 	
-	public void addField(String key, ASTNode node){
-		//Add a field
-		symbolTable.put(key, new TableEntry(node));
-	}
-	
 	public void addClass(String key, ASTNode node){
 		TableEntry te = new TableEntry(node);
 		te.setLevel(0);
@@ -133,41 +129,46 @@ public class SymbolTable{
 		symbolTable.put(key, te);
 		
 	}
-	public void addMethod(MethodDeclaration node) throws Exception{
-		String name = this.name + "." + node.getName().getName() + "(";
-		for(ParameterDeclaration parameter: node.getParameters()) {
-			name += parameter.getType().getIdentifier();
-		}
-		name += ")";
-		symbolTable.put(name, new TableEntry(node));
-	}
 	
-	public TableEntry getMethod(String key){
-		return this.symbolTable.get(key+"()");
-		
-	}
-	
-	public TableEntry getField(String key){
-		return this.symbolTable.get(key);
-	}
-	
-	public boolean hasField(String key){
-		logger.fine("KEY: "+key);
-		//if false, no field exists and we can add it
-		//Currently this just checks the immediate scope for any overlap
-		//a nested block has it's parent's scope pushed into it during processing
-		//and is removed after...
-		return (symbolTable.containsKey(key));
-	}
-	
-	public boolean hasMethod(MethodDeclaration method) throws Exception{
-		//If false, no Method exists and we can add it
+	public String signatureOfMethod(MethodDeclaration method) throws Exception {
 		String name = this.name + "." + method.getName().getName() + "(";
 		for(ParameterDeclaration parameter: method.getParameters()) {
 			name += parameter.getType().getIdentifier();
 		}
 		name += ")";
-		return (symbolTable.containsKey(name));
+		return name;
+	}
+
+	public void addMethod(MethodDeclaration node) throws Exception{
+		String name = this.signatureOfMethod(node);
+		symbolTable.put(name, new TableEntry(node));
+	}
+	
+	public TableEntry getMethod(MethodDeclaration node) throws Exception{
+		//If false, no Method exists and we can add it
+		String name = this.signatureOfMethod(node);
+		return symbolTable.get(name);
+	}
+	
+	public String nameForDecl(VariableDeclaration field) throws Exception {
+		String name = this.getName() + "." + field.getName().getName();
+		return name;
+	}
+
+	public void addVariableDecl(VariableDeclaration node) throws Exception{
+		//Add a field
+		symbolTable.put(this.nameForDecl(node), new TableEntry(node));
+	}
+	
+	public void addVariableDecl(VariableDeclaration node, int level) throws Exception{
+		//Add a field
+		TableEntry entry = new TableEntry(node);
+		entry.setLevel(level);
+		symbolTable.put(this.nameForDecl(node), entry);
+	}
+
+	public TableEntry getVariableDecl(VariableDeclaration node) throws Exception{
+		return this.symbolTable.get(this.nameForDecl(node));
 	}
 	
 	public void build(ASTVisitor visitor, ASTNode astNode) throws Exception {
@@ -183,9 +184,11 @@ public class SymbolTable{
 			ast.getRoot().accept(new TopDeclVisitor());
 		}
 		
-//		for (AST iast: asts){
-//			iast.getRoot().accept(new DeepDeclVisitor());
-//		}
+		logger.info("Pass 1 Finished");
+		
+		for (AST iast: asts){
+			iast.getRoot().accept(new DeepDeclVisitor());
+		}
 	}
 
 	public static void listScopes() {
