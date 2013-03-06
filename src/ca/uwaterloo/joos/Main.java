@@ -3,10 +3,9 @@
  */
 package ca.uwaterloo.joos;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStreamReader;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
 
@@ -66,7 +65,7 @@ public class Main {
 		this.weeder = new Weeder();
 	}
 
-	public Object execute(File source) throws Exception {
+	public AST constructAst(File source) throws Exception {
 		logger.info("Processing: " + source.getName());
 
 		/* Scanning */
@@ -104,20 +103,20 @@ public class Main {
 	 */
 	public static void main(String[] args) throws IOException {
 		if(args.length < 1) {
-			BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
-			String line = reader.readLine();
-			if(line == null) System.exit(-1);
-			args = line.split("\\s");
-		}
-
-		if(args.length < 1) {
 			System.exit(-1);
+		}
+		
+		for(String arg: args) {
+			System.out.println("Source: " + arg);
 		}
 
 		Main instance = new Main();
 
 		try {
-			instance.execute(new File(args[0]));
+			List<AST> asts = new ArrayList<AST>();
+			for(String arg: args) {
+				asts.add(instance.constructAst(new File(arg)));
+			}
 		} catch (Exception e) {
 			System.err.println("ERROR: " + e.getLocalizedMessage() + " " + e.getClass().getName());
 			e.printStackTrace();
