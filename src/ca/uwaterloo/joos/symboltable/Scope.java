@@ -8,8 +8,10 @@ package ca.uwaterloo.joos.symboltable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import ca.uwaterloo.joos.ast.ASTNode;
 import ca.uwaterloo.joos.ast.ASTNode.ChildTypeUnmatchException;
@@ -38,6 +40,7 @@ public class Scope{
 	
 	private String name = null;	// Represents the name of the current scope
 	private Map<String, TableEntry> symbolTable = null;	// A map mapping identifiers to their related ASTNode
+	private Map<String, Integer> symbolPriority = null;
 	
 	//Constructs a symbol table
 	//An AST is generated at this point, walk it.
@@ -49,20 +52,22 @@ public class Scope{
 	
 	public Scope(String name){
 		this.symbolTable = new HashMap<String, TableEntry>();
+		this.symbolPriority = new HashMap<String, Integer>();
 		this.name = name;
 //		Scope.scopes.put(name, this);
 	}
 	
-	public void appendScope(Scope table){
-		//ONLY CALLED FROM BLOCK VISITOR
-		
+	public void appendScope(Scope table, int priority){		
 		for (String key : table.symbolTable.keySet()) {
 			TableEntry entry = table.symbolTable.get(key);
 			this.symbolTable.put(key, entry);
+			Integer old_priority = table.symbolPriority.get(key);
+			if(priority != 0) this.symbolPriority.put(key, priority);
+			else if(old_priority != null) this.symbolPriority.put(key, old_priority);
 		}
 	}
 	
-	public void addPublicMembers(Scope table) throws ChildTypeUnmatchException {
+	public void addPublicMembers(Scope table, int priority) throws ChildTypeUnmatchException {
 		for(String key: table.symbolTable.keySet()) {
 			TableEntry entry = table.symbolTable.get(key);
 			
@@ -70,12 +75,11 @@ public class Scope{
 				BodyDeclaration node = (BodyDeclaration) entry.getNode();
 				if(node.getModifiers().getModifiers().contains(Modifier.PUBLIC)) {
 					this.symbolTable.put(key, entry);
+					this.symbolPriority.put(key, priority == 0 ? table.symbolPriority.get(key) : priority);
 				}
 			} else if(entry.getNode() instanceof TypeDeclaration) {
-				TypeDeclaration node = (TypeDeclaration) entry.getNode();
-				if(node.getModifiers().getModifiers().contains(Modifier.PUBLIC)) {
-					this.symbolTable.put(key, entry);
-				}
+				this.symbolTable.put(key, entry);
+				this.symbolPriority.put(key, priority == 0 ? table.symbolPriority.get(key) : priority);
 			}
 		}
 	}
@@ -164,12 +168,33 @@ public class Scope{
 	
 	public String lookupReferenceType(ReferenceType type) throws Exception {
 		Name name = type.getName();
+		
+		Map<String, Integer> nameWithPriority = new HashMap<String, Integer>();
 		for(String key: this.symbolTable.keySet()) {
-			if(key.matches("^.*" + name.getName() + "\\{\\}$")) {
-				return key;
+			if(key.matches("^(.+\\.)*" + name.getName() + "\\{\\}$")) {
+				Integer priority = this.symbolPriority.get(key);
+				priority = priority == null ? 200 : priority;
+				nameWithPriority.put(key, priority);
 			}
 		}
-		return null;
+		
+		Set<Integer> conflicting = new HashSet<Integer>();
+		String result = null;
+		int highest = 0;
+		for(String key: nameWithPriority.keySet()) {
+			int current = nameWithPriority.get(key);
+			if(current > highest) {
+				highest = current;
+				result = key;
+			} else if(current == highest) {
+				conflicting.add(current);
+			}
+		}
+		if(conflicting.contains(highest)) {
+			throw new Exception("Unresovable ambiguous type " + type.getName());
+		}
+		
+		return result;
 	}
 	
 	public void listSymbols(){

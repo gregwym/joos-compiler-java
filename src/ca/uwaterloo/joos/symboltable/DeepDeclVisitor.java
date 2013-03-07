@@ -39,12 +39,12 @@ public class DeepDeclVisitor extends SemanticsVisitor {
 			// Second: get the class description scope
 			Scope table = this.table.getScope(name);
 			
-			table.appendScope(currentScope);
+			table.appendScope(currentScope, 10);
 			
 			// Add java.lang implicitly
 			Scope javaLang = this.table.getScope("java.lang");
 			if(javaLang != null) {
-				table.addPublicMembers(javaLang);
+				table.addPublicMembers(javaLang, 20);
 			}
 			else {
 //				throw new Exception("Missing java.lang");
@@ -55,7 +55,7 @@ public class DeepDeclVisitor extends SemanticsVisitor {
 				if(anImport instanceof SingleImport) {
 					Scope importTable = this.table.getScope(anImport.getImportName().getName() + "{}");
 					if(importTable != null) {
-						table.addPublicMembers(importTable);
+						table.addPublicMembers(importTable, 100);
 					}
 					else {
 						throw new Exception("Unknown Single Import " + anImport.getIdentifier());
@@ -63,7 +63,7 @@ public class DeepDeclVisitor extends SemanticsVisitor {
 				} else if(anImport instanceof OnDemandImport) {
 					Scope importTable = this.table.getScope(anImport.getImportName().getName());
 					if(importTable != null) {
-						table.addPublicMembers(importTable);
+						table.addPublicMembers(importTable, 90);
 					}
 					else {
 						throw new Exception("Unknown Single Import " + anImport.getIdentifier());
@@ -78,7 +78,7 @@ public class DeepDeclVisitor extends SemanticsVisitor {
 			String name = this.getCurrentScope().signatureOfMethod((MethodDeclaration) node);
 			Scope scope = this.table.getScope(name);
 			
-			scope.appendScope(this.getCurrentScope());
+			scope.appendScope(this.getCurrentScope(), 0);
 			
 			this.pushScope(scope);
 		}
