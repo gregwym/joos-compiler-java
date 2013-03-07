@@ -89,6 +89,11 @@ public class A2Test {
 		try {
 			String[] files = new String[this.testFiles.size()];
 			instance.execute(this.testFiles.toArray(files));
+			if (fileException != null) {
+				System.out.println("Expecting: " + fileException.getClass().getSimpleName() + "\t"
+						+ "but got: NoException" + "\t\t"
+						+ "[" + testFileList.getName() + "]");
+			}
 		} catch (Exception e) {
 			realException = e;
 			if (fileException == null) {
@@ -97,7 +102,7 @@ public class A2Test {
 
 			}
 		}
-
+		
 		if (fileException != null && realException != null) {
 			assertEquals(fileException.getClass().getSimpleName(), realException.getClass().getSimpleName());
 		} else {
