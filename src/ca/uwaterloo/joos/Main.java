@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.logging.Logger;
 
 import ca.uwaterloo.joos.ast.AST;
+import ca.uwaterloo.joos.ast.visitor.ToStringVisitor;
 import ca.uwaterloo.joos.parser.LR1;
 import ca.uwaterloo.joos.parser.LR1Parser;
 import ca.uwaterloo.joos.parser.ParseTree;
@@ -105,15 +106,16 @@ public class Main {
 //		table.listScopes();
 		
 		for(AST ast: asts) {
+//			System.out.println("Checking " + ast.getRoot().getIdentifier() );
 			TypeLinker linker = new TypeLinker(table);
 			ast.getRoot().accept(linker);
 		}
 	}
 	
 	public void execute(String[] args) throws Exception {
-//		for(String arg: args) {
-//			System.out.println("Source: " + arg);
-//		}
+		for(String arg: args) {
+			System.out.println("Source: " + arg);
+		}
 		
 		List<AST> asts = new ArrayList<AST>();
 		for(String arg: args) {

@@ -53,8 +53,8 @@ public class SymbolTable {
 		}
 		logger.info("Building Symbol Table Pass 1 Finished");
 		
-		for (AST iast: asts){
-			iast.getRoot().accept(new DeepDeclVisitor(this));
+		for (AST ast: asts){
+			ast.getRoot().accept(new DeepDeclVisitor(this));
 		}
 		logger.info("Building Symbol Table Pass 2 Finished");
 	}
