@@ -110,7 +110,7 @@ public class TypeLinker extends TypeVisitor {
 		} else if (node instanceof MethodDeclaration) {
 			this.popScope();
 			this.blocks.pop();
-		} else if (node instanceof Block && this.viewStack.peek().getName().contains("Block")) {
+		} else if (node instanceof Block && this.viewStack.peek().getName().matches("(.+\\.)+\\d+Block")) {
 			this.popScope();
 			this.blocks.pop();
 		}
