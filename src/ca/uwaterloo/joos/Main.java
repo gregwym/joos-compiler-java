@@ -97,6 +97,31 @@ public class Main {
 
 		return ast;
 	}
+	
+	public void typeChecking(List<AST> asts) throws Exception {
+		SymbolTable table = new SymbolTable();
+		
+		table.build(asts);
+//		table.listScopes();
+		
+		for(AST ast: asts) {
+			TypeLinker linker = new TypeLinker(table);
+			ast.getRoot().accept(linker);
+		}
+	}
+	
+	public void execute(String[] args) throws Exception {
+//		for(String arg: args) {
+//			System.out.println("Source: " + arg);
+//		}
+		
+		List<AST> asts = new ArrayList<AST>();
+		for(String arg: args) {
+			asts.add(this.constructAst(new File(arg)));
+		}
+		
+		typeChecking(asts);
+	}
 
 	/**
 	 * @param args
@@ -107,28 +132,10 @@ public class Main {
 			System.exit(-1);
 		}
 		
-		for(String arg: args) {
-			System.out.println("Source: " + arg);
-		}
 		Main instance = new Main();
 
 		try {
-			List<AST> asts = new ArrayList<AST>();
-			for(String arg: args) {
-				asts.add(instance.constructAst(new File(arg)));
-			}
-			
-			SymbolTable table = new SymbolTable();
-			table.build(asts);
-			table.listScopes();
-			
-			
-			
-			for(AST ast: asts) {
-				TypeLinker linker = new TypeLinker(table);
-				System.out.println("Start linking: " + ast.getRoot().getIdentifier());
-				ast.getRoot().accept(linker);
-			}
+			instance.execute(args);
 		} catch (Exception e) {
 			System.err.println("ERROR: " + e.getLocalizedMessage() + " " + e.getClass().getName());
 			e.printStackTrace();

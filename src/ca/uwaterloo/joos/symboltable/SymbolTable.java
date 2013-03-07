@@ -5,7 +5,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import ca.uwaterloo.joos.Main;
@@ -46,18 +45,18 @@ public class SymbolTable {
 	}
 	
 	public void build(List<AST> asts) throws Exception{
-		logger.setLevel(Level.FINE);
+//		logger.setLevel(Level.FINE);
 		logger.fine("Building SymbolTable");
 		//Called from main
 		for (AST ast: asts){
 			ast.getRoot().accept(new TopDeclVisitor(this));
 		}
-		
-		logger.info("Pass 1 Finished");
+		logger.info("Building Symbol Table Pass 1 Finished");
 		
 		for (AST iast: asts){
 			iast.getRoot().accept(new DeepDeclVisitor(this));
 		}
+		logger.info("Building Symbol Table Pass 2 Finished");
 	}
 
 	public void listScopes() {
