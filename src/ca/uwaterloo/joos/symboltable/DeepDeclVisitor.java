@@ -53,17 +53,17 @@ public class DeepDeclVisitor extends SemanticsVisitor {
 			List<ImportDeclaration> imports = ((FileUnit) node.getParent()).getImportDeclarations();
 			for(ImportDeclaration anImport: imports) {
 				if(anImport instanceof SingleImport) {
-					Scope importTable = this.table.getScope(anImport.getImportName().getName() + "{}");
-					if(importTable != null) {
-						table.addPublicMembers(importTable, 100);
+					String domain = anImport.getImportName().getName() + "{}";
+					if(this.table.containScope(domain)) {
+						table.addPublicMembers(this.table.getScope(domain), 100);
 					}
 					else {
 						throw new Exception("Unknown Single Import " + anImport.getIdentifier());
 					}
 				} else if(anImport instanceof OnDemandImport) {
-					Scope importTable = this.table.getScope(anImport.getImportName().getName());
-					if(importTable != null) {
-						table.addPublicMembers(importTable, 90);
+					String domain = anImport.getImportName().getName();
+					if(this.table.containScope(domain)) {
+						table.addPublicMembers(this.table.getScope(domain), 90);
 					}
 					else {
 						throw new Exception("Unknown Single Import " + anImport.getIdentifier());
