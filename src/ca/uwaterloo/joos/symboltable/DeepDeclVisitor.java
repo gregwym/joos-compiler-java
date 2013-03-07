@@ -41,6 +41,15 @@ public class DeepDeclVisitor extends SemanticsVisitor {
 			
 			table.appendScope(currentScope);
 			
+			// Add java.lang implicitly
+			Scope javaLang = this.table.getScope("java.lang");
+			if(javaLang != null) {
+				table.addPublicMembers(javaLang);
+			}
+			else {
+//				throw new Exception("Missing java.lang");
+			}
+			
 			List<ImportDeclaration> imports = ((FileUnit) node.getParent()).getImportDeclarations();
 			for(ImportDeclaration anImport: imports) {
 				if(anImport instanceof SingleImport) {
