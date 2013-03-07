@@ -113,9 +113,9 @@ public class Main {
 	}
 	
 	public void execute(String[] args) throws Exception {
-		for(String arg: args) {
-			System.out.println("Source: " + arg);
-		}
+//		for(String arg: args) {
+//			System.out.println("Source: " + arg);
+//		}
 		
 		List<AST> asts = new ArrayList<AST>();
 		for(String arg: args) {
