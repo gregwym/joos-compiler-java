@@ -21,6 +21,8 @@ public abstract class Name extends Expression implements Lefthand {
 	}
 
 	public abstract String getName() throws Exception;
+	
+	public abstract String getSimpleName() throws Exception;
 
 	private static class NameTraverser implements Traverser {
 		public Name node;

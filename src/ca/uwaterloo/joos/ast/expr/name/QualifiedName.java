@@ -19,16 +19,24 @@ public class QualifiedName extends Name {
 	public String getQualifiedName() throws ChildTypeUnmatchException {
 		return Lambda.join(this.getComponents(), ".");
 	}
+	
+	@Override
+	public String getName() throws Exception {
+		return this.getQualifiedName();
+	}
+	
+	@Override
+	public String getSimpleName() throws Exception {
+		List<String> components = this.getComponents();
+		return components.get(components.size() - 1);
+	}
 
 	@SuppressWarnings("unchecked")
 	public List<String> getComponents() throws ChildTypeUnmatchException {
 		return (List<String>) this.getChildByDescriptor(COMPONENTS);
 	}
 
-	@Override
-	public String getName() throws Exception {
-		return this.getQualifiedName();
-	}
+	
 
 	@Override
 	public void processLeafNode(LeafNode leafNode) throws Exception {

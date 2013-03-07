@@ -10,14 +10,14 @@ import java.util.List;
 import java.util.logging.Logger;
 
 import ca.uwaterloo.joos.ast.AST;
-import ca.uwaterloo.joos.ast.visitor.ToStringVisitor;
 import ca.uwaterloo.joos.parser.LR1;
 import ca.uwaterloo.joos.parser.LR1Parser;
 import ca.uwaterloo.joos.parser.ParseTree;
 import ca.uwaterloo.joos.scanner.DFA;
 import ca.uwaterloo.joos.scanner.Scanner;
 import ca.uwaterloo.joos.scanner.Token;
-import ca.uwaterloo.joos.symbolTable.SymbolTable;
+import ca.uwaterloo.joos.symboltable.SymbolTable;
+import ca.uwaterloo.joos.typelinker.TypeLinker;
 import ca.uwaterloo.joos.weeder.Weeder;
 
 /**
@@ -110,7 +110,6 @@ public class Main {
 		for(String arg: args) {
 			System.out.println("Source: " + arg);
 		}
-		SymbolTable st;
 		Main instance = new Main();
 
 		try {
@@ -119,11 +118,17 @@ public class Main {
 				asts.add(instance.constructAst(new File(arg)));
 			}
 			
-			st = new SymbolTable();
-			st.build(asts);
-			st.listScopes();
-//			System.out.println(st.getMethod("default_package.J1_01.test").getNode().getIdentifier());
+			SymbolTable table = new SymbolTable();
+			table.build(asts);
+			table.listScopes();
 			
+			
+			
+			for(AST ast: asts) {
+				TypeLinker linker = new TypeLinker(table);
+				System.out.println("Start linking: " + ast.getRoot().getIdentifier());
+				ast.getRoot().accept(linker);
+			}
 		} catch (Exception e) {
 			System.err.println("ERROR: " + e.getLocalizedMessage() + " " + e.getClass().getName());
 			e.printStackTrace();

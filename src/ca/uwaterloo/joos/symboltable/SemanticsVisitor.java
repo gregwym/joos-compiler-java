@@ -1,18 +1,43 @@
-package ca.uwaterloo.joos.ast.visitor;
+package ca.uwaterloo.joos.symboltable;
 
+import java.util.Stack;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import ca.uwaterloo.joos.Main;
 import ca.uwaterloo.joos.ast.ASTNode;
 import ca.uwaterloo.joos.ast.ASTNode.ChildTypeUnmatchException;
 import ca.uwaterloo.joos.ast.body.ClassBody;
 import ca.uwaterloo.joos.ast.decl.VariableDeclaration;
 import ca.uwaterloo.joos.ast.statement.Block;
-import ca.uwaterloo.joos.symbolTable.SymbolTable;
+import ca.uwaterloo.joos.ast.visitor.ASTVisitor;
 
 public abstract class SemanticsVisitor extends ASTVisitor {
 	// SYMBOLTABLE - Link to the global SymbolTable
-	protected SymbolTable st = null;
+	
+	protected static Logger logger = Main.getLogger(SemanticsVisitor.class);
+	protected Stack<Scope> viewStack;
+	protected SymbolTable table;
 
-	public SemanticsVisitor(SymbolTable st) {
-		this.st = st;
+	public SemanticsVisitor(SymbolTable table) {
+		this.viewStack = new Stack<Scope>();
+		this.table = table;
+		logger.setLevel(Level.FINER);
+	}
+	
+	protected Scope getCurrentScope() {
+		return this.viewStack.peek();
+	}
+	
+	protected void pushScope(Scope table) {
+		logger.finer("Pushing scope " + table.toString());
+		this.viewStack.push(table);
+	}
+	
+	protected Scope popScope() {
+		Scope scope = this.viewStack.pop();
+		logger.finer("Popping scope " + scope);
+		return scope;
 	}
 
 	@Override

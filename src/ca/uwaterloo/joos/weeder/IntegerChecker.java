@@ -3,12 +3,9 @@
  */
 package ca.uwaterloo.joos.weeder;
 
-import java.util.HashSet;
-import java.util.Set;
 import ca.uwaterloo.joos.ast.ASTNode;
 import ca.uwaterloo.joos.ast.expr.primary.LiteralPrimary;
 import ca.uwaterloo.joos.ast.visitor.IntegerVisitor;
-import ca.uwaterloo.joos.scanner.Scanner.ScanException;
 
 /**
  * @author wenzhuman
