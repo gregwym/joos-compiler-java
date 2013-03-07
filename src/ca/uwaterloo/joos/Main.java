@@ -122,9 +122,11 @@ public class Main {
 			table.build(asts);
 			table.listScopes();
 			
-			TypeLinker linker = new TypeLinker(table);
+			
 			
 			for(AST ast: asts) {
+				TypeLinker linker = new TypeLinker(table);
+				System.out.println("Start linking: " + ast.getRoot().getIdentifier());
 				ast.getRoot().accept(linker);
 			}
 		} catch (Exception e) {

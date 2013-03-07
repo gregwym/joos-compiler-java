@@ -10,6 +10,9 @@ import java.util.logging.Logger;
 
 import ca.uwaterloo.joos.Main;
 import ca.uwaterloo.joos.ast.AST;
+import ca.uwaterloo.joos.ast.expr.name.Name;
+import ca.uwaterloo.joos.ast.expr.name.QualifiedName;
+import ca.uwaterloo.joos.ast.type.ReferenceType;
 
 public class SymbolTable {
 	
@@ -32,6 +35,14 @@ public class SymbolTable {
 	
 	public boolean containScope(String name) {
 		return this.scopes.containsKey(name);
+	}
+	
+	public String lookupReferenceType(ReferenceType type) throws Exception {
+		Name name = type.getName();
+		if(name instanceof QualifiedName && this.containScope(name.getName() + "{}")) {
+			return name.getName();
+		}
+		return null;
 	}
 	
 	public void build(List<AST> asts) throws Exception{

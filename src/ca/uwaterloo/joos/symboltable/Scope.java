@@ -18,7 +18,10 @@ import ca.uwaterloo.joos.ast.decl.BodyDeclaration;
 import ca.uwaterloo.joos.ast.decl.LocalVariableDeclaration;
 import ca.uwaterloo.joos.ast.decl.MethodDeclaration;
 import ca.uwaterloo.joos.ast.decl.ParameterDeclaration;
+import ca.uwaterloo.joos.ast.decl.TypeDeclaration;
 import ca.uwaterloo.joos.ast.decl.VariableDeclaration;
+import ca.uwaterloo.joos.ast.expr.name.Name;
+import ca.uwaterloo.joos.ast.type.ReferenceType;
 
 
 public class Scope{
@@ -64,6 +67,11 @@ public class Scope{
 			
 			if(entry.getNode() instanceof BodyDeclaration) {
 				BodyDeclaration node = (BodyDeclaration) entry.getNode();
+				if(node.getModifiers().getModifiers().contains(Modifier.PUBLIC)) {
+					this.symbolTable.put(key, entry);
+				}
+			} else if(entry.getNode() instanceof TypeDeclaration) {
+				TypeDeclaration node = (TypeDeclaration) entry.getNode();
 				if(node.getModifiers().getModifiers().contains(Modifier.PUBLIC)) {
 					this.symbolTable.put(key, entry);
 				}
@@ -148,6 +156,16 @@ public class Scope{
 
 	public TableEntry getVariableDecl(VariableDeclaration node) throws Exception{
 		return this.symbolTable.get(this.nameForDecl(node));
+	}
+	
+	public String lookupReferenceType(ReferenceType type) throws Exception {
+		Name name = type.getName();
+		for(String key: this.symbolTable.keySet()) {
+			if(key.matches("^.*" + name.getName() + "\\{\\}$")) {
+				return key;
+			}
+		}
+		return null;
 	}
 	
 	public void listSymbols(){
