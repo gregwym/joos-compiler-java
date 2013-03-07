@@ -1,15 +1,9 @@
 package ca.uwaterloo.joos.symboltable;
 
-import java.util.List;
-
 import ca.uwaterloo.joos.ast.ASTNode;
 import ca.uwaterloo.joos.ast.ASTNode.ChildTypeUnmatchException;
-import ca.uwaterloo.joos.ast.FileUnit;
-import ca.uwaterloo.joos.ast.decl.ImportDeclaration;
 import ca.uwaterloo.joos.ast.decl.MethodDeclaration;
-import ca.uwaterloo.joos.ast.decl.OnDemandImport;
 import ca.uwaterloo.joos.ast.decl.PackageDeclaration;
-import ca.uwaterloo.joos.ast.decl.SingleImport;
 import ca.uwaterloo.joos.ast.decl.TypeDeclaration;
 import ca.uwaterloo.joos.ast.visitor.ASTVisitor;
 
@@ -40,36 +34,6 @@ public class DeepDeclVisitor extends SemanticsVisitor {
 			Scope table = this.table.getScope(name);
 			
 			table.appendScope(currentScope, 10);
-			
-			// Add java.lang implicitly
-			Scope javaLang = this.table.getScope("java.lang");
-			if(javaLang != null) {
-				table.addPublicMembers(javaLang, 20);
-			}
-			else {
-//				throw new Exception("Missing java.lang");
-			}
-			
-			List<ImportDeclaration> imports = ((FileUnit) node.getParent()).getImportDeclarations();
-			for(ImportDeclaration anImport: imports) {
-				if(anImport instanceof SingleImport) {
-					String domain = anImport.getImportName().getName() + "{}";
-					if(this.table.containScope(domain)) {
-						table.addPublicMembers(this.table.getScope(domain), 100);
-					}
-					else {
-						throw new Exception("Unknown Single Import " + anImport.getIdentifier());
-					}
-				} else if(anImport instanceof OnDemandImport) {
-					String domain = anImport.getImportName().getName();
-					if(this.table.containScope(domain)) {
-						table.addPublicMembers(this.table.getScope(domain), 90);
-					}
-					else {
-						throw new Exception("Unknown Single Import " + anImport.getIdentifier());
-					}
-				}
-			}
 			
 			// Push current scope into the view stack
 			this.pushScope(table);
