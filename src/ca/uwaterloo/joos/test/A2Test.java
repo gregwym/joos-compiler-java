@@ -1,6 +1,7 @@
 package ca.uwaterloo.joos.test;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -92,6 +93,7 @@ public class A2Test {
 				System.out.println("Expecting: " + fileException.getClass().getSimpleName() + "\t"
 						+ "but got: NoException" + "\t\t"
 						+ "[" + testFileList.getName() + "]");
+				fail("Fail to get exception");
 			}
 		} catch (Exception e) {
 			realException = e;

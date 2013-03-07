@@ -14,7 +14,7 @@ public class InterfaceDeclaration extends TypeDeclaration {
 	}
 	@Override
 	public List<Node> processTreeNode(TreeNode treeNode) throws Exception {
-		if (treeNode.productionRule.getLefthand().equals("extendsinterfaces")&&(treeNode.children.size()!=0)) {
+		if (treeNode.productionRule.getLefthand().equals("name")) {
 			ReferenceType implemntsType = new ReferenceType(treeNode, this);
 			addChild(IMPLEMNTS, implemntsType);
 		}
