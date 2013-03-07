@@ -1,7 +1,6 @@
 package ca.uwaterloo.joos.symboltable;
 
 import java.util.Stack;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import ca.uwaterloo.joos.Main;
@@ -22,7 +21,7 @@ public abstract class SemanticsVisitor extends ASTVisitor {
 	public SemanticsVisitor(SymbolTable table) {
 		this.viewStack = new Stack<Scope>();
 		this.table = table;
-		logger.setLevel(Level.FINER);
+//		logger.setLevel(Level.FINER);
 	}
 	
 	protected Scope getCurrentScope() {
