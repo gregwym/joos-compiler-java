@@ -15,6 +15,7 @@ import ca.uwaterloo.joos.ast.ASTNode;
 import ca.uwaterloo.joos.ast.ASTNode.ChildTypeUnmatchException;
 import ca.uwaterloo.joos.ast.Modifiers.Modifier;
 import ca.uwaterloo.joos.ast.decl.BodyDeclaration;
+import ca.uwaterloo.joos.ast.decl.ConstructorDeclaration;
 import ca.uwaterloo.joos.ast.decl.LocalVariableDeclaration;
 import ca.uwaterloo.joos.ast.decl.MethodDeclaration;
 import ca.uwaterloo.joos.ast.decl.ParameterDeclaration;
@@ -102,6 +103,9 @@ public class Scope{
 	
 	public String signatureOfMethod(MethodDeclaration method) throws Exception {
 		String name = this.name + "." + method.getName().getName() + "(";
+		if(method instanceof ConstructorDeclaration) {
+			name += "C";
+		}
 		for(ParameterDeclaration parameter: method.getParameters()) {
 			name += parameter.getType().getIdentifier();
 		}
