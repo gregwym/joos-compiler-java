@@ -1,7 +1,6 @@
 package ca.uwaterloo.joos.typelinker;
 
 import java.util.Stack;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import ca.uwaterloo.joos.Main;
@@ -26,7 +25,7 @@ public class TypeLinker extends TypeVisitor {
 
 	public TypeLinker(SymbolTable table) {
 		this(table, new Stack<Scope>());
-		logger.setLevel(Level.FINER);
+//		logger.setLevel(Level.FINER);
 	}
 	
 	public TypeLinker(SymbolTable table, Stack<Scope> viewStack) {

@@ -17,8 +17,7 @@ import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
 import ca.uwaterloo.joos.Main;
-import ca.uwaterloo.joos.ast.AST;
-import ca.uwaterloo.joos.symbolTable.SymbolTable;
+
 
 @SuppressWarnings("serial")
 @RunWith(value = Parameterized.class)
@@ -63,18 +62,17 @@ public class A2Test {
 		return data;
 	}
 
-	private ArrayList<String> testFiles = new ArrayList<String>();
+	private List<String> testFiles = new ArrayList<String>();
 	private File testFileList;
 
-	// public A2Test(){}
 	public A2Test(File testFileInput) {
-		System.out.println("A2Test:   " + testFileInput);
+//		System.out.println("A2Test:   " + testFileInput);
 		this.testFileList = testFileInput;
 		if (!testFileInput.isFile()) {
 			extractFiles(testFileInput);
 		} else {
-			testFiles.add(testFileInput.getPath());
-			System.out.println("testFiles:   " + testFiles.get(0));
+			this.testFiles.add(testFileInput.getPath());
+//			System.out.println("testFiles:   " + testFiles.get(0));
 		}
 		extractFiles(new File("stdlib/2.0"));
 	}
@@ -89,16 +87,13 @@ public class A2Test {
 		Exception realException = null;
 
 		try {
-			List<AST> asts = new ArrayList<AST>();
-			for (String testFile : testFiles) {
-				System.out.println(testFile);
-				asts.add(instance.constructAst(new File(testFile)));
+			String[] files = new String[this.testFiles.size()];
+			instance.execute(this.testFiles.toArray(files));
+			if (fileException != null) {
+				System.out.println("Expecting: " + fileException.getClass().getSimpleName() + "\t"
+						+ "but got: NoException" + "\t\t"
+						+ "[" + testFileList.getName() + "]");
 			}
-
-			SymbolTable.build(asts);
-			// SymbolTable.listScopes();
-			// System.out.println(st.getMethod("default_package.J1_01.test").getNode().getIdentifier());
-
 		} catch (Exception e) {
 			realException = e;
 			if (fileException == null) {
@@ -107,7 +102,7 @@ public class A2Test {
 
 			}
 		}
-
+		
 		if (fileException != null && realException != null) {
 			assertEquals(fileException.getClass().getSimpleName(), realException.getClass().getSimpleName());
 		} else {
