@@ -59,6 +59,7 @@ public class TopDeclVisitor extends SemanticsVisitor {
 			
 			// Second: get the class description scope
 			Scope table = this.table.getScope(name);
+			table.addClass(name, node);
 			
 			// Third: add type declaration as package member
 			currentScope.addClass(name, node);
@@ -72,7 +73,7 @@ public class TopDeclVisitor extends SemanticsVisitor {
 	public void didVisit(ASTNode node) throws ChildTypeUnmatchException {
 		if (node instanceof TypeDeclaration) {
 			Scope typeScope = this.popScope();
-			this.getCurrentScope().addPublicMembers(typeScope);
+			this.getCurrentScope().addPublicMembers(typeScope, 10);
 		}
 	}
 

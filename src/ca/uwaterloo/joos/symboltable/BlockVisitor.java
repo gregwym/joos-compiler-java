@@ -59,7 +59,7 @@ public class BlockVisitor extends SemanticsVisitor {
 			String name = this.getCurrentScope().getName() + "." + this.blocks + "Block";
 			Scope scope = this.table.getScope(name);
 			
-			scope.appendScope(this.getCurrentScope());
+			scope.appendScope(this.getCurrentScope(), 0);
 			
 			this.pushScope(scope);
 			this.blocks++;
