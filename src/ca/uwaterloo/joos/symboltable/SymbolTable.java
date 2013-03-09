@@ -10,6 +10,7 @@ import java.util.logging.Logger;
 
 import ca.uwaterloo.joos.Main;
 import ca.uwaterloo.joos.ast.AST;
+import ca.uwaterloo.joos.ast.decl.PackageDeclaration;
 
 public class SymbolTable {
 
@@ -26,9 +27,19 @@ public class SymbolTable {
 
 	public SymbolTable() {
 		this.scopes = new HashMap<String, Scope>();
+		logger.setLevel(Level.FINER);
 	}
 
-	public PackageScope getPackage(String name) throws Exception {
+	public PackageScope getPackageByDecl(PackageDeclaration packDecl) throws Exception {
+		// Get Package Name
+		String name = null;
+		if(packDecl.getPackageName() == null) {
+			name = "__default__";
+		} else {
+			name = packDecl.getPackageName().getName(); 
+		}
+		
+		// Find the scope
 		Scope scope = this.scopes.get(name);
 		if (scope == null) {
 			scope = this.addPackage(name);
@@ -37,12 +48,24 @@ public class SymbolTable {
 		}
 		return (PackageScope) scope;
 	}
+	
+	public PackageScope getPackage(String name) throws Exception {
+		// Get Package Name
+		if(name == null) {
+			name = "__default__";
+		}
+		
+		// Find the scope
+		Scope scope = this.scopes.get(name);
+		if (!(scope instanceof PackageScope)) {
+			throw new SymbolTableException("Expecting PackageScope but get " + scope.getClass().getName());
+		}
+		return (PackageScope) scope;
+	}
 
 	public TypeScope getType(String name) throws Exception {
 		Scope scope = this.scopes.get(name + "{}");
-		if (scope == null) {
-			scope = this.addType(name);
-		} else if (!(scope instanceof TypeScope)) {
+		if (!(scope instanceof TypeScope)) {
 			throw new SymbolTableException("Expecting TypeScope but get " + scope.getClass().getName());
 		}
 		return (TypeScope) scope;
@@ -54,7 +77,7 @@ public class SymbolTable {
 	}
 
 	public boolean containType(String name) {
-		Scope scope = this.scopes.get(name);
+		Scope scope = this.scopes.get(name + "{}");
 		return scope != null && scope instanceof TypeScope;
 	}
 
@@ -107,11 +130,11 @@ public class SymbolTable {
 		}
 		logger.info("Building Symbol Table Pass 1 Finished");
 
-		// for (AST ast: asts){
-		// ast.getRoot().accept(new ImportVisitor(this));
-		// }
-		// logger.info("Building Symbol Table Pass 2 Finished");
-		//
+		for (AST ast: asts){
+			ast.getRoot().accept(new ImportVisitor(this));
+		}
+		logger.info("Building Symbol Table Pass 2 Finished");
+
 		// for (AST ast: asts){
 		// ast.getRoot().accept(new DeepDeclVisitor(this));
 		// }

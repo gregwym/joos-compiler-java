@@ -16,27 +16,25 @@ public class DeepDeclVisitor extends SemanticsVisitor {
 	public void willVisit(ASTNode node) throws Exception {
 
 		if (node instanceof PackageDeclaration) {
-			PackageDeclaration PNode = (PackageDeclaration) node;
-			String name = PNode.getPackageName();
+			PackageDeclaration packDecl = (PackageDeclaration) node;
 			
 			// Get the symbol table for the given package 
 			// Create one if not exists
-			Scope table = this.table.getScope(name);
+			Scope scope = this.table.getPackageByDecl(packDecl);
 			
 			// Push current scope into the view stack
-			this.pushScope(table);
+			this.pushScope(scope);
 		} else if (node instanceof TypeDeclaration) {
-			Scope currentScope = this.getCurrentScope();
-			String name = ((TypeDeclaration) node).getIdentifier();
-			name = currentScope.getName() + "." + name + "{}";
+			PackageScope currentScope = (PackageScope) this.getCurrentScope();
+			String name = currentScope.getName() + "." + ((TypeDeclaration) node).getIdentifier();
 			
-			// Second: get the class description scope
-			Scope table = this.table.getScope(name);
+			// Get the scope
+			TypeScope scope = this.table.getType(name);
 			
-			table.appendScope(currentScope, 10);
+			scope.setWithinPackage(currentScope);
 			
 			// Push current scope into the view stack
-			this.pushScope(table);
+			this.pushScope(scope);
 		} else if (node instanceof MethodDeclaration) {
 			// Make a new symbol table which builds
 			String name = this.getCurrentScope().signatureOfMethod((MethodDeclaration) node);
