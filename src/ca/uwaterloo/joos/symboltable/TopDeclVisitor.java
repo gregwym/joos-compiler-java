@@ -7,6 +7,7 @@ import ca.uwaterloo.joos.ast.decl.FieldDeclaration;
 import ca.uwaterloo.joos.ast.decl.MethodDeclaration;
 import ca.uwaterloo.joos.ast.decl.PackageDeclaration;
 import ca.uwaterloo.joos.ast.decl.TypeDeclaration;
+import ca.uwaterloo.joos.ast.expr.name.Name;
 
 public class TopDeclVisitor extends SemanticsVisitor {
 
@@ -28,7 +29,7 @@ public class TopDeclVisitor extends SemanticsVisitor {
 				currentScope.addMethod((MethodDeclaration) node);
 			}
 			else {
-				throw new Exception("Duplicate declaratio of method");
+				throw new Exception("Duplicate declaration of method");
 			}
 		}
 
@@ -38,34 +39,32 @@ public class TopDeclVisitor extends SemanticsVisitor {
 	@Override
 	public void willVisit(ASTNode node) throws Exception {
 		if (node instanceof PackageDeclaration) {
-			PackageDeclaration PNode = (PackageDeclaration) node;
-			String name = PNode.getPackageName();
+			String name = "__default__";
+			
+			// Get package declaration
+			Name packName = ((PackageDeclaration) node).getPackageName();
+			if(packName != null) {
+				name = packName.getName();
+			}
 			
 			// Get the symbol table for the given package 
 			// Create one if not exists
-			Scope table = this.table.getScope(name);
+			PackageScope scope = this.table.getPackage(name);
 			
 			// Push current scope into the view stack
-			this.pushScope(table);
+			this.pushScope(scope);
 		} else if (node instanceof TypeDeclaration) {
 			Scope currentScope = this.getCurrentScope();
 			String name = ((TypeDeclaration) node).getIdentifier();
-			name = currentScope.getName() + "." + name + "{}";
+			name = currentScope.getName() + "." + name;
 			
-			// First: check duplicate class
-			if(this.table.containScope(name)) {
-				throw new Exception("Duplicate declaration of class");
-			}
+			TypeScope scope = this.table.getType(name);
 			
-			// Second: get the class description scope
-			Scope table = this.table.getScope(name);
-			table.addClass(name, node);
-			
-			// Third: add type declaration as package member
+			// Add type declaration as package member
 			currentScope.addClass(name, node);
 			
 			// Push current scope into the view stack
-			this.pushScope(table);
+			this.pushScope(scope);
 		}
 	}
 
@@ -73,7 +72,7 @@ public class TopDeclVisitor extends SemanticsVisitor {
 	public void didVisit(ASTNode node) throws ChildTypeUnmatchException {
 		if (node instanceof TypeDeclaration) {
 			Scope typeScope = this.popScope();
-			this.getCurrentScope().addPublicMembers(typeScope, 10);
+//			this.getCurrentScope().addPublicMembers(typeScope, 10);
 		}
 	}
 
