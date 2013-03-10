@@ -7,9 +7,9 @@ import ca.uwaterloo.joos.ast.ASTNode.ChildTypeUnmatchException;
 import ca.uwaterloo.joos.ast.FileUnit;
 import ca.uwaterloo.joos.ast.decl.ImportDeclaration;
 import ca.uwaterloo.joos.ast.decl.OnDemandImport;
-import ca.uwaterloo.joos.ast.decl.PackageDeclaration;
 import ca.uwaterloo.joos.ast.decl.SingleImport;
 import ca.uwaterloo.joos.ast.decl.TypeDeclaration;
+import ca.uwaterloo.joos.symboltable.SymbolTable.SymbolTableException;
 
 public class ImportVisitor extends SemanticsVisitor {
 
@@ -17,30 +17,13 @@ public class ImportVisitor extends SemanticsVisitor {
 		super(table);
 	}
 
-	public void willVisit(ASTNode node) throws Exception {
-
-		if (node instanceof PackageDeclaration) {
-			PackageDeclaration PNode = (PackageDeclaration) node;
-			String name = PNode.getPackageName();
-			
-			// Get the symbol table for the given package 
-			// Create one if not exists
-			Scope table = this.table.getScope(name);
-			
-			// Push current scope into the view stack
-			this.pushScope(table);
-		} else if (node instanceof TypeDeclaration) {
-			Scope currentScope = this.getCurrentScope();
-			String name = ((TypeDeclaration) node).getIdentifier();
-			name = currentScope.getName() + "." + name + "{}";
-			
-			// Second: get the class description scope
-			Scope table = this.table.getScope(name);
+	public boolean visit(ASTNode node) throws ChildTypeUnmatchException, Exception {
+		if (node instanceof TypeDeclaration) {
+			TypeScope scope = (TypeScope) this.getCurrentScope();
 			
 			// Add java.lang implicitly
-			Scope javaLang = this.table.getScope("java.lang");
-			if(javaLang != null) {
-				table.addPublicMembers(javaLang, 20);
+			if(this.table.containPackage("java.lang")) {
+				scope.addOnDemandImport(this.table.getPackage("java.lang"));
 			}
 			else {
 //				throw new Exception("Missing java.lang");
@@ -49,41 +32,26 @@ public class ImportVisitor extends SemanticsVisitor {
 			List<ImportDeclaration> imports = ((FileUnit) node.getParent()).getImportDeclarations();
 			for(ImportDeclaration anImport: imports) {
 				if(anImport instanceof SingleImport) {
-					String domain = anImport.getImportName().getName() + "{}";
-					if(this.table.containScope(domain)) {
-						table.addPublicMembers(this.table.getScope(domain), 100);
+					String name = anImport.getImportName().getName();
+					if(this.table.containType(name)) {
+						scope.addSingleImport(this.table.getType(name));
 					}
 					else {
-						throw new Exception("Unknown Single Import " + anImport.getIdentifier());
+						throw new SymbolTableException("Unknown Single Import " + anImport.getIdentifier());
 					}
 				} else if(anImport instanceof OnDemandImport) {
-					String domain = anImport.getImportName().getName();
-					if(this.table.containScope(domain)) {
-						table.addPublicMembers(this.table.getScope(domain), 90);
+					String name = anImport.getImportName().getName();
+					if(this.table.containPackage(name)) {
+						scope.addOnDemandImport(this.table.getPackage(name));
 					}
 					else {
-						throw new Exception("Unknown On Demand Import " + anImport.getIdentifier());
+						throw new SymbolTableException("Unknown On Demand Import " + anImport.getIdentifier());
 					}
 				}
 			}
-			
-			// Push current scope into the view stack
-			this.pushScope(table);
-		} 
-	}
-
-	public void didVisit(ASTNode node) {
-		if (node instanceof TypeDeclaration) {
-			this.popScope();
-		} 
-	}
-
-	public boolean visit(ASTNode node) throws ChildTypeUnmatchException, Exception {
-		if (node instanceof TypeDeclaration) {
-			return false;
 		}
 
-		return true;
+		return node instanceof FileUnit;
 	}
 
 }

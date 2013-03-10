@@ -103,13 +103,13 @@ public class Main {
 		SymbolTable table = new SymbolTable();
 		
 		table.build(asts);
-//		table.listScopes();
+		table.listScopes();
 		
-		for(AST ast: asts) {
-//			System.out.println("Checking " + ast.getRoot().getIdentifier() );
-			TypeLinker linker = new TypeLinker(table);
-			ast.getRoot().accept(linker);
-		}
+//		for(AST ast: asts) {
+////			System.out.println("Checking " + ast.getRoot().getIdentifier() );
+//			TypeLinker linker = new TypeLinker(table);
+//			ast.getRoot().accept(linker);
+//		}
 	}
 	
 	public void execute(String[] args) throws Exception {
