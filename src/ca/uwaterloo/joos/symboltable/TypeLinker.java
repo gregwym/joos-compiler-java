@@ -1,19 +1,10 @@
-package ca.uwaterloo.joos.typelinker;
-
-import java.util.Stack;
+package ca.uwaterloo.joos.symboltable;
 
 import ca.uwaterloo.joos.ast.ASTNode;
 import ca.uwaterloo.joos.ast.type.ReferenceType;
-import ca.uwaterloo.joos.symboltable.Scope;
-import ca.uwaterloo.joos.symboltable.SemanticsVisitor;
-import ca.uwaterloo.joos.symboltable.SymbolTable;
 
 public class TypeLinker extends SemanticsVisitor {
 	
-	protected Stack<Scope> viewStack;
-	protected Stack<Integer> blocks;
-	protected SymbolTable table;
-
 	public TypeLinker(SymbolTable table) {
 		super(table);
 	}
@@ -22,7 +13,9 @@ public class TypeLinker extends SemanticsVisitor {
 	public boolean visit(ASTNode node) throws Exception {
 		if(node instanceof ReferenceType) {
 			ReferenceType refType = (ReferenceType) node;
-			logger.info("Visiting Type: " + refType + " Scoping " + this.getCurrentScope());
+			
+			Scope currentScope = this.getCurrentScope();
+			currentScope.resolveReferenceType(refType, this.table);
 		}
 		return true;
 	}
