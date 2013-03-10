@@ -9,13 +9,13 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
+import java.util.logging.Logger;
 
 import org.hamcrest.Matchers;
 
+import ca.uwaterloo.joos.Main;
 import ca.uwaterloo.joos.ast.expr.name.Name;
 import ca.uwaterloo.joos.ast.expr.name.QualifiedName;
 import ca.uwaterloo.joos.ast.expr.name.SimpleName;
@@ -31,6 +31,8 @@ public abstract class Scope {
 	 * with the declarations held in the file's global namespace.
 	 * 
 	 */
+	
+	public static final Logger logger = Main.getLogger(Scope.class);
 
 	protected String name; // Represents the name of the current scope
 	protected Map<String, TableEntry> symbols;
@@ -55,44 +57,15 @@ public abstract class Scope {
 	public boolean resolveReferenceType(ReferenceType type, SymbolTable table) throws Exception {
 		Name name = type.getName();
 		if(name instanceof QualifiedName) {
-			TableEntry match = this.symbols.get(name.getName() + "{}");
+			TypeScope match = table.getType(name.getName());
 			return match != null;
 		} else if(name instanceof SimpleName) {
-			this.resolveSimpleNameType((SimpleName) name);
+			return this.resolveSimpleNameType((SimpleName) name);
 		}
 		return false;
 	}
 	
 	public abstract boolean resolveSimpleNameType(SimpleName name) throws Exception;
-	
-	public String lookupReferenceType(ReferenceType type) throws Exception {
-		Name name = type.getName();
-
-		Map<String, Integer> nameWithPriority = new HashMap<String, Integer>();
-		for (String key : this.symbols.keySet()) {
-			if (key.matches("^(.+\\.)*" + name.getName() + "\\{\\}$")) {
-				nameWithPriority.put(key, 0);
-			}
-		}
-
-		Set<Integer> conflicting = new HashSet<Integer>();
-		String result = null;
-		int highest = 0;
-		for (String key : nameWithPriority.keySet()) {
-			int current = nameWithPriority.get(key);
-			if (current > highest) {
-				highest = current;
-				result = key;
-			} else if (current == highest) {
-				conflicting.add(current);
-			}
-		}
-		if (conflicting.contains(highest)) {
-			throw new Exception("Unresovable ambiguous type " + type.getName());
-		}
-
-		return result;
-	}
 
 	public void listSymbols() {
 		System.out.println("\tSymbols:");
