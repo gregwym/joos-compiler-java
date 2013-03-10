@@ -14,6 +14,6 @@ public class PackageScope extends Scope {
 	}
 	
 	public TableEntry getType(String key){
-		return symbols.get(key + "{}");
+		return symbols.get(key);
 	}
 }

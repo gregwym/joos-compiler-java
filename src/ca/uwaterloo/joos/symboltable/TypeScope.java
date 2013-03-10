@@ -58,10 +58,10 @@ public class TypeScope extends Scope {
 	public String signatureOfMethod(MethodDeclaration method) throws Exception {
 		String name = this.name + "." + method.getName().getName() + "(";
 		if(method instanceof ConstructorDeclaration) {
-			name += "C";
+			name += "THIS,";
 		}
 		for(ParameterDeclaration parameter: method.getParameters()) {
-			name += parameter.getType().getIdentifier();
+			name += parameter.getType().getIdentifier() + ",";
 		}
 		name += ")";
 		return name;
