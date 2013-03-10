@@ -9,6 +9,7 @@ import ca.uwaterloo.joos.ast.decl.ImportDeclaration;
 import ca.uwaterloo.joos.ast.decl.OnDemandImport;
 import ca.uwaterloo.joos.ast.decl.SingleImport;
 import ca.uwaterloo.joos.ast.decl.TypeDeclaration;
+import ca.uwaterloo.joos.ast.expr.name.Name;
 import ca.uwaterloo.joos.symboltable.SymbolTable.SymbolTableException;
 
 public class ImportVisitor extends SemanticsVisitor {
@@ -31,9 +32,11 @@ public class ImportVisitor extends SemanticsVisitor {
 			List<ImportDeclaration> imports = ((FileUnit) node.getParent()).getImportDeclarations();
 			for (ImportDeclaration anImport : imports) {
 				if (anImport instanceof SingleImport) {
-					String name = anImport.getImportName().getName();
-					if (this.table.containType(name)) {
-						scope.addSingleImport(this.table.getType(name));
+					Name name = anImport.getImportName();
+					String typeName = name.getName();
+					
+					if (this.table.containType(typeName)) {
+						scope.addSingleImport(name.getSimpleName(), this.table.getType(typeName));
 					} else {
 						throw new SymbolTableException("Unknown Single Import " + anImport.getIdentifier());
 					}

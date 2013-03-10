@@ -54,18 +54,18 @@ public abstract class Scope {
 		return Lambda.select(scopes, Lambda.having(Lambda.on(Scope.class).getName(), Matchers.endsWith(suffix)));
 	}
 
-	public boolean resolveReferenceType(ReferenceType type, SymbolTable table) throws Exception {
+	public String resolveReferenceType(ReferenceType type, SymbolTable table) throws Exception {
 		Name name = type.getName();
 		if(name instanceof QualifiedName) {
 			TypeScope match = table.getType(name.getName());
-			return match != null;
+			return match.getName();
 		} else if(name instanceof SimpleName) {
 			return this.resolveSimpleNameType((SimpleName) name);
 		}
-		return false;
+		return null;
 	}
 	
-	public abstract boolean resolveSimpleNameType(SimpleName name) throws Exception;
+	public abstract String resolveSimpleNameType(SimpleName name) throws Exception;
 
 	public void listSymbols() {
 		System.out.println("\tSymbols:");

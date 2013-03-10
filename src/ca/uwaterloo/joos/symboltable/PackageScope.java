@@ -24,14 +24,16 @@ public class PackageScope extends Scope {
 	}
 
 	@Override
-	public boolean resolveSimpleNameType(SimpleName name) throws Exception {
+	public String resolveSimpleNameType(SimpleName name) throws Exception {
 		List<TableEntry> matches = new ArrayList<TableEntry>();
 		matches = this.entriesWithSuffix(this.symbols.values(), "." + name.getName());
 		
 		if(matches.size() > 1) {
 			throw new SymbolTableException("More than one match was found in Package Scope for type " + name);
+		} else if(matches.size() == 1) {
+			return matches.get(0).getName();
 		}
 		
-		return matches.size() > 0;
+		return null;
 	}
 }

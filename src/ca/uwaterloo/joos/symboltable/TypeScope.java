@@ -13,14 +13,14 @@ import ca.uwaterloo.joos.ast.expr.name.SimpleName;
 import ca.uwaterloo.joos.symboltable.SymbolTable.SymbolTableException;
 
 public class TypeScope extends Scope {
-	
+
 	protected PackageScope withinPackage;
 	protected Map<String, TypeScope> singleImport;
 	protected Map<String, PackageScope> onDemandImport;
 
 	public TypeScope(String name, PackageScope withinPackage) {
 		super(name);
-		
+
 		this.withinPackage = withinPackage;
 		this.singleImport = new HashMap<String, TypeScope>();
 		this.onDemandImport = new HashMap<String, PackageScope>();
@@ -29,15 +29,30 @@ public class TypeScope extends Scope {
 	public PackageScope getWithinPackage() {
 		return withinPackage;
 	}
-	
-	public void addSingleImport(TypeScope scope) {
+
+	public void addSingleImport(String simpleName, TypeScope scope) throws SymbolTableException {
+		// Check name clash with type
+		if ((!this.getName().equals(scope.getName())) && this.getName().endsWith("." + simpleName + "{}")) {
+			throw new SymbolTableException("Single Type Import " + scope.getName() + " clashes with type declaration " + this.getName());
+		}
+
+		// Check name clash with other import
+		List<? extends Scope> clashImports = this.scopesWithSuffix(this.singleImport.values(), "." + simpleName + "{}");
+		if (clashImports.size() > 0) {
+			for (Scope clashImport : clashImports) {
+				if (!clashImport.getName().equals(scope.getName())) {
+					throw new SymbolTableException("Single Type Import " + scope.getName() + " clashes with type declaration[s] " + clashImports);
+				}
+			}
+		}
+
 		this.singleImport.put(scope.getName(), scope);
 	}
-	
+
 	public void addOnDemandImport(PackageScope scope) {
 		this.onDemandImport.put(scope.getName(), scope);
 	}
-	
+
 	public String nameForDecl(FieldDeclaration field) throws Exception {
 		String name = this.getName() + "." + field.getName().getName();
 		return name;
@@ -46,8 +61,8 @@ public class TypeScope extends Scope {
 	public void addFieldDecl(FieldDeclaration field) throws Exception {
 		String name = this.nameForDecl(field);
 		TableEntry entry = new TableEntry(name, field);
-		
-		if(this.symbols.containsKey(name)) {
+
+		if (this.symbols.containsKey(name)) {
 			throw new SymbolTableException("Duplicate Field Declarations: " + name);
 		}
 
@@ -60,83 +75,87 @@ public class TypeScope extends Scope {
 
 	public String signatureOfMethod(MethodDeclaration method) throws Exception {
 		String name = this.name + "." + method.getName().getName() + "(";
-		if(method instanceof ConstructorDeclaration) {
+		if (method instanceof ConstructorDeclaration) {
 			name += "THIS,";
 		}
-		for(ParameterDeclaration parameter: method.getParameters()) {
+		for (ParameterDeclaration parameter : method.getParameters()) {
 			name += parameter.getType().getIdentifier() + ",";
 		}
 		name += ")";
 		return name;
 	}
 
-	public void addMethod(MethodDeclaration node) throws Exception{
+	public void addMethod(MethodDeclaration node) throws Exception {
 		String name = this.signatureOfMethod(node);
-		if(this.symbols.containsKey(name)) {
+		if (this.symbols.containsKey(name)) {
 			throw new SymbolTableException("Duplicate Method Declaraion " + name);
 		}
 		this.symbols.put(name, new TableEntry(name, node));
 	}
-	
-	public TableEntry getMethod(MethodDeclaration node) throws Exception{
-		//If false, no Method exists and we can add it
+
+	public TableEntry getMethod(MethodDeclaration node) throws Exception {
+		// If false, no Method exists and we can add it
 		String name = this.signatureOfMethod(node);
 		return this.symbols.get(name);
 	}
-	
+
 	@Override
-	public boolean resolveSimpleNameType(SimpleName name) throws Exception {
+	public String resolveSimpleNameType(SimpleName name) throws Exception {
 		// Check enclosing type
-		if(this.getName().matches(".+\\." + name.getName() + "\\{\\}")) {
-			return true;
+		if (this.getName().matches(".+\\." + name.getName() + "\\{\\}")) {
+			return this.getName();
 		}
-		
+
 		// Check Single Type Imports
-		List<Scope> matches = new ArrayList<Scope>();
-		matches.addAll(this.scopesWithSuffix(this.singleImport.values(), "." + name.getName() + "{}"));
-		
-		if(matches.size() > 1) {
+		String type = null;
+		List<String> types = new ArrayList<String>();
+		List<Scope> scopes = new ArrayList<Scope>();
+		scopes.addAll(this.scopesWithSuffix(this.singleImport.values(), "." + name.getName() + "{}"));
+
+		if (scopes.size() > 1) {
 			throw new SymbolTableException("More than one match was found in Single Type Imports for type " + name);
-		} else if(matches.size() == 1) {
-			return true;
+		} else if (scopes.size() == 1) {
+			return scopes.get(0).getName();
 		}
-		
+
 		// Check Same Package
-		if(this.withinPackage.resolveSimpleNameType(name)) {
-			return true;
+		type = this.withinPackage.resolveSimpleNameType(name);
+		if (type != null) {
+			return type;
 		}
-		
+
 		// Check On Demand Imports
-		for(PackageScope scope: this.onDemandImport.values()) {
-			if(scope.resolveSimpleNameType(name)) {
-				matches.add(scope);
+		for (PackageScope scope : this.onDemandImport.values()) {
+			type = scope.resolveSimpleNameType(name);
+			if (type != null) {
+				types.add(type);
 			}
 		}
-		
-		if(matches.size() > 1) {
+
+		if (types.size() > 1) {
 			throw new SymbolTableException("More than one match was found in On Demand Imports for type " + name);
-		} else if(matches.size() == 1) {
-			return true;
+		} else if (types.size() == 1) {
+			return types.get(0);
 		}
-		
-		return false;
+
+		return null;
 	}
-	
+
 	@Override
-	public void listSymbols(){
+	public void listSymbols() {
 		System.out.println("\tPackage:");
 		System.out.println("\t\t" + this.withinPackage);
-		
+
 		System.out.println("\tSingle Type Imports:");
-		for(Scope scope: this.singleImport.values()) {
+		for (Scope scope : this.singleImport.values()) {
 			System.out.println("\t\t" + scope);
 		}
-		
+
 		System.out.println("\tOnDemand Imports:");
-		for(Scope scope: this.onDemandImport.values()) {
+		for (Scope scope : this.onDemandImport.values()) {
 			System.out.println("\t\t" + scope);
 		}
-		
+
 		super.listSymbols();
 	}
 }
