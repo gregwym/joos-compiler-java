@@ -8,15 +8,16 @@ import java.util.Map;
 import java.util.Set;
 
 public class HierarchyChecker {
-	public HierarchyBuilder hierarchyBuilder = new HierarchyBuilder();
+	public static HierarchyBuilder hierarchyBuilder = new HierarchyBuilder();
    
 	public HierarchyChecker(HierarchyBuilder hierarchyBuilder) throws Exception {
 		this.hierarchyBuilder = hierarchyBuilder;
-		System.out.println("checking @@@@");
-		hierarchyBuilder = new HierarchyBuilder();
+		//System.out.println("hierarchyBuilder"+hierarchyBuilder.getHierarchyMap().size());
+		//System.out.println("checking @@@@");
+		//checkCycle();
 		checkImplements();
 		checkExtends();
-		checkCycle();
+		
 	}
 
 	private void checkImplements() throws Exception {
@@ -38,9 +39,31 @@ public class HierarchyChecker {
 
 		Iterator it = hierarchyBuilder.getHierarchyMap().entrySet().iterator();
 		while (it.hasNext()) {
-
-			@SuppressWarnings("rawtypes")
+			Set<String> superClain = new HashSet<String>();
 			Map.Entry pairs = (Map.Entry) it.next();
+			System.out.println("adding @@@@" + (String) pairs.getKey());
+			superClain.add((String) pairs.getKey());
+
+			if (superClain.contains((String) pairs.getValue())) {
+				throw new Exception("extend cycle");
+			} else {
+				System.out.println("adding @@@@" + (String) pairs.getValue());
+				superClain.add((String) pairs.getValue());
+			}
+			String chain = (String) pairs.getValue();
+
+			while (this.hierarchyBuilder.getHierarchyMap().containsKey(chain)) {
+				if (superClain.contains((String) this.hierarchyBuilder.getHierarchyMap().get(chain))) {
+					throw new Exception("extend cycle");
+				} else {
+					System.out.println("adding @@@@" + (String) this.hierarchyBuilder.getHierarchyMap().get(chain));
+					superClain.add(this.hierarchyBuilder.getHierarchyMap().get(chain));
+				}
+				chain = this.hierarchyBuilder.getHierarchyMap().get(chain);
+
+			}
+			@SuppressWarnings("rawtypes")
+		
 			String className = (String) pairs.getKey();
 
 			// @SuppressWarnings("unchecked")
@@ -60,37 +83,4 @@ public class HierarchyChecker {
 		}
 	}
 
-	private void checkCycle() throws Exception {
-		Map<String, String> hierMap = hierarchyBuilder.hierarchyMap;
-		System.out.println("hierMap"+hierMap.size());
-		Iterator it = hierarchyBuilder.getHierarchyMap().entrySet().iterator();
-
-		while (it.hasNext()) {
-			Set<String> superClain = new HashSet<String>();
-			Map.Entry pairs = (Map.Entry) it.next();
-			System.out.println("adding @@@@" + (String) pairs.getKey());
-			superClain.add((String) pairs.getKey());
-
-			if (superClain.contains((String) pairs.getValue())) {
-				throw new Exception("extend cycle");
-			} else {
-				System.out.println("adding @@@@" + (String) pairs.getValue());
-				superClain.add((String) pairs.getValue());
-			}
-			String chain = (String) pairs.getValue();
-
-			while (hierMap.containsKey(chain)) {
-				if (superClain.contains((String) hierMap.get(chain))) {
-					throw new Exception("extend cycle");
-				} else {
-					System.out.println("adding @@@@" + (String) hierMap.get(chain));
-					superClain.add(hierMap.get(chain));
-				}
-				chain = hierMap.get(chain);
-
-			}
-			System.out.println(pairs.getKey() + " = " + pairs.getValue());
-			it.remove(); // avoids a ConcurrentModificationException
-		}
-	}
 }

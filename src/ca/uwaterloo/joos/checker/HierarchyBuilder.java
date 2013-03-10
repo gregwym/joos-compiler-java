@@ -17,7 +17,7 @@ import ca.uwaterloo.joos.ast.type.ReferenceType;
 import ca.uwaterloo.joos.ast.visitor.TypeDeclVisitor;
 
 public class HierarchyBuilder extends TypeDeclVisitor {
-	public static Map<String, String> hierarchyMap = new HashMap<String,String>();
+	private static Map<String, String> hierarchyMap = new HashMap<String,String>();
 	private static Map<String, List<String>> implementMap = new HashMap<String, List<String>>();
 	private static Set<String> interfaces = new HashSet<String>();
 	private static Set<String> classes = new HashSet<String>();
@@ -25,19 +25,19 @@ public class HierarchyBuilder extends TypeDeclVisitor {
 
 	@Override
 	protected void visitClassDecl(TypeDeclaration node) throws Exception {
-		System.out.println("visiting @@@@"+node.getIdentifier()+node.getModifiers().getModifiers()+node.getModifiers().getModifiers().contains(Modifier.FINAL));
+		//System.out.println("visiting @@@@"+node.getIdentifier()+node.getModifiers().getModifiers()+node.getModifiers().getModifiers().contains(Modifier.FINAL));
 		if (node.getModifiers().getModifiers().contains(Modifiers.Modifier.FINAL)) {
-			System.out.println("this is final !!!!!"+node.getIdentifier());
+			//System.out.println("this is final !!!!!"+node.getIdentifier());
 			finals.add(node.getIdentifier());
 		}
 		if (node instanceof ClassDeclaration) {
 			
 			classes.add(node.getIdentifier());
 			if (((ClassDeclaration) node).getSuperClass()!= null) {
-				System.out.println("getHierarchyMap supers@@@@"+((ClassDeclaration) node).getSuperClass());
+				//System.out.println("getHierarchyMap supers@@@@"+((ClassDeclaration) node).getSuperClass());
 				ReferenceType EXTEND = (ReferenceType) ((ClassDeclaration) node).getSuperClass();
 				String extendClasses = EXTEND.getIdentifier();
-				System.out.println("getHierarchyMap!!!!!@@@@"+node.getIdentifier()+ extendClasses);
+				//System.out.println("getHierarchyMap!!!!!@@@@"+node.getIdentifier()+ extendClasses);
 				hierarchyMap.put(node.getIdentifier(), extendClasses);
 			}
 		} else {
