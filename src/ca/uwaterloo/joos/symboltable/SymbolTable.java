@@ -66,7 +66,7 @@ public class SymbolTable {
 	public TypeScope getType(String name) throws Exception {
 		Scope scope = this.scopes.get(name + "{}");
 		if (!(scope instanceof TypeScope)) {
-			throw new SymbolTableException("Expecting TypeScope but get " + scope.getClass().getName());
+			throw new SymbolTableException("Expecting TypeScope but get " + scope);
 		}
 		return (TypeScope) scope;
 	}
@@ -74,7 +74,7 @@ public class SymbolTable {
 	public BlockScope getBlock(String name) throws Exception {
 		Scope scope = this.scopes.get(name);
 		if (!(scope instanceof BlockScope)) {
-			throw new SymbolTableException("Expecting BlockScope but get " + scope.getClass().getName());
+			throw new SymbolTableException("Expecting BlockScope but get " + scope);
 		}
 		return (BlockScope) scope;
 	}
@@ -147,7 +147,7 @@ public class SymbolTable {
 	}
 
 	public void build(List<AST> asts) throws Exception {
-		logger.setLevel(Level.FINE);
+		logger.setLevel(Level.FINER);
 
 		for (AST ast : asts) {
 			ast.getRoot().accept(new TopDeclVisitor(this));

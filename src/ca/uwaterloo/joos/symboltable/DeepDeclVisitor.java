@@ -1,17 +1,16 @@
 package ca.uwaterloo.joos.symboltable;
 
 import ca.uwaterloo.joos.ast.ASTNode;
-import ca.uwaterloo.joos.ast.ASTNode.ChildTypeUnmatchException;
+import ca.uwaterloo.joos.ast.decl.FieldDeclaration;
+import ca.uwaterloo.joos.ast.decl.LocalVariableDeclaration;
 import ca.uwaterloo.joos.ast.decl.MethodDeclaration;
+import ca.uwaterloo.joos.ast.decl.VariableDeclaration;
 import ca.uwaterloo.joos.ast.statement.Block;
 
 public class DeepDeclVisitor extends SemanticsVisitor {
 	
-	private int blockCount;
-
 	public DeepDeclVisitor(SymbolTable table) {
 		super(table);
-		this.blockCount = 0;
 	}
 
 	@Override
@@ -19,10 +18,17 @@ public class DeepDeclVisitor extends SemanticsVisitor {
 
 		if (node instanceof MethodDeclaration) {
 			TypeScope currentScope = (TypeScope) this.getCurrentScope();
-			// Make a new symbol table which builds
 			String name = currentScope.signatureOfMethod((MethodDeclaration) node);
 			Scope scope = this.table.addBlock(name, currentScope);
-						
+			
+			this.blockCount = 0;
+			this.pushScope(scope);
+		} else if (node instanceof Block || node instanceof LocalVariableDeclaration) {
+			BlockScope currentScope = (BlockScope) this.getCurrentScope();
+			String name = currentScope.getName() + ".block" + this.blockCount;
+			Scope scope = this.table.addBlock(name, currentScope);
+			
+			this.blockCount++;
 			this.pushScope(scope);
 		} else {
 			super.willVisit(node);
@@ -31,23 +37,16 @@ public class DeepDeclVisitor extends SemanticsVisitor {
 	}
 
 	@Override
-	public boolean visit(ASTNode node) throws ChildTypeUnmatchException, Exception {
-		if (node instanceof MethodDeclaration) {
+	public boolean visit(ASTNode node) throws Exception {
+		if (node instanceof FieldDeclaration) {
 			
-			return false;
+		}
+		else if (node instanceof VariableDeclaration) {
+			VariableDeclaration varDecl = (VariableDeclaration) node;
+			BlockScope currentScope = (BlockScope) this.getCurrentScope();
+			currentScope.addVariableDecl(varDecl);
 		}
 
-		return true;
-	}
-
-	@Override
-	public void didVisit(ASTNode node) {
-		if (node instanceof MethodDeclaration) {
-			this.popScope();
-		} else if (node instanceof Block) {
-			this.popScope();
-		} else {
-			super.didVisit(node);
-		}
+		return !(node instanceof VariableDeclaration);
 	}
 }

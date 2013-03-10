@@ -4,6 +4,7 @@ import ca.uwaterloo.joos.ast.ASTNode;
 import ca.uwaterloo.joos.ast.decl.BodyDeclaration;
 import ca.uwaterloo.joos.ast.decl.FieldDeclaration;
 import ca.uwaterloo.joos.ast.decl.MethodDeclaration;
+import ca.uwaterloo.joos.ast.decl.PackageDeclaration;
 import ca.uwaterloo.joos.ast.decl.TypeDeclaration;
 
 public class TopDeclVisitor extends SemanticsVisitor {
@@ -26,7 +27,10 @@ public class TopDeclVisitor extends SemanticsVisitor {
 
 	@Override
 	public void willVisit(ASTNode node) throws Exception {
-		if (node instanceof TypeDeclaration) {
+		if (node instanceof PackageDeclaration) {
+			PackageScope scope = this.table.getPackageByDecl((PackageDeclaration) node);
+			this.pushScope(scope);
+		} else if (node instanceof TypeDeclaration) {
 			PackageScope currentScope = (PackageScope) this.getCurrentScope();
 			String name = ((TypeDeclaration) node).getIdentifier();
 			name = currentScope.getName() + "." + name;
@@ -38,8 +42,6 @@ public class TopDeclVisitor extends SemanticsVisitor {
 
 			// Push current scope into the view stack
 			this.pushScope(scope);
-		} else {
-			super.willVisit(node);
 		}
 	}
 }
