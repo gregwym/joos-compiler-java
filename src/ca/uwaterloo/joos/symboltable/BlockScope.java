@@ -51,7 +51,7 @@ public class BlockScope extends Scope {
 	}
 	
 	@Override
-	public boolean resolveSimpleNameType(SimpleName name) throws Exception {
+	public String resolveSimpleNameType(SimpleName name) throws Exception {
 //		List<TableEntry> matches = new ArrayList<TableEntry>();
 //		matches = this.entriesWithSuffix(this.symbols.values(), name.getName());
 //		
