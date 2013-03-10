@@ -9,11 +9,10 @@ import java.util.logging.Logger;
 
 import org.hamcrest.Matchers;
 
-import ch.lambdaj.Lambda;
-
 import ca.uwaterloo.joos.Main;
 import ca.uwaterloo.joos.ast.AST;
 import ca.uwaterloo.joos.ast.decl.PackageDeclaration;
+import ch.lambdaj.Lambda;
 
 public class SymbolTable {
 
@@ -102,15 +101,6 @@ public class SymbolTable {
 		return scope != null && scope instanceof BlockScope;
 	}
 
-//	public String lookupReferenceType(ReferenceType type) throws Exception {
-		// Name name = type.getName();
-		// if(name instanceof QualifiedName && this.containScope(name.getName()
-		// + "{}")) {
-		// return name.getName();
-		// }
-//		return null;
-//	}
-
 	public PackageScope addPackage(String packageName) throws Exception {
 		int i = 0;
 		String[] components = packageName.split("\\.");
@@ -133,7 +123,8 @@ public class SymbolTable {
 
 	public TypeScope addType(String typeName, PackageScope packageScope) throws Exception {
 		// Check for prefix conflict
-		if (this.containPackage(typeName)) {
+		List<? extends Scope> packages = this.getScopeByPrefix(typeName + ".", PackageScope.class);
+		if (this.containPackage(typeName) || !packages.isEmpty()) {
 			throw new SymbolTableException("Type declaration conflict with package prefix " + typeName);
 		}
 		typeName += "{}";
