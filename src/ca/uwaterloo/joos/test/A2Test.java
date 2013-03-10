@@ -93,22 +93,23 @@ public class A2Test {
 				System.out.println("Expecting: " + fileException.getClass().getSimpleName() + "\t"
 						+ "but got: NoException" + "\t\t"
 						+ "[" + testFileList.getName() + "]");
-				fail("Fail to get exception");
+				fail("Fail to reject");
 			}
 		} catch (Exception e) {
 			realException = e;
 			if (fileException == null) {
 				System.out.println("Expecting: NoException" + "\t" + "but got: " + realException.getClass().getSimpleName() + " " + realException.getMessage() + "\t\t" + "[" + testFileList.getName() + "]");
+				fail("Fail to let it through");
 			} else if (!realException.getClass().getSimpleName().equals(fileException.getClass().getSimpleName())) {
 
 			}
 		}
 		
-		if (fileException != null && realException != null) {
-			assertEquals(fileException.getClass().getSimpleName(), realException.getClass().getSimpleName());
-		} else {
+//		if (fileException != null && realException != null) {
+//			assertEquals(fileException.getClass().getSimpleName(), realException.getClass().getSimpleName());
+//		} else {
 //			assertSame(fileException, realException);
-		}
+//		}
 	}
 
 	private void extractFiles(File file) {

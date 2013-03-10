@@ -20,31 +20,37 @@ public class ImportVisitor extends SemanticsVisitor {
 	public boolean visit(ASTNode node) throws ChildTypeUnmatchException, Exception {
 		if (node instanceof TypeDeclaration) {
 			TypeScope scope = (TypeScope) this.getCurrentScope();
-			
+
 			// Add java.lang implicitly
-			if(this.table.containPackage("java.lang")) {
+			if (this.table.containPackage("java.lang")) {
 				scope.addOnDemandImport(this.table.getPackage("java.lang"));
+			} else {
+				// throw new Exception("Missing java.lang");
 			}
-			else {
-//				throw new Exception("Missing java.lang");
-			}
-			
+
 			List<ImportDeclaration> imports = ((FileUnit) node.getParent()).getImportDeclarations();
-			for(ImportDeclaration anImport: imports) {
-				if(anImport instanceof SingleImport) {
+			for (ImportDeclaration anImport : imports) {
+				if (anImport instanceof SingleImport) {
 					String name = anImport.getImportName().getName();
-					if(this.table.containType(name)) {
+					if (this.table.containType(name)) {
 						scope.addSingleImport(this.table.getType(name));
-					}
-					else {
+					} else {
 						throw new SymbolTableException("Unknown Single Import " + anImport.getIdentifier());
 					}
-				} else if(anImport instanceof OnDemandImport) {
+				} else if (anImport instanceof OnDemandImport) {
 					String name = anImport.getImportName().getName();
-					if(this.table.containPackage(name)) {
+
+					if (this.table.containPackage(name)) {
 						scope.addOnDemandImport(this.table.getPackage(name));
-					}
-					else {
+						continue;
+					} 
+					
+					List<? extends Scope> scopes = this.table.getScopeByPrefix(name + ".", PackageScope.class);
+					if (scopes.size() > 0) {
+						for (Scope packScope : scopes) {
+							scope.addOnDemandImport((PackageScope) packScope);
+						}
+					} else {
 						throw new SymbolTableException("Unknown On Demand Import " + anImport.getIdentifier());
 					}
 				}

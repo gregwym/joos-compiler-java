@@ -5,8 +5,11 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import org.hamcrest.Matchers;
+
+import ch.lambdaj.Lambda;
 
 import ca.uwaterloo.joos.Main;
 import ca.uwaterloo.joos.ast.AST;
@@ -27,7 +30,6 @@ public class SymbolTable {
 
 	public SymbolTable() {
 		this.scopes = new HashMap<String, Scope>();
-		logger.setLevel(Level.FINER);
 	}
 
 	public PackageScope getPackageByDecl(PackageDeclaration packDecl) throws Exception {
@@ -61,6 +63,12 @@ public class SymbolTable {
 			throw new SymbolTableException("Expecting PackageScope but get " + scope.getClass().getName());
 		}
 		return (PackageScope) scope;
+	}
+	
+	public List<? extends Scope> getScopeByPrefix(String prefix, Class<?> scopeClass) {
+		return Lambda.select(
+				Lambda.select(this.scopes.values(), Matchers.instanceOf(scopeClass)), 
+				Lambda.having(Lambda.on(Scope.class).getName(), Matchers.startsWith(prefix)));
 	}
 
 	public TypeScope getType(String name) throws Exception {
@@ -147,7 +155,7 @@ public class SymbolTable {
 	}
 
 	public void build(List<AST> asts) throws Exception {
-		logger.setLevel(Level.FINER);
+//		logger.setLevel(Level.FINER);
 
 		for (AST ast : asts) {
 			ast.getRoot().accept(new TopDeclVisitor(this));

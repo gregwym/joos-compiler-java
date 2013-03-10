@@ -6,6 +6,7 @@ package ca.uwaterloo.joos.symboltable;
 
 //Proposal
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -13,8 +14,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.hamcrest.Matchers;
+
 import ca.uwaterloo.joos.ast.expr.name.Name;
+import ca.uwaterloo.joos.ast.expr.name.QualifiedName;
+import ca.uwaterloo.joos.ast.expr.name.SimpleName;
 import ca.uwaterloo.joos.ast.type.ReferenceType;
+import ch.lambdaj.Lambda;
 
 public abstract class Scope {
 	/**
@@ -37,7 +43,28 @@ public abstract class Scope {
 	public String getName() {
 		return name;
 	}
+	
+	protected List<TableEntry> entriesWithSuffix(Collection<TableEntry> entries, String suffix) {
+		return Lambda.select(entries, Lambda.having(Lambda.on(TableEntry.class).getName(), Matchers.endsWith(suffix)));
+	}
+	
+	protected List<? extends Scope> scopesWithSuffix(Collection<? extends Scope> scopes, String suffix) {
+		return Lambda.select(scopes, Lambda.having(Lambda.on(Scope.class).getName(), Matchers.endsWith(suffix)));
+	}
 
+	public boolean resolveReferenceType(ReferenceType type, SymbolTable table) throws Exception {
+		Name name = type.getName();
+		if(name instanceof QualifiedName) {
+			TableEntry match = this.symbols.get(name.getName() + "{}");
+			return match != null;
+		} else if(name instanceof SimpleName) {
+			this.resolveSimpleNameType((SimpleName) name);
+		}
+		return false;
+	}
+	
+	public abstract boolean resolveSimpleNameType(SimpleName name) throws Exception;
+	
 	public String lookupReferenceType(ReferenceType type) throws Exception {
 		Name name = type.getName();
 

@@ -18,7 +18,7 @@ import ca.uwaterloo.joos.scanner.DFA;
 import ca.uwaterloo.joos.scanner.Scanner;
 import ca.uwaterloo.joos.scanner.Token;
 import ca.uwaterloo.joos.symboltable.SymbolTable;
-import ca.uwaterloo.joos.typelinker.TypeLinker;
+import ca.uwaterloo.joos.symboltable.TypeLinker;
 import ca.uwaterloo.joos.weeder.Weeder;
 
 /**
@@ -103,13 +103,13 @@ public class Main {
 		SymbolTable table = new SymbolTable();
 		
 		table.build(asts);
-		table.listScopes();
+//		table.listScopes();
 		
-//		for(AST ast: asts) {
-////			System.out.println("Checking " + ast.getRoot().getIdentifier() );
-//			TypeLinker linker = new TypeLinker(table);
-//			ast.getRoot().accept(linker);
-//		}
+		for(AST ast: asts) {
+//			System.out.println("Checking " + ast.getRoot().getIdentifier() );
+			TypeLinker linker = new TypeLinker(table);
+			ast.getRoot().accept(linker);
+		}
 	}
 	
 	public void execute(String[] args) throws Exception {

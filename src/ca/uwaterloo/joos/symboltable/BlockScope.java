@@ -1,6 +1,7 @@
 package ca.uwaterloo.joos.symboltable;
 
 import ca.uwaterloo.joos.ast.decl.VariableDeclaration;
+import ca.uwaterloo.joos.ast.expr.name.SimpleName;
 
 
 public class BlockScope extends Scope {
@@ -18,14 +19,28 @@ public class BlockScope extends Scope {
 	}
 
 	public void addVariableDecl(VariableDeclaration var) throws Exception {
-		TableEntry entry = new TableEntry(var);
 		String name = this.nameForDecl(var);
+		TableEntry entry = new TableEntry(name, var);
 
 		this.symbols.put(name, entry);
 	}
 
 	public TableEntry getVariableDecl(VariableDeclaration var) throws Exception {
 		return this.symbols.get(this.nameForDecl(var));
+	}
+	
+	@Override
+	public boolean resolveSimpleNameType(SimpleName name) throws Exception {
+//		List<TableEntry> matches = new ArrayList<TableEntry>();
+//		matches = this.entriesWithSuffix(this.symbols.values(), name.getName());
+//		
+//		if(matches.size() > 1) {
+//			throw new SymbolTableException("More than one match was found in Block Scope for type " + name);
+//		} else if(matches.size() == 1) {
+//			return true;
+//		}
+		
+		return this.parent.resolveSimpleNameType(name);
 	}
 
 	@Override
