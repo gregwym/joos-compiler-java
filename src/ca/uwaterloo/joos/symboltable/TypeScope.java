@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import ca.uwaterloo.joos.ast.decl.ConstructorDeclaration;
+import ca.uwaterloo.joos.ast.decl.FieldDeclaration;
 import ca.uwaterloo.joos.ast.decl.MethodDeclaration;
 import ca.uwaterloo.joos.ast.decl.ParameterDeclaration;
 import ca.uwaterloo.joos.symboltable.SymbolTable.SymbolTableException;
@@ -14,12 +15,16 @@ public class TypeScope extends Scope {
 	protected Map<String, TypeScope> singleImport;
 	protected Map<String, PackageScope> onDemandImport;
 
-	public PackageScope getWithinPackage() {
-		return withinPackage;
+	public TypeScope(String name, PackageScope withinPackage) {
+		super(name);
+		
+		this.withinPackage = withinPackage;
+		this.singleImport = new HashMap<String, TypeScope>();
+		this.onDemandImport = new HashMap<String, PackageScope>();
 	}
 
-	public void setWithinPackage(PackageScope withinPackage) {
-		this.withinPackage = withinPackage;
+	public PackageScope getWithinPackage() {
+		return withinPackage;
 	}
 	
 	public void addSingleImport(TypeScope scope) {
@@ -29,13 +34,25 @@ public class TypeScope extends Scope {
 	public void addOnDemandImport(PackageScope scope) {
 		this.onDemandImport.put(scope.getName(), scope);
 	}
+	
+	public String nameForDecl(FieldDeclaration field) throws Exception {
+		String name = this.getName() + "." + field.getName().getName();
+		return name;
+	}
 
-	public TypeScope(String name) {
-		super(name);
+	public void addFieldDecl(FieldDeclaration field) throws Exception {
+		TableEntry entry = new TableEntry(field);
+		String name = this.nameForDecl(field);
 		
-		this.withinPackage = null;
-		this.singleImport = new HashMap<String, TypeScope>();
-		this.onDemandImport = new HashMap<String, PackageScope>();
+		if(this.symbols.containsKey(name)) {
+			throw new SymbolTableException("Duplicate Field Declarations: " + name);
+		}
+
+		this.symbols.put(name, entry);
+	}
+
+	public TableEntry getFieldDecl(FieldDeclaration field) throws Exception {
+		return this.symbols.get(this.nameForDecl(field));
 	}
 
 	public String signatureOfMethod(MethodDeclaration method) throws Exception {
@@ -53,7 +70,7 @@ public class TypeScope extends Scope {
 	public void addMethod(MethodDeclaration node) throws Exception{
 		String name = this.signatureOfMethod(node);
 		if(this.symbols.containsKey(name)) {
-			throw new SymbolTableException("Duplicate method declaraion " + name);
+			throw new SymbolTableException("Duplicate Method Declaraion " + name);
 		}
 		this.symbols.put(name, new TableEntry(node));
 	}

@@ -55,6 +55,6 @@ public abstract class SemanticsVisitor extends ASTVisitor {
 	public void didVisit(ASTNode node) {
 		if (node instanceof TypeDeclaration) {
 			this.popScope();
-		} 
+		}
 	}
 }

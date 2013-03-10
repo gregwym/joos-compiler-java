@@ -13,11 +13,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import ca.uwaterloo.joos.ast.ASTNode;
-import ca.uwaterloo.joos.ast.decl.BodyDeclaration;
-import ca.uwaterloo.joos.ast.decl.LocalVariableDeclaration;
-import ca.uwaterloo.joos.ast.decl.ParameterDeclaration;
-import ca.uwaterloo.joos.ast.decl.VariableDeclaration;
 import ca.uwaterloo.joos.ast.expr.name.Name;
 import ca.uwaterloo.joos.ast.type.ReferenceType;
 
@@ -31,10 +26,8 @@ public abstract class Scope {
 	 * 
 	 */
 
-	protected String name = null; // Represents the name of the current scope
-	protected Map<String, TableEntry> symbols = null; // A map mapping
-														// identifiers to their
-														// related ASTNode
+	protected String name; // Represents the name of the current scope
+	protected Map<String, TableEntry> symbols;
 
 	public Scope(String name) {
 		this.name = name;
@@ -43,43 +36,6 @@ public abstract class Scope {
 
 	public String getName() {
 		return name;
-	}
-
-	public void addDeclaration(String key, ASTNode node) {
-		TableEntry te = new TableEntry(node);
-		symbols.put(key, te);
-
-	}
-
-	public String nameForDecl(VariableDeclaration field) throws Exception {
-		String name = this.getName() + "." + field.getName().getName();
-		return name;
-	}
-
-	public boolean containVariableName(VariableDeclaration varDecl) throws Exception {
-		String simpleName = varDecl.getName().getSimpleName();
-		for (String key : this.symbols.keySet()) {
-			TableEntry entry = this.symbols.get(key);
-			ASTNode node = entry.getNode();
-
-			if ((node instanceof LocalVariableDeclaration || node instanceof ParameterDeclaration) && 
-					((BodyDeclaration) node).getName().getSimpleName().equals(simpleName)) {
-				return true;
-			}
-		}
-		return false;
-	}
-
-	public void addVariableDecl(VariableDeclaration node) throws Exception {
-		// Add a field
-		TableEntry entry = new TableEntry(node);
-		String name = this.nameForDecl(node);
-
-		symbols.put(name, entry);
-	}
-
-	public TableEntry getVariableDecl(VariableDeclaration node) throws Exception {
-		return this.symbols.get(this.nameForDecl(node));
 	}
 
 	public String lookupReferenceType(ReferenceType type) throws Exception {

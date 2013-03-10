@@ -30,7 +30,7 @@ public class BlockVisitor extends SemanticsVisitor {
 			// if name is not already in view
 			VariableDeclaration LNode = (VariableDeclaration) node;
 
-			if (currentScope.containVariableName(LNode)) {
+			if (currentScope.containField(LNode)) {
 				throw new Exception("Duplicate local variable declaration within overlapping scope");
 			}
 			currentScope.addVariableDecl(LNode, level);

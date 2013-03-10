@@ -70,6 +70,14 @@ public class SymbolTable {
 		}
 		return (TypeScope) scope;
 	}
+	
+	public BlockScope getBlock(String name) throws Exception {
+		Scope scope = this.scopes.get(name);
+		if (!(scope instanceof BlockScope)) {
+			throw new SymbolTableException("Expecting BlockScope but get " + scope.getClass().getName());
+		}
+		return (BlockScope) scope;
+	}
 
 	public boolean containPackage(String name) {
 		Scope scope = this.scopes.get(name);
@@ -79,6 +87,11 @@ public class SymbolTable {
 	public boolean containType(String name) {
 		Scope scope = this.scopes.get(name + "{}");
 		return scope != null && scope instanceof TypeScope;
+	}
+	
+	public boolean containBlock(String name) {
+		Scope scope = this.scopes.get(name);
+		return scope != null && scope instanceof BlockScope;
 	}
 
 //	public String lookupReferenceType(ReferenceType type) throws Exception {
@@ -110,15 +123,26 @@ public class SymbolTable {
 		return scope;
 	}
 
-	public TypeScope addType(String typeName) throws Exception {
+	public TypeScope addType(String typeName, PackageScope packageScope) throws Exception {
 		// Check for prefix conflict
 		if (this.containPackage(typeName)) {
 			throw new SymbolTableException("Type declaration conflict with package prefix " + typeName);
 		}
 		typeName += "{}";
 
-		TypeScope scope = new TypeScope(typeName);
+		TypeScope scope = new TypeScope(typeName, packageScope);
 		this.scopes.put(typeName, scope);
+		return scope;
+	}
+	
+	public BlockScope addBlock(String blockName, Scope parent) throws Exception {
+		// Check for prefix conflict
+		if (this.scopes.containsKey(blockName)) {
+			throw new SymbolTableException("Duplicate Block Declaration: " + blockName);
+		}
+
+		BlockScope scope = new BlockScope(blockName, parent);
+		this.scopes.put(blockName, scope);
 		return scope;
 	}
 
@@ -135,10 +159,10 @@ public class SymbolTable {
 		}
 		logger.info("Building Symbol Table Pass 2 Finished");
 
-		// for (AST ast: asts){
-		// ast.getRoot().accept(new DeepDeclVisitor(this));
-		// }
-		// logger.info("Building Symbol Table Pass 3 Finished");
+		for (AST ast: asts){
+			ast.getRoot().accept(new DeepDeclVisitor(this));
+		}
+		logger.info("Building Symbol Table Pass 3 Finished");
 	}
 
 	public void listScopes() {

@@ -5,7 +5,6 @@ import ca.uwaterloo.joos.ast.decl.BodyDeclaration;
 import ca.uwaterloo.joos.ast.decl.FieldDeclaration;
 import ca.uwaterloo.joos.ast.decl.MethodDeclaration;
 import ca.uwaterloo.joos.ast.decl.TypeDeclaration;
-import ca.uwaterloo.joos.symboltable.SymbolTable.SymbolTableException;
 
 public class TopDeclVisitor extends SemanticsVisitor {
 
@@ -16,19 +15,10 @@ public class TopDeclVisitor extends SemanticsVisitor {
 	public boolean visit(ASTNode node) throws Exception {
 		if (node instanceof FieldDeclaration) {
 			TypeScope currentScope = (TypeScope) this.getCurrentScope();
-			if (currentScope.getVariableDecl((FieldDeclaration) node) == null)
-				currentScope.addVariableDecl((FieldDeclaration) node);
-			else {
-				throw new SymbolTableException("TopDeclVisitor.visit(): Multiple Field Declarations with same name. Exiting with 42");
-			}
+			currentScope.addFieldDecl((FieldDeclaration) node);
 		} else if (node instanceof MethodDeclaration) {
 			TypeScope currentScope = (TypeScope) this.getCurrentScope();
-			if (currentScope.getMethod((MethodDeclaration) node) == null) {
-				currentScope.addMethod((MethodDeclaration) node);
-			}
-			else {
-				throw new SymbolTableException("Duplicate declaration of method");
-			}
+			currentScope.addMethod((MethodDeclaration) node);
 		}
 
 		return !(node instanceof BodyDeclaration);
@@ -40,13 +30,12 @@ public class TopDeclVisitor extends SemanticsVisitor {
 			PackageScope currentScope = (PackageScope) this.getCurrentScope();
 			String name = ((TypeDeclaration) node).getIdentifier();
 			name = currentScope.getName() + "." + name;
-			
-			TypeScope scope = this.table.addType(name);
-			
+
+			TypeScope scope = this.table.addType(name, currentScope);
+
 			// Add type declaration as package member
 			currentScope.addType((TypeDeclaration) node);
-			scope.setWithinPackage(currentScope);
-			
+
 			// Push current scope into the view stack
 			this.pushScope(scope);
 		} else {
