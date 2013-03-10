@@ -105,11 +105,11 @@ public class Main {
 		table.build(asts);
 		table.listScopes();
 		
-//		for(AST ast: asts) {
-////			System.out.println("Checking " + ast.getRoot().getIdentifier() );
-//			TypeLinker linker = new TypeLinker(table);
-//			ast.getRoot().accept(linker);
-//		}
+		for(AST ast: asts) {
+//			System.out.println("Checking " + ast.getRoot().getIdentifier() );
+			TypeLinker linker = new TypeLinker(table);
+			ast.getRoot().accept(linker);
+		}
 	}
 	
 	public void execute(String[] args) throws Exception {
