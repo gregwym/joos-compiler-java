@@ -102,7 +102,7 @@ public class TypeScope extends Scope {
 	@Override
 	public String resolveSimpleNameType(SimpleName name) throws Exception {
 		// Check enclosing type
-		if (this.getName().matches(".+\\." + name.getName() + "\\{\\}")) {
+		if (this.getName().endsWith("." + name.getName())) {
 			return this.getName();
 		}
 
