@@ -11,6 +11,8 @@ import java.util.logging.Logger;
 
 import ca.uwaterloo.joos.ast.AST;
 import ca.uwaterloo.joos.ast.visitor.ToStringVisitor;
+import ca.uwaterloo.joos.checker.HierarchyBuilder;
+import ca.uwaterloo.joos.checker.HierarchyChecker;
 import ca.uwaterloo.joos.parser.LR1;
 import ca.uwaterloo.joos.parser.LR1Parser;
 import ca.uwaterloo.joos.parser.ParseTree;
@@ -36,7 +38,7 @@ public class Main {
 	private final LR1Parser parser;
 	private final Preprocessor preprocessor;
 	private final Weeder weeder;
-
+	
 	public Main() {
 		// Construct Preprocessor
 		this.preprocessor = new Preprocessor();
@@ -95,7 +97,6 @@ public class Main {
 		
 		/* AST Weeding */
 		this.weeder.weedAst(ast);
-
 		return ast;
 	}
 	
@@ -105,11 +106,17 @@ public class Main {
 		table.build(asts);
 //		table.listScopes();
 		
+		HierarchyBuilder hierarchyBuilder = new HierarchyBuilder();
+		
 		for(AST ast: asts) {
 //			System.out.println("Checking " + ast.getRoot().getIdentifier() );
 			TypeLinker linker = new TypeLinker(table);
 			ast.getRoot().accept(linker);
+			ast.getRoot().accept(hierarchyBuilder);
 		}
+		
+		HierarchyChecker hierarchyChecker = new HierarchyChecker(hierarchyBuilder);
+		hierarchyChecker.CheckHierarchy();
 	}
 	
 	public void execute(String[] args) throws Exception {
@@ -123,6 +130,7 @@ public class Main {
 		}
 		
 		typeChecking(asts);
+		
 	}
 
 	/**

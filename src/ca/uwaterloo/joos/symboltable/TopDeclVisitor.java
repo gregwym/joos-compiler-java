@@ -34,6 +34,7 @@ public class TopDeclVisitor extends SemanticsVisitor {
 			PackageScope currentScope = (PackageScope) this.getCurrentScope();
 			String name = ((TypeDeclaration) node).getIdentifier();
 			name = currentScope.getName() + "." + name;
+			((TypeDeclaration) node).fullyQualifiedName = name;
 
 			TypeScope scope = this.table.addType(name, currentScope);
 
