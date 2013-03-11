@@ -1,16 +1,19 @@
 package ca.uwaterloo.joos.ast.expr;
 
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
 import ca.uwaterloo.joos.ast.AST.ASTConstructException;
 import ca.uwaterloo.joos.ast.ASTNode;
+import ca.uwaterloo.joos.ast.descriptor.ChildDescriptor;
 import ca.uwaterloo.joos.ast.descriptor.ChildListDescriptor;
 import ca.uwaterloo.joos.ast.descriptor.SimpleDescriptor;
 import ca.uwaterloo.joos.ast.expr.UnaryExpression.UnaryOperator;
-import ca.uwaterloo.joos.ast.expr.primary.LiteralPrimary;
-import ca.uwaterloo.joos.ast.expr.primary.LiteralPrimary.LiteralType;
+import ca.uwaterloo.joos.ast.type.ArrayType;
+import ca.uwaterloo.joos.ast.type.ReferenceType;
+import ca.uwaterloo.joos.ast.type.Type;
 import ca.uwaterloo.joos.parser.ParseTree.Node;
 import ca.uwaterloo.joos.parser.ParseTree.TreeNode;
 
@@ -18,6 +21,7 @@ public class InfixExpression extends Expression {
 	
 	public static final SimpleDescriptor OPERATOR = new SimpleDescriptor(InfixOperator.class);
 	public static final ChildListDescriptor OPERANDS = new ChildListDescriptor(Expression.class);
+	public static final ChildDescriptor RHSTYPE = new ChildDescriptor(Type.class);
 	
 	public static enum InfixOperator {
 		OR, AND, BOR, BAND, EQ, NEQ, LT, GT, LEQ, GEQ, INSTANCEOF, PLUS, MINUS, STAR, SLASH, PERCENT,   
@@ -67,17 +71,28 @@ public class InfixExpression extends Expression {
 			
 			Expression operand1 = Expression.newExpression(first, this);
 			InfixOperator operator = stringToInfixOperator(second.getKind().toUpperCase());
-			Expression operand2 = Expression.newExpression(third, this);
+			if(operator == InfixOperator.INSTANCEOF) {
+				Type type = null;
+				TreeNode thirdNode = (TreeNode) third;
+				List<String> rhs = Arrays.asList(thirdNode.productionRule.getRighthand());
+				if(rhs.contains("arraytype")) {
+					type = new ArrayType(thirdNode.children.get(0), this);
+				}
+				else if(rhs.contains("name")) {
+					type = new ReferenceType(thirdNode.children.get(0), this);
+				}
+				else {
+					throw new ASTConstructException("Unknown referencetype" + rhs);
+				}
+				this.addChild(RHSTYPE, type);
+			}
+			else {
+				Expression operand2 = Expression.newExpression(third, this);
+				this.addChild(OPERANDS, operand2);
+			}
 			
 			this.addChild(OPERANDS, operand1);
 			this.addChild(OPERATOR, operator);
-			this.addChild(OPERANDS, operand2);
-			
-			if(operator.equals(InfixOperator.INSTANCEOF) && 
-					(operand2 instanceof LiteralPrimary) && 
-					((LiteralPrimary) operand2).getType() == LiteralType.NULL) {
-				throw new ASTConstructException("Cannot execute Instanceof on NULL literal");
-			}
 		}
 		else {
 			throw new ASTConstructException("Infix Expression is expecting a treeNode with valid format");
