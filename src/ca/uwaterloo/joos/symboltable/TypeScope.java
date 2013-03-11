@@ -32,12 +32,12 @@ public class TypeScope extends Scope {
 
 	public void addSingleImport(String simpleName, TypeScope scope) throws SymbolTableException {
 		// Check name clash with type
-		if ((!this.getName().equals(scope.getName())) && this.getName().endsWith("." + simpleName + "{}")) {
+		if ((!this.getName().equals(scope.getName())) && this.getName().endsWith("." + simpleName)) {
 			throw new SymbolTableException("Single Type Import " + scope.getName() + " clashes with type declaration " + this.getName());
 		}
 
 		// Check name clash with other import
-		List<? extends Scope> clashImports = this.scopesWithSuffix(this.singleImport.values(), "." + simpleName + "{}");
+		List<? extends Scope> clashImports = this.scopesWithSuffix(this.singleImport.values(), "." + simpleName);
 		if (clashImports.size() > 0) {
 			for (Scope clashImport : clashImports) {
 				if (!clashImport.getName().equals(scope.getName())) {
@@ -110,7 +110,7 @@ public class TypeScope extends Scope {
 		String type = null;
 		List<String> types = new ArrayList<String>();
 		List<Scope> scopes = new ArrayList<Scope>();
-		scopes.addAll(this.scopesWithSuffix(this.singleImport.values(), "." + name.getName() + "{}"));
+		scopes.addAll(this.scopesWithSuffix(this.singleImport.values(), "." + name.getName()));
 
 		if (scopes.size() > 1) {
 			throw new SymbolTableException("More than one match was found in Single Type Imports for type " + name);

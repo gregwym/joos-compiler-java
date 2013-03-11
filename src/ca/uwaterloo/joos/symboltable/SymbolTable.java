@@ -71,7 +71,7 @@ public class SymbolTable {
 	}
 
 	public TypeScope getType(String name) throws Exception {
-		Scope scope = this.scopes.get(name + "{}");
+		Scope scope = this.scopes.get(name);
 		if (!(scope instanceof TypeScope)) {
 			throw new SymbolTableException("Expecting TypeScope but get " + scope);
 		}
@@ -92,7 +92,7 @@ public class SymbolTable {
 	}
 
 	public boolean containType(String name) {
-		Scope scope = this.scopes.get(name + "{}");
+		Scope scope = this.scopes.get(name);
 		return scope != null && scope instanceof TypeScope;
 	}
 	
@@ -127,7 +127,6 @@ public class SymbolTable {
 		if (this.containPackage(typeName) || !packages.isEmpty()) {
 			throw new SymbolTableException("Type declaration conflict with package prefix " + typeName);
 		}
-		typeName += "{}";
 
 		TypeScope scope = new TypeScope(typeName, packageScope);
 		this.scopes.put(typeName, scope);
