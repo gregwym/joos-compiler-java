@@ -116,6 +116,7 @@ public class Main {
 		}
 		
 		HierarchyChecker hierarchyChecker = new HierarchyChecker(hierarchyBuilder);
+		hierarchyChecker.CheckHierarchy();
 	}
 	
 	public void execute(String[] args) throws Exception {

@@ -12,12 +12,10 @@ public class HierarchyChecker {
 
 	public HierarchyChecker(HierarchyBuilder hierarchyBuilder) throws Exception {
 		this.hierarchyBuilder = hierarchyBuilder;
-		checkImplements();
-		checkExtends();
 
 	}
 
-	public void CheckHierarchy() {
+	public void CheckHierarchy() throws Exception {
 		checkImplements();
 		checkExtends();
 	}
