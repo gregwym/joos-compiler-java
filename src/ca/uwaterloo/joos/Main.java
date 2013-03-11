@@ -137,7 +137,7 @@ public class Main {
 	 * @param args
 	 * @throws IOException
 	 */
-	public static void main(String[] args) throws IOException {
+	public static void main(String[] args) {
 		if(args.length < 1) {
 			System.exit(-1);
 		}
