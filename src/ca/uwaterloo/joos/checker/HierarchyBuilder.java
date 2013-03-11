@@ -7,16 +7,18 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import com.sun.mirror.declaration.Modifier;
-
+import ca.uwaterloo.joos.ast.ASTNode;
 import ca.uwaterloo.joos.ast.Modifiers;
 import ca.uwaterloo.joos.ast.decl.ClassDeclaration;
 import ca.uwaterloo.joos.ast.decl.TypeDeclaration;
-import ca.uwaterloo.joos.ast.expr.name.Name;
 import ca.uwaterloo.joos.ast.type.ReferenceType;
 import ca.uwaterloo.joos.ast.visitor.TypeDeclVisitor;
+import ca.uwaterloo.joos.symboltable.Scope;
+import ca.uwaterloo.joos.symboltable.SymbolTable;
 
 public class HierarchyBuilder extends TypeDeclVisitor {
+
+	
 	private static Map<String, String> hierarchyMap = new HashMap<String,String>();
 	private static Map<String, List<String>> implementMap = new HashMap<String, List<String>>();
 	private static Set<String> interfaces = new HashSet<String>();
@@ -28,28 +30,31 @@ public class HierarchyBuilder extends TypeDeclVisitor {
 		//System.out.println("visiting @@@@"+node.getIdentifier()+node.getModifiers().getModifiers()+node.getModifiers().getModifiers().contains(Modifier.FINAL));
 		if (node.getModifiers().getModifiers().contains(Modifiers.Modifier.FINAL)) {
 			//System.out.println("this is final !!!!!"+node.getIdentifier());
-			finals.add(node.getIdentifier());
+			finals.add(node.fullyQualifiedName);
 		}
 		if (node instanceof ClassDeclaration) {
 			
-			classes.add(node.getIdentifier());
+			classes.add(node.fullyQualifiedName);
 			if (((ClassDeclaration) node).getSuperClass()!= null) {
 				//System.out.println("getHierarchyMap supers@@@@"+((ClassDeclaration) node).getSuperClass());
 				ReferenceType EXTEND = (ReferenceType) ((ClassDeclaration) node).getSuperClass();
-				String extendClasses = EXTEND.getIdentifier();
+				String extendClasses = EXTEND.fullyQualifedTypeName;
 				//System.out.println("getHierarchyMap!!!!!@@@@"+node.getIdentifier()+ extendClasses);
-				hierarchyMap.put(node.getIdentifier(), extendClasses);
+				hierarchyMap.put(node.fullyQualifiedName, extendClasses);
+				System.out.println("add"+node.fullyQualifiedName+" extend"+extendClasses);
 			}
 		} else {
-			interfaces.add(node.getIdentifier());
+			interfaces.add(node.fullyQualifiedName);
+			System.out.println("add interfaces" +node.fullyQualifiedName);
 		}
-		if (node.getInterfaces() != null) {
+		if (node.getInterfaces().size()!=0) {
 			List<ReferenceType> IMPLENTS = node.getInterfaces();
 			List<String> implentClasses = new ArrayList<String>();
 			for (ReferenceType implent : IMPLENTS) {
-				implentClasses.add(implent.getIdentifier());
+				implentClasses.add(implent.fullyQualifedTypeName);
 			}
-			implementMap.put(node.getIdentifier(), implentClasses);
+			implementMap.put(node.fullyQualifiedName, implentClasses);
+			System.out.println("add"+node.fullyQualifiedName+" implent"+implentClasses);
 		}
 
 	}
@@ -71,6 +76,18 @@ public class HierarchyBuilder extends TypeDeclVisitor {
 	}
 	public Set<String> getFinals() {
 		return finals;
+	}
+
+	@Override
+	public void willVisit(ASTNode node) throws Exception {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void didVisit(ASTNode node) throws Exception {
+		// TODO Auto-generated method stub
+		
 	}
 
 }

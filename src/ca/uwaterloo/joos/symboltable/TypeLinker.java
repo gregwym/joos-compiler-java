@@ -16,9 +16,12 @@ public class TypeLinker extends SemanticsVisitor {
 			ReferenceType refType = (ReferenceType) node;
 			
 			Scope currentScope = this.getCurrentScope();
-			if(currentScope.resolveReferenceType(refType, this.table) == null) {
+			String resolved = currentScope.resolveReferenceType(refType, this.table);
+			if(resolved == null) {
 				throw new SymbolTableException("Cannot resolve type " + refType.getName().getName());
 			}
+			
+			refType.fullyQualifedTypeName = resolved;
 		}
 		return true;
 	}
