@@ -1,10 +1,5 @@
-//Scratch
-//TODO 
-//	-JAVADOC
-//	-Define Table
 package ca.uwaterloo.joos.symboltable;
 
-//Proposal
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -23,14 +18,6 @@ import ca.uwaterloo.joos.ast.type.ReferenceType;
 import ch.lambdaj.Lambda;
 
 public abstract class Scope {
-	/**
-	 * Symbol Table
-	 * 
-	 * Scans an AST of a validated joos source file. The class maintains a
-	 * static HashMap. After an AST scan is completed the HashMap is updated
-	 * with the declarations held in the file's global namespace.
-	 * 
-	 */
 	
 	public static final Logger logger = Main.getLogger(Scope.class);
 
