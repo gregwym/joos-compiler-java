@@ -11,6 +11,7 @@ import java.util.logging.Logger;
 import org.hamcrest.Matchers;
 
 import ca.uwaterloo.joos.Main;
+import ca.uwaterloo.joos.ast.ASTNode;
 import ca.uwaterloo.joos.ast.expr.name.Name;
 import ca.uwaterloo.joos.ast.expr.name.QualifiedName;
 import ca.uwaterloo.joos.ast.expr.name.SimpleName;
@@ -23,14 +24,20 @@ public abstract class Scope {
 
 	protected String name; // Represents the name of the current scope
 	protected Map<String, TableEntry> symbols;
+	protected ASTNode referenceNode;
 
-	public Scope(String name) {
+	public Scope(String name, ASTNode referenceNode) {
 		this.name = name;
 		this.symbols = new HashMap<String, TableEntry>();
+		this.referenceNode = referenceNode;
 	}
 
 	public String getName() {
 		return name;
+	}
+	
+	public ASTNode getReferenceNode() {
+		return this.referenceNode;
 	}
 	
 	protected List<TableEntry> entriesWithSuffix(Collection<TableEntry> entries, String suffix) {
@@ -55,6 +62,7 @@ public abstract class Scope {
 	public abstract String resolveSimpleNameType(SimpleName name) throws Exception;
 
 	public void listSymbols() {
+		System.out.println("\tReferences to: " + this.referenceNode);
 		System.out.println("\tSymbols:");
 		List<String> keys = new ArrayList<String>(this.symbols.keySet());
 		Collections.sort(keys);

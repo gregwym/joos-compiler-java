@@ -36,7 +36,7 @@ public class TopDeclVisitor extends SemanticsVisitor {
 			name = currentScope.getName() + "." + name;
 			((TypeDeclaration) node).fullyQualifiedName = name;
 
-			TypeScope scope = this.table.addType(name, currentScope);
+			TypeScope scope = this.table.addType(name, currentScope, node);
 
 			// Add type declaration as package member
 			currentScope.addType((TypeDeclaration) node);

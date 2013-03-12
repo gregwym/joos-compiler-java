@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.hamcrest.Matchers;
 
+import ca.uwaterloo.joos.ast.ASTNode;
 import ca.uwaterloo.joos.ast.decl.VariableDeclaration;
 import ca.uwaterloo.joos.ast.expr.name.SimpleName;
 import ca.uwaterloo.joos.symboltable.SymbolTable.SymbolTableException;
@@ -14,8 +15,8 @@ public class BlockScope extends Scope {
 	
 	protected Scope parent;
 
-	public BlockScope(String name, Scope parent) {
-		super(name);
+	public BlockScope(String name, Scope parent, ASTNode referenceNode) {
+		super(name, referenceNode);
 		this.parent = parent;
 	}
 	

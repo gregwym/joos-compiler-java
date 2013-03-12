@@ -71,7 +71,7 @@ public abstract class SemanticsVisitor extends ASTVisitor {
 	}
 	
 	@Override
-	public void didVisit(ASTNode node) {
+	public void didVisit(ASTNode node) throws Exception {
 		if (node instanceof TypeDeclaration) {
 			this.viewStack.clear();
 		} else if (node instanceof MethodDeclaration) {
