@@ -19,14 +19,14 @@ public class DeepDeclVisitor extends SemanticsVisitor {
 		if (node instanceof MethodDeclaration) {
 			TypeScope currentScope = (TypeScope) this.getCurrentScope();
 			String name = currentScope.signatureOfMethod((MethodDeclaration) node);
-			Scope scope = this.table.addBlock(name, currentScope);
+			Scope scope = this.table.addBlock(name, currentScope, node);
 			
 			this.blockCount = 0;
 			this.pushScope(scope);
 		} else if (node instanceof Block || node instanceof LocalVariableDeclaration) {
 			BlockScope currentScope = (BlockScope) this.getCurrentScope();
 			String name = currentScope.getName() + ".block" + this.blockCount;
-			Scope scope = this.table.addBlock(name, currentScope);
+			Scope scope = this.table.addBlock(name, currentScope, node);
 			
 			this.blockCount++;
 			this.pushScope(scope);

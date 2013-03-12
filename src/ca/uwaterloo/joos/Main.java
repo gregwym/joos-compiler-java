@@ -115,6 +115,8 @@ public class Main {
 			ast.getRoot().accept(hierarchyBuilder);
 		}
 		
+//		table.listScopes();
+		
 		HierarchyChecker hierarchyChecker = new HierarchyChecker(hierarchyBuilder);
 		hierarchyChecker.CheckHierarchy();
 	}

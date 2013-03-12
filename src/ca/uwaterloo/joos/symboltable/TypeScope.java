@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import ca.uwaterloo.joos.ast.ASTNode;
 import ca.uwaterloo.joos.ast.decl.ConstructorDeclaration;
 import ca.uwaterloo.joos.ast.decl.FieldDeclaration;
 import ca.uwaterloo.joos.ast.decl.MethodDeclaration;
@@ -17,13 +18,17 @@ public class TypeScope extends Scope {
 	protected PackageScope withinPackage;
 	protected Map<String, TypeScope> singleImport;
 	protected Map<String, PackageScope> onDemandImport;
+	protected TypeScope superScope;
+	protected Map<String, TypeScope> interfaceScopes;
 
-	public TypeScope(String name, PackageScope withinPackage) {
-		super(name);
+	public TypeScope(String name, PackageScope withinPackage, ASTNode referenceNode) {
+		super(name, referenceNode);
 
 		this.withinPackage = withinPackage;
 		this.singleImport = new HashMap<String, TypeScope>();
 		this.onDemandImport = new HashMap<String, PackageScope>();
+		this.superScope = null;
+		this.interfaceScopes = new HashMap<String, TypeScope>();
 	}
 
 	public PackageScope getWithinPackage() {
@@ -98,6 +103,22 @@ public class TypeScope extends Scope {
 		String name = this.signatureOfMethod(node);
 		return this.symbols.get(name);
 	}
+	
+	public void setSuperScope(TypeScope superScope) {
+		this.superScope = superScope;
+	}
+	
+	public TypeScope getSuperScope() {
+		return this.superScope;
+	}
+	
+	public void addInterfaceScope(TypeScope interfaceScope) {
+		this.interfaceScopes.put(interfaceScope.getName(), interfaceScope);
+	}
+	
+	public Map<String, TypeScope> getInterfaceScopes() {
+		return this.interfaceScopes;
+	}
 
 	@Override
 	public String resolveSimpleNameType(SimpleName name) throws Exception {
@@ -146,16 +167,32 @@ public class TypeScope extends Scope {
 		System.out.println("\tPackage:");
 		System.out.println("\t\t" + this.withinPackage);
 
-		System.out.println("\tSingle Type Imports:");
-		for (Scope scope : this.singleImport.values()) {
-			System.out.println("\t\t" + scope);
+		if(this.singleImport.size() > 0) {
+			System.out.println("\tSingle Type Imports:");
+			for (Scope scope : this.singleImport.values()) {
+				System.out.println("\t\t" + scope);
+			}
+		}
+		
+		if(this.onDemandImport.size() > 0) {
+			System.out.println("\tOnDemand Imports:");
+			for (Scope scope : this.onDemandImport.values()) {
+				System.out.println("\t\t" + scope);
+			}
+		}
+		
+		if(this.superScope != null) {
+			System.out.println("\tSuper Scope:");
+			System.out.println("\t\t" + this.superScope);
 		}
 
-		System.out.println("\tOnDemand Imports:");
-		for (Scope scope : this.onDemandImport.values()) {
-			System.out.println("\t\t" + scope);
+		if(this.interfaceScopes.size() > 0) {
+			System.out.println("\tInterface Scopes:");
+			for (Scope scope : this.interfaceScopes.values()) {
+				System.out.println("\t\t" + scope);
+			}
 		}
-
+		
 		super.listSymbols();
 	}
 }

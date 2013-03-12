@@ -11,6 +11,7 @@ import org.hamcrest.Matchers;
 
 import ca.uwaterloo.joos.Main;
 import ca.uwaterloo.joos.ast.AST;
+import ca.uwaterloo.joos.ast.ASTNode;
 import ca.uwaterloo.joos.ast.decl.PackageDeclaration;
 import ch.lambdaj.Lambda;
 
@@ -43,7 +44,7 @@ public class SymbolTable {
 		// Find the scope
 		Scope scope = this.scopes.get(name);
 		if (scope == null) {
-			scope = this.addPackage(name);
+			scope = this.addPackage(name, packDecl);
 		} else if (!(scope instanceof PackageScope)) {
 			throw new SymbolTableException("Expecting PackageScope but get " + scope.getClass().getName());
 		}
@@ -101,7 +102,7 @@ public class SymbolTable {
 		return scope != null && scope instanceof BlockScope;
 	}
 
-	public PackageScope addPackage(String packageName) throws Exception {
+	public PackageScope addPackage(String packageName, ASTNode referenceNode) throws Exception {
 		int i = 0;
 		String[] components = packageName.split("\\.");
 		String name;
@@ -116,30 +117,30 @@ public class SymbolTable {
 			}
 		}
 
-		PackageScope scope = new PackageScope(packageName);
+		PackageScope scope = new PackageScope(packageName, referenceNode);
 		this.scopes.put(packageName, scope);
 		return scope;
 	}
 
-	public TypeScope addType(String typeName, PackageScope packageScope) throws Exception {
+	public TypeScope addType(String typeName, PackageScope packageScope, ASTNode referenceNode) throws Exception {
 		// Check for prefix conflict
 		List<? extends Scope> packages = this.getScopeByPrefix(typeName + ".", PackageScope.class);
 		if (this.containPackage(typeName) || !packages.isEmpty()) {
 			throw new SymbolTableException("Type declaration conflict with package prefix " + typeName);
 		}
 
-		TypeScope scope = new TypeScope(typeName, packageScope);
+		TypeScope scope = new TypeScope(typeName, packageScope, referenceNode);
 		this.scopes.put(typeName, scope);
 		return scope;
 	}
 	
-	public BlockScope addBlock(String blockName, Scope parent) throws Exception {
+	public BlockScope addBlock(String blockName, Scope parent, ASTNode referenceNode) throws Exception {
 		// Check for prefix conflict
 		if (this.scopes.containsKey(blockName)) {
 			throw new SymbolTableException("Duplicate Block Declaration: " + blockName);
 		}
 
-		BlockScope scope = new BlockScope(blockName, parent);
+		BlockScope scope = new BlockScope(blockName, parent, referenceNode);
 		this.scopes.put(blockName, scope);
 		return scope;
 	}
