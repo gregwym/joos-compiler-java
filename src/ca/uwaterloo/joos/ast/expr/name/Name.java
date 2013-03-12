@@ -14,6 +14,8 @@ import ca.uwaterloo.joos.parser.ParseTreeTraverse;
 import ca.uwaterloo.joos.parser.ParseTreeTraverse.Traverser;
 
 public abstract class Name extends Expression implements Lefthand {
+	
+	public String originalDeclaration;
 
 	public Name(Node node, ASTNode parent) throws Exception {
 		super(node, parent);

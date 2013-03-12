@@ -6,6 +6,7 @@ import org.hamcrest.Matchers;
 
 import ca.uwaterloo.joos.ast.ASTNode;
 import ca.uwaterloo.joos.ast.decl.VariableDeclaration;
+import ca.uwaterloo.joos.ast.expr.name.Name;
 import ca.uwaterloo.joos.ast.expr.name.SimpleName;
 import ca.uwaterloo.joos.symboltable.SymbolTable.SymbolTableException;
 import ch.lambdaj.Lambda;
@@ -63,6 +64,15 @@ public class BlockScope extends Scope {
 //		}
 		
 		return this.parent.resolveSimpleNameType(name);
+	}
+	
+	@Override
+	public String resolveVariableToDecl(Name name) throws Exception {
+		String result = super.resolveVariableToDecl(name);
+		if(result == null) {
+			result = this.parent.resolveVariableToDecl(name);
+		}
+		return result;
 	}
 
 	@Override

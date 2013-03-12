@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.logging.Logger;
 
 import ca.uwaterloo.joos.ast.AST;
+import ca.uwaterloo.joos.ast.visitor.ToStringVisitor;
 import ca.uwaterloo.joos.checker.HierarchyBuilder;
 import ca.uwaterloo.joos.checker.HierarchyChecker;
 import ca.uwaterloo.joos.parser.LR1;
@@ -18,6 +19,7 @@ import ca.uwaterloo.joos.parser.ParseTree;
 import ca.uwaterloo.joos.scanner.DFA;
 import ca.uwaterloo.joos.scanner.Scanner;
 import ca.uwaterloo.joos.scanner.Token;
+import ca.uwaterloo.joos.symboltable.NameLinker;
 import ca.uwaterloo.joos.symboltable.SymbolTable;
 import ca.uwaterloo.joos.symboltable.TypeLinker;
 import ca.uwaterloo.joos.weeder.Weeder;
@@ -85,14 +87,18 @@ public class Main {
 		ParseTree parseTree = null;
 		parseTree = this.parser.parseTokens(tokens);
 		
+//		if(!source.getPath().contains("stdlib")) {
 //		System.out.println(parseTree);
+//		}
 		
 		/* AST Constructing */
 		AST ast = new AST(parseTree, source.getName());
 		
+//		if(!source.getPath().contains("stdlib")) {
 //		ToStringVisitor visitor = new ToStringVisitor();
 //		ast.getRoot().accept(visitor);
 //		System.out.println(visitor.getString());
+//		}
 		
 		/* AST Weeding */
 		this.weeder.weedAst(ast);
@@ -121,8 +127,16 @@ public class Main {
 		return table;
 	}
 	
-	public void nameLinking(List<AST> asts, SymbolTable table) {
+	public void nameLinking(List<AST> asts, SymbolTable table) throws Exception {
+		NameLinker linker = new NameLinker(table);
 		
+		for(AST ast: asts) {
+			ast.getRoot().accept(linker);
+		}
+		
+//		for(Class<?> c : linker.nameUsageParentClasses) {
+//			System.out.println(c.getName());
+//		}
 	}
 	
 	public void execute(String[] args) throws Exception {
