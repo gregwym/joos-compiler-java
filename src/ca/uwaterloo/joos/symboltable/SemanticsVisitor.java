@@ -5,23 +5,25 @@ import java.util.logging.Logger;
 
 import ca.uwaterloo.joos.Main;
 import ca.uwaterloo.joos.ast.ASTNode;
-import ca.uwaterloo.joos.ast.ASTNode.ChildTypeUnmatchException;
-import ca.uwaterloo.joos.ast.body.ClassBody;
-import ca.uwaterloo.joos.ast.decl.VariableDeclaration;
+import ca.uwaterloo.joos.ast.decl.LocalVariableDeclaration;
+import ca.uwaterloo.joos.ast.decl.MethodDeclaration;
+import ca.uwaterloo.joos.ast.decl.PackageDeclaration;
+import ca.uwaterloo.joos.ast.decl.TypeDeclaration;
 import ca.uwaterloo.joos.ast.statement.Block;
 import ca.uwaterloo.joos.ast.visitor.ASTVisitor;
 
 public abstract class SemanticsVisitor extends ASTVisitor {
 	// SYMBOLTABLE - Link to the global SymbolTable
 	
-	protected static Logger logger = Main.getLogger(SemanticsVisitor.class);
+	protected static Logger logger = Main.getLogger(SymbolTable.class);
 	protected Stack<Scope> viewStack;
 	protected SymbolTable table;
+	protected int blockCount;
 
 	public SemanticsVisitor(SymbolTable table) {
 		this.viewStack = new Stack<Scope>();
 		this.table = table;
-//		logger.setLevel(Level.FINER);
+		this.blockCount = 0;
 	}
 	
 	protected Scope getCurrentScope() {
@@ -38,19 +40,46 @@ public abstract class SemanticsVisitor extends ASTVisitor {
 		logger.finer("Popping scope " + scope);
 		return scope;
 	}
-
-	@Override
-	public boolean visit(ASTNode node) throws ChildTypeUnmatchException, Exception {
-		// Processes a single node in the AST tree
-
-		if (node instanceof ClassBody) {
-			System.out.println("SemanticsVisitor.visit: Class Body found!");
-		} else if (node instanceof VariableDeclaration) {
-			System.out.println("SemanticsVisitor.visit: VarDecl Found!");
-		} else if (node instanceof Block) {
-			System.out.println("SemanticsVisitor.visit(): Block: " + node.toString());
+	
+	@Override 
+	public void willVisit(ASTNode node) throws Exception {
+		if (node instanceof PackageDeclaration) {
+			PackageScope scope = this.table.getPackageByDecl((PackageDeclaration) node);
+			this.pushScope(scope);
+		} else if (node instanceof TypeDeclaration) {
+			PackageScope currentScope = (PackageScope) this.getCurrentScope();
+			String name = ((TypeDeclaration) node).getIdentifier();
+			name = currentScope.getName() + "." + name;
+			
+			TypeScope scope = this.table.getType(name);
+			this.pushScope(scope);
+		} else if (node instanceof MethodDeclaration) {
+			TypeScope currentScope = (TypeScope) this.getCurrentScope();
+			String name = currentScope.signatureOfMethod((MethodDeclaration) node);
+			Scope scope = this.table.getBlock(name);
+			
+			this.blockCount = 0;
+			this.pushScope(scope);
+		} else if (node instanceof Block || node instanceof LocalVariableDeclaration) {
+			BlockScope currentScope = (BlockScope) this.getCurrentScope();
+			String name = currentScope.getName() + ".block" + this.blockCount;
+			Scope scope = this.table.getBlock(name);
+			
+			this.blockCount++;
+			this.pushScope(scope);
 		}
-
-		return true;
+	}
+	
+	@Override
+	public void didVisit(ASTNode node) throws Exception {
+		if (node instanceof TypeDeclaration) {
+			this.viewStack.clear();
+		} else if (node instanceof MethodDeclaration) {
+			while(this.getCurrentScope() instanceof BlockScope) {
+				this.popScope();
+			}
+		} else if (node instanceof Block) {
+			this.popScope();
+		}
 	}
 }

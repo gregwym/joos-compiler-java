@@ -1,71 +1,52 @@
 package ca.uwaterloo.joos.symboltable;
 
 import ca.uwaterloo.joos.ast.ASTNode;
-import ca.uwaterloo.joos.ast.ASTNode.ChildTypeUnmatchException;
+import ca.uwaterloo.joos.ast.decl.FieldDeclaration;
+import ca.uwaterloo.joos.ast.decl.LocalVariableDeclaration;
 import ca.uwaterloo.joos.ast.decl.MethodDeclaration;
-import ca.uwaterloo.joos.ast.decl.PackageDeclaration;
-import ca.uwaterloo.joos.ast.decl.TypeDeclaration;
-import ca.uwaterloo.joos.ast.visitor.ASTVisitor;
+import ca.uwaterloo.joos.ast.decl.VariableDeclaration;
+import ca.uwaterloo.joos.ast.statement.Block;
 
 public class DeepDeclVisitor extends SemanticsVisitor {
-
+	
 	public DeepDeclVisitor(SymbolTable table) {
 		super(table);
 	}
 
+	@Override
 	public void willVisit(ASTNode node) throws Exception {
 
-		if (node instanceof PackageDeclaration) {
-			PackageDeclaration PNode = (PackageDeclaration) node;
-			String name = PNode.getPackageName();
+		if (node instanceof MethodDeclaration) {
+			TypeScope currentScope = (TypeScope) this.getCurrentScope();
+			String name = currentScope.signatureOfMethod((MethodDeclaration) node);
+			Scope scope = this.table.addBlock(name, currentScope, node);
 			
-			// Get the symbol table for the given package 
-			// Create one if not exists
-			Scope table = this.table.getScope(name);
-			
-			// Push current scope into the view stack
-			this.pushScope(table);
-		} else if (node instanceof TypeDeclaration) {
-			Scope currentScope = this.getCurrentScope();
-			String name = ((TypeDeclaration) node).getIdentifier();
-			name = currentScope.getName() + "." + name + "{}";
-			
-			// Second: get the class description scope
-			Scope table = this.table.getScope(name);
-			
-			table.appendScope(currentScope, 10);
-			
-			// Push current scope into the view stack
-			this.pushScope(table);
-		} else if (node instanceof MethodDeclaration) {
-			// Make a new symbol table which builds
-			String name = this.getCurrentScope().signatureOfMethod((MethodDeclaration) node);
-			Scope scope = this.table.getScope(name);
-			
-			scope.appendScope(this.getCurrentScope(), 0);
-			
+			this.blockCount = 0;
 			this.pushScope(scope);
+		} else if (node instanceof Block || node instanceof LocalVariableDeclaration) {
+			BlockScope currentScope = (BlockScope) this.getCurrentScope();
+			String name = currentScope.getName() + ".block" + this.blockCount;
+			Scope scope = this.table.addBlock(name, currentScope, node);
+			
+			this.blockCount++;
+			this.pushScope(scope);
+		} else {
+			super.willVisit(node);
 		}
 		
 	}
 
-	public void didVisit(ASTNode node) {
-		if (node instanceof TypeDeclaration) {
-			this.popScope();
-		} else if (node instanceof MethodDeclaration) {
-			this.popScope();
-		}
-	}
-
-	public boolean visit(ASTNode node) throws ChildTypeUnmatchException, Exception {
-		if (node instanceof MethodDeclaration) {
-			ASTVisitor blockVisitor = new BlockVisitor(this.viewStack, this.table);
-			node.accept(blockVisitor);
+	@Override
+	public boolean visit(ASTNode node) throws Exception {
+		if (node instanceof FieldDeclaration) {
 			
-			return false;
+		}
+		else if (node instanceof VariableDeclaration) {
+			VariableDeclaration varDecl = (VariableDeclaration) node;
+			BlockScope currentScope = (BlockScope) this.getCurrentScope();
+			currentScope.addVariableDecl(varDecl);
 		}
 
-		return true;
+		return !(node instanceof VariableDeclaration);
 	}
-
 }

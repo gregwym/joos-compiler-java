@@ -16,10 +16,8 @@ public class PackageDeclaration extends ASTNode {
 		super(node, parent);
 	}
 
-	public String getPackageName() throws ChildTypeUnmatchException{
-		ASTNode ret = this.getChildByDescriptor(PACKAGENAME);
-		if (ret == null) return "default_package";
-		else return ret.getIdentifier();
+	public Name getPackageName() throws ChildTypeUnmatchException{
+		return (Name) this.getChildByDescriptor(PACKAGENAME);
 	}
 	
 	@Override

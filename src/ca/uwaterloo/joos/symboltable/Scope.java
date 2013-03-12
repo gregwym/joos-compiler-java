@@ -1,211 +1,77 @@
-//Scratch
-//TODO 
-//	-JAVADOC
-//	-Define Table
 package ca.uwaterloo.joos.symboltable;
 
-//Proposal
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
+import java.util.logging.Logger;
 
+import org.hamcrest.Matchers;
+
+import ca.uwaterloo.joos.Main;
 import ca.uwaterloo.joos.ast.ASTNode;
-import ca.uwaterloo.joos.ast.ASTNode.ChildTypeUnmatchException;
-import ca.uwaterloo.joos.ast.Modifiers.Modifier;
-import ca.uwaterloo.joos.ast.decl.BodyDeclaration;
-import ca.uwaterloo.joos.ast.decl.ConstructorDeclaration;
-import ca.uwaterloo.joos.ast.decl.LocalVariableDeclaration;
-import ca.uwaterloo.joos.ast.decl.MethodDeclaration;
-import ca.uwaterloo.joos.ast.decl.ParameterDeclaration;
-import ca.uwaterloo.joos.ast.decl.TypeDeclaration;
-import ca.uwaterloo.joos.ast.decl.VariableDeclaration;
 import ca.uwaterloo.joos.ast.expr.name.Name;
+import ca.uwaterloo.joos.ast.expr.name.QualifiedName;
+import ca.uwaterloo.joos.ast.expr.name.SimpleName;
 import ca.uwaterloo.joos.ast.type.ReferenceType;
+import ch.lambdaj.Lambda;
 
+public abstract class Scope {
+	
+	public static final Logger logger = Main.getLogger(Scope.class);
 
-public class Scope{
-	/**
-	 * Symbol Table
-	 * 
-	 * Scans an AST of a validated joos source file.
-	 * The class maintains a static HashMap. After an AST scan is completed
-	 * the HashMap is updated with the declarations held in the file's global
-	 * namespace.
-	 * 
-	 */
-	
-	private String name = null;	// Represents the name of the current scope
-	private Map<String, TableEntry> symbolTable = null;	// A map mapping identifiers to their related ASTNode
-	private Map<String, Integer> symbolPriority = null;
-	
-	//Constructs a symbol table
-	//An AST is generated at this point, walk it.
-	
-	//First task is to build the environment
-	//	-Replace each symbol declaration with a reference to the Symbol table.
-	//	-Add the symbol to the table at some index and put that index into the AST
-	//	-Associate each package...
-	
-	public Scope(String name){
-		this.symbolTable = new HashMap<String, TableEntry>();
-		this.symbolPriority = new HashMap<String, Integer>();
+	protected String name; // Represents the name of the current scope
+	protected Map<String, TableEntry> symbols;
+	protected ASTNode referenceNode;
+
+	public Scope(String name, ASTNode referenceNode) {
 		this.name = name;
-//		Scope.scopes.put(name, this);
+		this.symbols = new HashMap<String, TableEntry>();
+		this.referenceNode = referenceNode;
 	}
-	
-	public void appendScope(Scope table, int priority){		
-		for (String key : table.symbolTable.keySet()) {
-			TableEntry entry = table.symbolTable.get(key);
-			this.symbolTable.put(key, entry);
-			Integer old_priority = table.symbolPriority.get(key);
-			if(priority != 0) this.symbolPriority.put(key, priority);
-			else if(old_priority != null) this.symbolPriority.put(key, old_priority);
-		}
-	}
-	
-	public void addPublicMembers(Scope table, int priority) throws ChildTypeUnmatchException {
-		for(String key: table.symbolTable.keySet()) {
-			TableEntry entry = table.symbolTable.get(key);
-			
-			if(entry.getNode() instanceof BodyDeclaration) {
-				BodyDeclaration node = (BodyDeclaration) entry.getNode();
-				if(node.getModifiers().getModifiers().contains(Modifier.PUBLIC)) {
-					this.symbolTable.put(key, entry);
-					this.symbolPriority.put(key, priority == 0 ? table.symbolPriority.get(key) : priority);
-				}
-			} else if(entry.getNode() instanceof TypeDeclaration) {
-				this.symbolTable.put(key, entry);
-				this.symbolPriority.put(key, priority == 0 ? table.symbolPriority.get(key) : priority);
-			}
-		}
-	}
-	
-	public String getName(){
+
+	public String getName() {
 		return name;
 	}
 	
-	public void addClass(String key, ASTNode node){
-		TableEntry te = new TableEntry(node);
-		te.setLevel(0);
-		symbolTable.put(key, te);
+	public ASTNode getReferenceNode() {
+		return this.referenceNode;
 	}
 	
-	public TableEntry getClass(String key){
-		return symbolTable.get(key + "{}");
+	protected List<TableEntry> entriesWithSuffix(Collection<TableEntry> entries, String suffix) {
+		return Lambda.select(entries, Lambda.having(Lambda.on(TableEntry.class).getName(), Matchers.endsWith(suffix)));
 	}
 	
-	public void addDeclaration(String key, ASTNode node, int level){
-		TableEntry te = new TableEntry(node);
-		te.setLevel(level);
-		symbolTable.put(key, te);
-		
-	}
-	
-	public String signatureOfMethod(MethodDeclaration method) throws Exception {
-		String name = this.name + "." + method.getName().getName() + "(";
-		if(method instanceof ConstructorDeclaration) {
-			name += "C";
-		}
-		for(ParameterDeclaration parameter: method.getParameters()) {
-			name += parameter.getType().getIdentifier();
-		}
-		name += ")";
-		return name;
+	protected List<? extends Scope> scopesWithSuffix(Collection<? extends Scope> scopes, String suffix) {
+		return Lambda.select(scopes, Lambda.having(Lambda.on(Scope.class).getName(), Matchers.endsWith(suffix)));
 	}
 
-	public void addMethod(MethodDeclaration node) throws Exception{
-		String name = this.signatureOfMethod(node);
-		symbolTable.put(name, new TableEntry(node));
-	}
-	
-	public TableEntry getMethod(MethodDeclaration node) throws Exception{
-		//If false, no Method exists and we can add it
-		String name = this.signatureOfMethod(node);
-		return symbolTable.get(name);
-	}
-	
-	public String nameForDecl(VariableDeclaration field) throws Exception {
-		String name = this.getName() + "." + field.getName().getName();
-		return name;
-	}
-	
-	public boolean containVariableName(VariableDeclaration varDecl) throws Exception {
-		String simpleName = varDecl.getName().getSimpleName();
-		for(String key: this.symbolTable.keySet()) {
-			TableEntry entry = this.symbolTable.get(key);
-			ASTNode node = entry.getNode(); 
-			
-			if((node instanceof LocalVariableDeclaration || 
-					node instanceof ParameterDeclaration) && 
-					((BodyDeclaration) node).getName().getSimpleName().equals(simpleName)) {
-				return true;
-			}
-		}
-		return false;
-	}
-
-	public void addVariableDecl(VariableDeclaration node) throws Exception{
-		//Add a field
-		symbolTable.put(this.nameForDecl(node), new TableEntry(node));
-	}
-	
-	public void addVariableDecl(VariableDeclaration node, int level) throws Exception{
-		//Add a field
-		TableEntry entry = new TableEntry(node);
-		entry.setLevel(level);
-		String name = this.nameForDecl(node);
-		
-		symbolTable.put(name, entry);
-	}
-
-	public TableEntry getVariableDecl(VariableDeclaration node) throws Exception{
-		return this.symbolTable.get(this.nameForDecl(node));
-	}
-	
-	public String lookupReferenceType(ReferenceType type) throws Exception {
+	public String resolveReferenceType(ReferenceType type, SymbolTable table) throws Exception {
 		Name name = type.getName();
-		
-		Map<String, Integer> nameWithPriority = new HashMap<String, Integer>();
-		for(String key: this.symbolTable.keySet()) {
-			if(key.matches("^(.+\\.)*" + name.getName() + "\\{\\}$")) {
-				Integer priority = this.symbolPriority.get(key);
-				priority = priority == null ? 200 : priority;
-				nameWithPriority.put(key, priority);
-			}
+		if(name instanceof QualifiedName) {
+			TypeScope match = table.getType(name.getName());
+			return match.getName();
+		} else if(name instanceof SimpleName) {
+			return this.resolveSimpleNameType((SimpleName) name);
 		}
-		
-		Set<Integer> conflicting = new HashSet<Integer>();
-		String result = null;
-		int highest = 0;
-		for(String key: nameWithPriority.keySet()) {
-			int current = nameWithPriority.get(key);
-			if(current > highest) {
-				highest = current;
-				result = key;
-			} else if(current == highest) {
-				conflicting.add(current);
-			}
-		}
-		if(conflicting.contains(highest)) {
-			throw new Exception("Unresovable ambiguous type " + type.getName());
-		}
-		
-		return result;
+		return null;
 	}
 	
-	public void listSymbols(){
-		List<String> keys = new ArrayList<String>(this.symbolTable.keySet());
+	public abstract String resolveSimpleNameType(SimpleName name) throws Exception;
+
+	public void listSymbols() {
+		System.out.println("\tReferences to: " + this.referenceNode);
+		System.out.println("\tSymbols:");
+		List<String> keys = new ArrayList<String>(this.symbols.keySet());
 		Collections.sort(keys);
-		for (String key: keys){
-			System.out.println("\t" + key + "\t" + this.symbolTable.get(key).getNode() + "\tLevel: " + this.symbolTable.get(key).getLevel());
+		for (String key : keys) {
+			System.out.println("\t\t" + key + "\t" + this.symbols.get(key).getNode());
 		}
 		System.out.println();
 	}
-	
+
 	public String toString() {
 		return "<" + this.getClass().getSimpleName() + "> " + this.name;
 	}

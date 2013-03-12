@@ -4,6 +4,8 @@ import java.util.List;
 
 import ca.uwaterloo.joos.ast.ASTNode;
 import ca.uwaterloo.joos.ast.Modifiers;
+import ca.uwaterloo.joos.ast.ASTNode.ChildTypeUnmatchException;
+import ca.uwaterloo.joos.ast.Modifiers.Modifier;
 import ca.uwaterloo.joos.ast.body.ClassBody;
 import ca.uwaterloo.joos.ast.body.InterfaceBody;
 import ca.uwaterloo.joos.ast.body.TypeBody;
@@ -19,7 +21,8 @@ public abstract class TypeDeclaration extends ASTNode {
 	protected static final ChildDescriptor MODIFIERS = new ChildDescriptor(Modifiers.class);
 	protected static final ChildListDescriptor IMPLEMNTS = new ChildListDescriptor(ReferenceType.class);
 	protected static final ChildDescriptor BODY = new ChildDescriptor(TypeBody.class);
-
+	public String fullyQualifiedName;
+	
 	public TypeDeclaration(Node node, ASTNode parent) throws Exception {
 		super(node, parent);
 	}
@@ -36,6 +39,7 @@ public abstract class TypeDeclaration extends ASTNode {
 	public TypeBody getBody() throws ChildTypeUnmatchException {
 		return (TypeBody) this.getChildByDescriptor(TypeDeclaration.BODY);
 	}
+	
 
 	@Override
 	public List<Node> processTreeNode(TreeNode treeNode) throws Exception {

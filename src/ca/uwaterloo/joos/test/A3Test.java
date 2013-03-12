@@ -16,13 +16,12 @@ import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
 import ca.uwaterloo.joos.Main;
-import ca.uwaterloo.joos.ast.AST;
 
 
 @SuppressWarnings("serial")
 @RunWith(value = Parameterized.class)
-public class A2Test {
-	public class A2Exception extends Exception {
+public class A3Test {
+	public class A3Exception extends Exception {
 
 	}
 
@@ -33,7 +32,7 @@ public class A2Test {
 		instance = new Main();
 
 		try {
-			File outFile = new File("tmp/a2test.out");
+			File outFile = new File("tmp/a3test.out");
 			if (outFile.exists()) {
 				outFile.delete();
 			}
@@ -48,7 +47,7 @@ public class A2Test {
 		List<Object[]> data = new ArrayList<Object[]>();
 
 		try {
-			File directory = new File("testcases/a2");
+			File directory = new File("testcases/a3");
 
 			File[] testFileList = directory.listFiles();
 			for (File testFile : testFileList) {
@@ -65,38 +64,28 @@ public class A2Test {
 	private List<String> testFiles = new ArrayList<String>();
 	private File testFileList;
 
-	public A2Test(File testFileInput) {
-//		System.out.println("A2Test:   " + testFileInput);
+	public A3Test(File testFileInput) {
 		this.testFileList = testFileInput;
 		if (!testFileInput.isFile()) {
 			extractFiles(testFileInput);
 		} else {
 			this.testFiles.add(testFileInput.getPath());
-//			System.out.println("testFiles:   " + testFiles.get(0));
 		}
-		extractFiles(new File("stdlib/2.0"));
+		extractFiles(new File("stdlib/3.0"));
 	}
 
 	@Test
 	public void Test() {
 		Exception fileException = null;
 		if (testFileList.getName().contains("Je")) {
-			fileException = new A2Exception();
+			fileException = new A3Exception();
 		}
 
 		Exception realException = null;
 
 		try {
 			String[] files = new String[this.testFiles.size()];
-			this.testFiles.toArray(files);
-			
-			List<AST> asts = new ArrayList<AST>();
-			for(String arg: files) {
-				asts.add(instance.constructAst(new File(arg)));
-			}
-			
-			instance.typeLinking(asts);
-			
+			instance.execute(this.testFiles.toArray(files));
 			if (fileException != null) {
 				System.out.println("Expecting: " + fileException.getClass().getSimpleName() + "\t"
 						+ "but got: NoException" + "\t\t"

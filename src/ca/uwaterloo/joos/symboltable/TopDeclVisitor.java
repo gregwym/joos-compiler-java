@@ -1,7 +1,6 @@
 package ca.uwaterloo.joos.symboltable;
 
 import ca.uwaterloo.joos.ast.ASTNode;
-import ca.uwaterloo.joos.ast.ASTNode.ChildTypeUnmatchException;
 import ca.uwaterloo.joos.ast.decl.BodyDeclaration;
 import ca.uwaterloo.joos.ast.decl.FieldDeclaration;
 import ca.uwaterloo.joos.ast.decl.MethodDeclaration;
@@ -16,20 +15,11 @@ public class TopDeclVisitor extends SemanticsVisitor {
 
 	public boolean visit(ASTNode node) throws Exception {
 		if (node instanceof FieldDeclaration) {
-			Scope currentScope = this.getCurrentScope();
-			if (currentScope.getVariableDecl((FieldDeclaration) node) == null)
-				currentScope.addVariableDecl((FieldDeclaration) node);
-			else {
-				throw new Exception("TopDeclVisitor.visit(): Multiple Field Declarations with same name. Exiting with 42");
-			}
+			TypeScope currentScope = (TypeScope) this.getCurrentScope();
+			currentScope.addFieldDecl((FieldDeclaration) node);
 		} else if (node instanceof MethodDeclaration) {
-			Scope currentScope = this.getCurrentScope();
-			if (currentScope.getMethod((MethodDeclaration) node) == null) {
-				currentScope.addMethod((MethodDeclaration) node);
-			}
-			else {
-				throw new Exception("Duplicate declaratio of method");
-			}
+			TypeScope currentScope = (TypeScope) this.getCurrentScope();
+			currentScope.addMethod((MethodDeclaration) node);
 		}
 
 		return !(node instanceof BodyDeclaration);
@@ -38,43 +28,21 @@ public class TopDeclVisitor extends SemanticsVisitor {
 	@Override
 	public void willVisit(ASTNode node) throws Exception {
 		if (node instanceof PackageDeclaration) {
-			PackageDeclaration PNode = (PackageDeclaration) node;
-			String name = PNode.getPackageName();
-			
-			// Get the symbol table for the given package 
-			// Create one if not exists
-			Scope table = this.table.getScope(name);
-			
-			// Push current scope into the view stack
-			this.pushScope(table);
+			PackageScope scope = this.table.getPackageByDecl((PackageDeclaration) node);
+			this.pushScope(scope);
 		} else if (node instanceof TypeDeclaration) {
-			Scope currentScope = this.getCurrentScope();
+			PackageScope currentScope = (PackageScope) this.getCurrentScope();
 			String name = ((TypeDeclaration) node).getIdentifier();
-			name = currentScope.getName() + "." + name + "{}";
-			
-			// First: check duplicate class
-			if(this.table.containScope(name)) {
-				throw new Exception("Duplicate declaration of class");
-			}
-			
-			// Second: get the class description scope
-			Scope table = this.table.getScope(name);
-			table.addClass(name, node);
-			
-			// Third: add type declaration as package member
-			currentScope.addClass(name, node);
-			
+			name = currentScope.getName() + "." + name;
+			((TypeDeclaration) node).fullyQualifiedName = name;
+
+			TypeScope scope = this.table.addType(name, currentScope, node);
+
+			// Add type declaration as package member
+			currentScope.addType((TypeDeclaration) node);
+
 			// Push current scope into the view stack
-			this.pushScope(table);
+			this.pushScope(scope);
 		}
 	}
-
-	@Override
-	public void didVisit(ASTNode node) throws ChildTypeUnmatchException {
-		if (node instanceof TypeDeclaration) {
-			Scope typeScope = this.popScope();
-			this.getCurrentScope().addPublicMembers(typeScope, 10);
-		}
-	}
-
 }
