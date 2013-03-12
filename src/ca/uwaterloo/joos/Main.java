@@ -10,7 +10,6 @@ import java.util.List;
 import java.util.logging.Logger;
 
 import ca.uwaterloo.joos.ast.AST;
-import ca.uwaterloo.joos.ast.visitor.ToStringVisitor;
 import ca.uwaterloo.joos.checker.HierarchyBuilder;
 import ca.uwaterloo.joos.checker.HierarchyChecker;
 import ca.uwaterloo.joos.parser.LR1;
@@ -100,7 +99,7 @@ public class Main {
 		return ast;
 	}
 	
-	public void typeChecking(List<AST> asts) throws Exception {
+	public SymbolTable typeLinking(List<AST> asts) throws Exception {
 		SymbolTable table = new SymbolTable();
 		
 		table.build(asts);
@@ -109,7 +108,6 @@ public class Main {
 		HierarchyBuilder hierarchyBuilder = new HierarchyBuilder();
 		
 		for(AST ast: asts) {
-//			System.out.println("Checking " + ast.getRoot().getIdentifier() );
 			TypeLinker linker = new TypeLinker(table);
 			ast.getRoot().accept(linker);
 			ast.getRoot().accept(hierarchyBuilder);
@@ -117,20 +115,22 @@ public class Main {
 		
 		HierarchyChecker hierarchyChecker = new HierarchyChecker(hierarchyBuilder);
 		hierarchyChecker.CheckHierarchy();
+		
+		return table;
+	}
+	
+	public void nameLinking(List<AST> asts, SymbolTable table) {
+		
 	}
 	
 	public void execute(String[] args) throws Exception {
-//		for(String arg: args) {
-//			System.out.println("Source: " + arg);
-//		}
-		
 		List<AST> asts = new ArrayList<AST>();
 		for(String arg: args) {
 			asts.add(this.constructAst(new File(arg)));
 		}
 		
-		typeChecking(asts);
-		
+		SymbolTable table = typeLinking(asts);
+		nameLinking(asts, table);
 	}
 
 	/**
