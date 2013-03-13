@@ -15,7 +15,7 @@ public class ReferenceType extends Type {
 
 	public static final ChildDescriptor NAME = new ChildDescriptor(Name.class);
 	
-	public String fullyQualifedTypeName;
+	protected String fullyQualifedName;
 
 	public ReferenceType(Node node, ASTNode parent) throws Exception {
 		super(node, parent);
@@ -34,6 +34,15 @@ public class ReferenceType extends Type {
 
 	public Name getName() throws ChildTypeUnmatchException {
 		return (Name) this.getChildByDescriptor(ReferenceType.NAME);
+	}
+	
+	@Override
+	public String getFullyQualifiedName() {
+		return this.fullyQualifedName;
+	}
+	
+	public void setFullyQualifiedName(String fullyQualifedTypeName) {
+		this.fullyQualifedName = fullyQualifedTypeName;
 	}
 
 	@Override

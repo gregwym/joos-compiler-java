@@ -29,6 +29,11 @@ public class PrimitiveType extends Type {
 	public Primitive getPrimitiveType() throws ChildTypeUnmatchException {
 		return (Primitive) this.getChildByDescriptor(PrimitiveType.TYPE);
 	}
+	
+	@Override
+	public String getFullyQualifiedName() throws ChildTypeUnmatchException {
+		return this.getPrimitiveType().name();
+	}
 
 	@Override
 	public void processLeafNode(LeafNode leafNode) throws Exception {

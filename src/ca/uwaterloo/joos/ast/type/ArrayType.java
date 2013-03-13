@@ -34,6 +34,11 @@ public class ArrayType extends Type {
 	}
 	
 	@Override
+	public String getFullyQualifiedName() throws Exception {
+		return this.getType().getFullyQualifiedName() + "[]";
+	}
+	
+	@Override
 	public String getIdentifier() {
 		String name = null;
 		try {
