@@ -71,15 +71,18 @@ public class InfixExpression extends Expression {
 			
 			Expression operand1 = Expression.newExpression(first, this);
 			InfixOperator operator = stringToInfixOperator(second.getKind().toUpperCase());
+			this.addChild(OPERANDS, operand1);
+			this.addChild(OPERATOR, operator);
+			
 			if(operator == InfixOperator.INSTANCEOF) {
 				Type type = null;
 				TreeNode thirdNode = (TreeNode) third;
 				List<String> rhs = Arrays.asList(thirdNode.productionRule.getRighthand());
 				if(rhs.contains("arraytype")) {
-					type = new ArrayType(thirdNode.children.get(0), this);
+					type = new ArrayType(thirdNode, this);
 				}
 				else if(rhs.contains("name")) {
-					type = new ReferenceType(thirdNode.children.get(0), this);
+					type = new ReferenceType(thirdNode, this);
 				}
 				else {
 					throw new ASTConstructException("Unknown referencetype" + rhs);
@@ -90,9 +93,6 @@ public class InfixExpression extends Expression {
 				Expression operand2 = Expression.newExpression(third, this);
 				this.addChild(OPERANDS, operand2);
 			}
-			
-			this.addChild(OPERANDS, operand1);
-			this.addChild(OPERATOR, operator);
 		}
 		else {
 			throw new ASTConstructException("Infix Expression is expecting a treeNode with valid format");
