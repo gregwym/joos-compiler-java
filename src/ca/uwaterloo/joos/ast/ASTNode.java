@@ -54,6 +54,8 @@ public abstract class ASTNode implements Traverser {
 	private List<ASTChild> childrenList = new ArrayList<ASTChild>();
 
 	public ASTNode(Node node, ASTNode parent) throws Exception {
+		if(node == null) return;
+		
 		this.parent = parent;
 		
 		ParseTreeTraverse traverse = new ParseTreeTraverse(this);
