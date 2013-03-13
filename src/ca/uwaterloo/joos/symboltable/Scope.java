@@ -65,7 +65,8 @@ public abstract class Scope {
 	public TableEntry resolveVariableToDecl(Name name) throws Exception {
 		if (name instanceof QualifiedName) {
 			List<String> components = ((QualifiedName) name).getComponents();
-			List<TableEntry> entries = this.entriesWithSuffix(this.symbols.values(), "." + components.get(0));
+			String fieldName = components.get(0);
+			List<TableEntry> entries = this.entriesWithSuffix(this.symbols.values(), "." + fieldName);
 			if (entries.size() > 1) {
 				throw new SymbolTableException("Resolved variable " + name.getName() + " to multiple definition " + entries);
 			} else if (entries.size() == 1) {

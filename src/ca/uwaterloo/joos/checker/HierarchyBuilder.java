@@ -37,7 +37,7 @@ public class HierarchyBuilder extends TypeDeclVisitor {
 			if (((ClassDeclaration) node).getSuperClass() != null) {
 
 				ReferenceType EXTEND = (ReferenceType) ((ClassDeclaration) node).getSuperClass();
-				String extendClasses = EXTEND.fullyQualifedTypeName;
+				String extendClasses = EXTEND.getFullyQualifiedName();
 
 				hierarchyMap.put(node.fullyQualifiedName, extendClasses);
 
@@ -46,10 +46,10 @@ public class HierarchyBuilder extends TypeDeclVisitor {
 				List<ReferenceType> IMPLENTS = node.getInterfaces();
 				List<String> implentClasses = new ArrayList<String>();
 				for (ReferenceType implent : IMPLENTS) {
-					if (implentClasses.contains(implent.fullyQualifedTypeName)) {
+					if (implentClasses.contains(implent.getFullyQualifiedName())) {
 						throw new Exception("An interface must not be mentioned more than once in the same implements clause of a class");
 					}
-					implentClasses.add(implent.fullyQualifedTypeName);
+					implentClasses.add(implent.getFullyQualifiedName());
 				}
 				implementMap.put(node.fullyQualifiedName, implentClasses);
 
@@ -59,7 +59,7 @@ public class HierarchyBuilder extends TypeDeclVisitor {
 			if (((InterfaceDeclaration) node).getInterfaces() != null) {
 				List<ReferenceType> EXTEND = ((InterfaceDeclaration) node).getInterfaces();
 				for (ReferenceType EXTENDNAME : EXTEND) {
-					String extendClasses = EXTENDNAME.fullyQualifedTypeName;
+					String extendClasses = EXTENDNAME.getFullyQualifiedName();
 					hierarchyMap.put(node.fullyQualifiedName, extendClasses);
 
 				}
