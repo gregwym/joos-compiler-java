@@ -10,6 +10,7 @@ import ca.uwaterloo.joos.ast.decl.ConstructorDeclaration;
 import ca.uwaterloo.joos.ast.decl.FieldDeclaration;
 import ca.uwaterloo.joos.ast.decl.MethodDeclaration;
 import ca.uwaterloo.joos.ast.decl.ParameterDeclaration;
+import ca.uwaterloo.joos.ast.expr.name.Name;
 import ca.uwaterloo.joos.ast.expr.name.SimpleName;
 import ca.uwaterloo.joos.symboltable.SymbolTable.SymbolTableException;
 
@@ -160,6 +161,15 @@ public class TypeScope extends Scope {
 		}
 
 		return null;
+	}
+	
+	@Override
+	public TableEntry resolveVariableToDecl(Name name) throws Exception {
+		TableEntry result = super.resolveVariableToDecl(name);
+		if(result == null && this.superScope != null) {
+			result = this.superScope.resolveVariableToDecl(name);
+		}
+		return result;
 	}
 
 	@Override

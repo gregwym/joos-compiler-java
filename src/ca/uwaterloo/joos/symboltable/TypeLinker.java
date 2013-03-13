@@ -59,7 +59,7 @@ public class TypeLinker extends SemanticsVisitor {
 			for(ReferenceType type: interfaces) {
 				TypeScope typeScope = this.table.getType(type.fullyQualifedTypeName);
 				if(typeScope == null) {
-					throw new SymbolTableException("Extending unknown super class " + node.getIdentifier());
+					throw new SymbolTableException("Extending unknown interface " + node.getIdentifier());
 				}
 				logger.finer("Adding " + typeScope.getName() + " as interface to " + node);
 				scope.addInterfaceScope(typeScope);
