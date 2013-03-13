@@ -4,8 +4,6 @@ import java.util.List;
 
 import ca.uwaterloo.joos.ast.ASTNode;
 import ca.uwaterloo.joos.ast.Modifiers;
-import ca.uwaterloo.joos.ast.ASTNode.ChildTypeUnmatchException;
-import ca.uwaterloo.joos.ast.Modifiers.Modifier;
 import ca.uwaterloo.joos.ast.body.ClassBody;
 import ca.uwaterloo.joos.ast.body.InterfaceBody;
 import ca.uwaterloo.joos.ast.body.TypeBody;
