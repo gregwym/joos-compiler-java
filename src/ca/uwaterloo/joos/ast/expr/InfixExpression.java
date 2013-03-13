@@ -47,6 +47,10 @@ public class InfixExpression extends Expression {
 		return (List<Expression>) this.getChildByDescriptor(OPERANDS);
 	}
 	
+	public Type getRHS() throws ChildTypeUnmatchException {
+		return (Type) this.getChildByDescriptor(RHSTYPE);
+	}
+	
 	public static Set<String> getAcceptingKinds() {
 		Set<String> acceptingKinds = new HashSet<String>();
 
