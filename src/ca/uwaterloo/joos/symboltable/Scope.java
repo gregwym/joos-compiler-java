@@ -62,15 +62,21 @@ public abstract class Scope {
 
 	public abstract String resolveSimpleNameType(SimpleName name) throws Exception;
 
-	public String resolveVariableToDecl(Name name) throws Exception {
+	public TableEntry resolveVariableToDecl(Name name) throws Exception {
 		if (name instanceof QualifiedName) {
-
+			List<String> components = ((QualifiedName) name).getComponents();
+			List<TableEntry> entries = this.entriesWithSuffix(this.symbols.values(), "." + components.get(0));
+			if (entries.size() > 1) {
+				throw new SymbolTableException("Resolved variable " + name.getName() + " to multiple definition " + entries);
+			} else if (entries.size() == 1) {
+				return entries.get(0);
+			}
 		} else if (name instanceof SimpleName) {
 			List<TableEntry> entries = this.entriesWithSuffix(this.symbols.values(), "." + name.getName());
 			if (entries.size() > 1) {
 				throw new SymbolTableException("Resolved variable " + name.getName() + " to multiple definition " + entries);
 			} else if (entries.size() == 1) {
-				return entries.get(0).getName();
+				return entries.get(0);
 			}
 		}
 		return null;

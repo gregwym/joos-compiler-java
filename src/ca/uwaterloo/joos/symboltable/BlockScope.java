@@ -67,8 +67,8 @@ public class BlockScope extends Scope {
 	}
 	
 	@Override
-	public String resolveVariableToDecl(Name name) throws Exception {
-		String result = super.resolveVariableToDecl(name);
+	public TableEntry resolveVariableToDecl(Name name) throws Exception {
+		TableEntry result = super.resolveVariableToDecl(name);
 		if(result == null) {
 			result = this.parent.resolveVariableToDecl(name);
 		}

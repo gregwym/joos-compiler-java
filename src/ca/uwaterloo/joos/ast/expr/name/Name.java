@@ -12,10 +12,11 @@ import ca.uwaterloo.joos.parser.ParseTree.Node;
 import ca.uwaterloo.joos.parser.ParseTree.TreeNode;
 import ca.uwaterloo.joos.parser.ParseTreeTraverse;
 import ca.uwaterloo.joos.parser.ParseTreeTraverse.Traverser;
+import ca.uwaterloo.joos.symboltable.TableEntry;
 
 public abstract class Name extends Expression implements Lefthand {
 	
-	public String originalDeclaration;
+	public TableEntry originalDeclaration;
 
 	public Name(Node node, ASTNode parent) throws Exception {
 		super(node, parent);
