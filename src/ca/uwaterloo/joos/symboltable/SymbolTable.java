@@ -59,13 +59,13 @@ public class SymbolTable {
 		
 		// Find the scope
 		Scope scope = this.scopes.get(name);
-		if (!(scope instanceof PackageScope)) {
+		if (scope != null && !(scope instanceof PackageScope)) {
 			throw new SymbolTableException("Expecting PackageScope but get " + scope.getClass().getName());
 		}
 		return (PackageScope) scope;
 	}
 	
-	public List<? extends Scope> getScopeByPrefix(String prefix, Class<?> scopeClass) {
+	public List<? extends Scope> getScopesByPrefix(String prefix, Class<?> scopeClass) {
 		return Lambda.select(
 				Lambda.select(this.scopes.values(), Matchers.instanceOf(scopeClass)), 
 				Lambda.having(Lambda.on(Scope.class).getName(), Matchers.startsWith(prefix)));
@@ -73,7 +73,7 @@ public class SymbolTable {
 
 	public TypeScope getType(String name) throws Exception {
 		Scope scope = this.scopes.get(name);
-		if (!(scope instanceof TypeScope)) {
+		if (scope != null && !(scope instanceof TypeScope)) {
 			throw new SymbolTableException("Expecting TypeScope but get " + scope);
 		}
 		return (TypeScope) scope;
@@ -81,7 +81,7 @@ public class SymbolTable {
 	
 	public BlockScope getBlock(String name) throws Exception {
 		Scope scope = this.scopes.get(name);
-		if (!(scope instanceof BlockScope)) {
+		if (scope != null && !(scope instanceof BlockScope)) {
 			throw new SymbolTableException("Expecting BlockScope but get " + scope);
 		}
 		return (BlockScope) scope;
@@ -124,7 +124,7 @@ public class SymbolTable {
 
 	public TypeScope addType(String typeName, PackageScope packageScope, ASTNode referenceNode) throws Exception {
 		// Check for prefix conflict
-		List<? extends Scope> packages = this.getScopeByPrefix(typeName + ".", PackageScope.class);
+		List<? extends Scope> packages = this.getScopesByPrefix(typeName + ".", PackageScope.class);
 		if (this.containPackage(typeName) || !packages.isEmpty()) {
 			throw new SymbolTableException("Type declaration conflict with package prefix " + typeName);
 		}
