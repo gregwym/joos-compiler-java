@@ -34,6 +34,10 @@ public class Modifiers extends ASTNode {
 	public List<Modifier> getModifiers() throws ChildTypeUnmatchException {
 		return (List<Modifier>) this.getChildByDescriptor(MODIFIERS);
 	}
+	
+	public boolean containModifier(Modifier modifier) throws ChildTypeUnmatchException {
+		return this.getModifiers().contains(modifier);
+	}
 
 	@Override
 	public void processLeafNode(LeafNode leafNode) throws Exception {
