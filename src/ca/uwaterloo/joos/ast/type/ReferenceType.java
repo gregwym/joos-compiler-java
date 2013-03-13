@@ -20,6 +20,17 @@ public class ReferenceType extends Type {
 	public ReferenceType(Node node, ASTNode parent) throws Exception {
 		super(node, parent);
 	}
+	
+	public ReferenceType(String type) throws Exception {
+		super(null, null);
+		Name name = null;
+		if(type.contains(".")) {
+			name = new QualifiedName(type);
+		} else {
+			name = new SimpleName(type);
+		}
+		this.addChild(NAME, name);
+	}
 
 	public Name getName() throws ChildTypeUnmatchException {
 		return (Name) this.getChildByDescriptor(ReferenceType.NAME);

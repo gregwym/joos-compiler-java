@@ -12,6 +12,12 @@ public class SimpleName extends Name {
 	public SimpleName(Node node, ASTNode parent) throws Exception {
 		super(node, parent);
 	}
+	
+	public SimpleName(String name) throws Exception {
+		super(null, null);
+		this.addChild(NAME, name);
+		this.setIdentifier(name);
+	}
 
 	@Override
 	public String getName() throws ChildTypeUnmatchException {

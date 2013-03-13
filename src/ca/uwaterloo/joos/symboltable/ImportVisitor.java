@@ -48,7 +48,7 @@ public class ImportVisitor extends SemanticsVisitor {
 						continue;
 					} 
 					
-					List<? extends Scope> scopes = this.table.getScopeByPrefix(name + ".", PackageScope.class);
+					List<? extends Scope> scopes = this.table.getScopesByPrefix(name + ".", PackageScope.class);
 					if (scopes.size() > 0) {
 						for (Scope packScope : scopes) {
 							scope.addOnDemandImport((PackageScope) packScope);

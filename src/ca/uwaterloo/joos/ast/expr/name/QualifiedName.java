@@ -15,6 +15,14 @@ public class QualifiedName extends Name {
 	public QualifiedName(Node qualifiedName, ASTNode parent) throws Exception {
 		super(qualifiedName, parent);
 	}
+	
+	public QualifiedName(String typeName) throws Exception {
+		super(null, null);
+		String[] components = typeName.split("\\.");
+		for(String component: components) {
+			this.addChild(COMPONENTS, component);
+		}
+	}
 
 	public String getQualifiedName() throws ChildTypeUnmatchException {
 		return Lambda.join(this.getComponents(), ".");
