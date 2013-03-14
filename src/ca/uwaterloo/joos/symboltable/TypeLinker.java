@@ -25,7 +25,7 @@ public class TypeLinker extends SemanticsVisitor {
 				throw new SymbolTableException("Cannot resolve type " + refType.getName().getName());
 			}
 			
-			refType.fullyQualifedTypeName = resolved;
+			refType.setFullyQualifiedName(resolved);
 		}
 		return true;
 	}
@@ -38,7 +38,7 @@ public class TypeLinker extends SemanticsVisitor {
 			TypeScope scope = (TypeScope) this.getCurrentScope();
 			ReferenceType superClass = ((ClassDeclaration) node).getSuperClass();
 			if(superClass != null) {
-				TypeScope superScope = this.table.getType(superClass.fullyQualifedTypeName);
+				TypeScope superScope = this.table.getType(superClass.getFullyQualifiedName());
 				if(superScope == null) {
 					throw new SymbolTableException("Extending unknown super class " + node.getIdentifier());
 				}
@@ -57,7 +57,7 @@ public class TypeLinker extends SemanticsVisitor {
 			TypeScope scope = (TypeScope) this.getCurrentScope();
 			List<ReferenceType> interfaces = ((TypeDeclaration) node).getInterfaces();
 			for(ReferenceType type: interfaces) {
-				TypeScope typeScope = this.table.getType(type.fullyQualifedTypeName);
+				TypeScope typeScope = this.table.getType(type.getFullyQualifiedName());
 				if(typeScope == null) {
 					throw new SymbolTableException("Extending unknown interface " + node.getIdentifier());
 				}
