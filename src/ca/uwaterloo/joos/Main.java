@@ -21,6 +21,7 @@ import ca.uwaterloo.joos.scanner.Scanner;
 import ca.uwaterloo.joos.scanner.Token;
 import ca.uwaterloo.joos.symboltable.NameLinker;
 import ca.uwaterloo.joos.symboltable.SymbolTable;
+import ca.uwaterloo.joos.symboltable.TypeChecker;
 import ca.uwaterloo.joos.symboltable.TypeLinker;
 import ca.uwaterloo.joos.weeder.Weeder;
 
@@ -118,9 +119,7 @@ public class Main {
 			ast.getRoot().accept(linker);
 			ast.getRoot().accept(hierarchyBuilder);
 		}
-		
-//		table.listScopes();
-		
+				
 		HierarchyChecker hierarchyChecker = new HierarchyChecker(hierarchyBuilder);
 		hierarchyChecker.CheckHierarchy();
 		
@@ -133,10 +132,14 @@ public class Main {
 		for(AST ast: asts) {
 			ast.getRoot().accept(linker);
 		}
+	}
+	
+	public void typeChecking(List<AST> asts, SymbolTable table) throws Exception {
+		TypeChecker checker = new TypeChecker(table);
 		
-//		for(Class<?> c : linker.nameUsageParentClasses) {
-//			System.out.println(c.getName());
-//		}
+		for(AST ast: asts) {
+			ast.getRoot().accept(checker);
+		}
 	}
 	
 	public void execute(String[] args) throws Exception {
@@ -146,7 +149,10 @@ public class Main {
 		}
 		
 		SymbolTable table = typeLinking(asts);
+		table.listScopes();
+		
 		nameLinking(asts, table);
+		typeChecking(asts, table);
 	}
 
 	/**
