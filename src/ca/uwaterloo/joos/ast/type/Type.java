@@ -11,4 +11,8 @@ public abstract class Type extends ASTNode {
 
 	public abstract String getFullyQualifiedName() throws Exception;
 
+	public boolean equals(Type type) throws Exception {
+		boolean result = this.getFullyQualifiedName().equals(type.getFullyQualifiedName());
+		return result;
+	}
 }

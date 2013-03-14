@@ -3,9 +3,8 @@ package ca.uwaterloo.joos.symboltable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.logging.Logger;
 
 import org.hamcrest.Matchers;
@@ -24,17 +23,21 @@ public abstract class Scope {
 	public static final Logger logger = Main.getLogger(Scope.class);
 
 	protected String name; // Represents the name of the current scope
-	protected Map<String, TableEntry> symbols;
+	protected LinkedHashMap<String, TableEntry> symbols;
 	protected ASTNode referenceNode;
 
 	public Scope(String name, ASTNode referenceNode) {
 		this.name = name;
-		this.symbols = new HashMap<String, TableEntry>();
+		this.symbols = new LinkedHashMap<String, TableEntry>();
 		this.referenceNode = referenceNode;
 	}
 
 	public String getName() {
 		return name;
+	}
+	
+	public LinkedHashMap<String, TableEntry> getSymbols() {
+		return this.symbols;
 	}
 
 	public ASTNode getReferenceNode() {

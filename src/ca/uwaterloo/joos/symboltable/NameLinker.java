@@ -5,6 +5,7 @@ import ca.uwaterloo.joos.ast.Modifiers;
 import ca.uwaterloo.joos.ast.decl.BodyDeclaration;
 import ca.uwaterloo.joos.ast.decl.FieldDeclaration;
 import ca.uwaterloo.joos.ast.decl.MethodDeclaration;
+import ca.uwaterloo.joos.ast.decl.VariableDeclaration;
 import ca.uwaterloo.joos.ast.expr.Expression;
 import ca.uwaterloo.joos.ast.expr.MethodInvokeExpression;
 import ca.uwaterloo.joos.ast.expr.name.Name;
@@ -68,7 +69,7 @@ public class NameLinker extends SemanticsVisitor {
 			}
 
 			if (result != null) {
-				((Name) node).originalDeclaration = result;
+				((Name) node).setOriginalDeclaration(result);
 				logger.finer(name + " => " + result.getName() + "\tParent: " + node.getParent());
 			} else {
 				throw new Exception("Fail to resolve " + name + " in scope " + currentScope);
@@ -79,10 +80,11 @@ public class NameLinker extends SemanticsVisitor {
 
 	@Override
 	public void willVisit(ASTNode node) throws Exception {
-		if (node instanceof Statement || node instanceof Expression) {
+		if (node instanceof Statement || node instanceof Expression || node instanceof FieldDeclaration) {
 			if (!(node instanceof Name))
 				linkName++;
-		} else if (node instanceof MethodDeclaration || node instanceof FieldDeclaration) {
+		}
+		if (node instanceof MethodDeclaration || node instanceof FieldDeclaration) {
 			// Change the inStatic flag according to the Method and Filed
 			// declaration scopes method
 			Modifiers modifiers = ((BodyDeclaration) node).getModifiers();
@@ -93,10 +95,11 @@ public class NameLinker extends SemanticsVisitor {
 
 	@Override
 	public void didVisit(ASTNode node) throws Exception {
-		if (node instanceof Statement || node instanceof Expression) {
+		if (node instanceof Statement || node instanceof Expression || node instanceof FieldDeclaration) {
 			if (!(node instanceof Name))
 				linkName--;
-		} else if (node instanceof MethodDeclaration || node instanceof FieldDeclaration) {
+		}
+		if (node instanceof MethodDeclaration || node instanceof FieldDeclaration) {
 			inStatic = false;
 		}
 		super.didVisit(node);

@@ -149,7 +149,7 @@ public class Main {
 		}
 		
 		SymbolTable table = typeLinking(asts);
-		table.listScopes();
+//		table.listScopes();
 		
 		nameLinking(asts, table);
 		typeChecking(asts, table);
@@ -169,7 +169,6 @@ public class Main {
 		try {
 			instance.execute(args);
 		} catch (Exception e) {
-			System.err.println("ERROR: " + e.getLocalizedMessage() + " " + e.getClass().getName());
 			e.printStackTrace();
 			System.exit(42);
 		}
