@@ -14,18 +14,29 @@ import ca.uwaterloo.joos.ast.decl.InterfaceDeclaration;
 import ca.uwaterloo.joos.ast.decl.TypeDeclaration;
 import ca.uwaterloo.joos.ast.type.ReferenceType;
 import ca.uwaterloo.joos.ast.visitor.TypeDeclVisitor;
+import ca.uwaterloo.joos.symboltable.Scope;
+import ca.uwaterloo.joos.symboltable.SymbolTable;
 
 public class HierarchyBuilder extends TypeDeclVisitor {
 
+	public HierarchyBuilder(SymbolTable table) {
+		super(table);
+	}
+
 	private Map<String, String> hierarchyMap = new HashMap<String, String>();
 	private Map<String, List<String>> implementMap = new HashMap<String, List<String>>();
+	private Map<String, Scope> methodMap = new HashMap<String, Scope>();
 	private Set<String> interfaces = new HashSet<String>();
 	private Set<String> classes = new HashSet<String>();
 	private Set<String> finals = new HashSet<String>();
 
 	@Override
 	protected void visitClassDecl(TypeDeclaration node) throws Exception {
-
+		if (!node.fullyQualifiedName.equals("java.lang.Object")) {
+			hierarchyMap.put(node.fullyQualifiedName, "java.lang.Object");
+		}
+		
+		methodMap.put(node.fullyQualifiedName, this.table.getType(node.fullyQualifiedName));
 		if (node.getModifiers().getModifiers().contains(Modifiers.Modifier.FINAL)) {
 
 			finals.add(node.fullyQualifiedName);
@@ -70,6 +81,10 @@ public class HierarchyBuilder extends TypeDeclVisitor {
 
 	}
 
+	public Map<String, Scope> getMethodMap() {
+		return methodMap;
+	}
+
 	public Map<String, String> getHierarchyMap() {
 		return hierarchyMap;
 	}
@@ -96,7 +111,7 @@ public class HierarchyBuilder extends TypeDeclVisitor {
 	}
 
 	@Override
-	public void didVisit(ASTNode node) throws Exception {
+	public void didVisit(ASTNode node) {
 
 	}
 
