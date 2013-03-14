@@ -17,6 +17,11 @@ public class PrimitiveType extends Type {
 	public PrimitiveType(Node node, ASTNode parent) throws Exception {
 		super(node, parent);
 	}
+	
+	public PrimitiveType(Primitive type, ASTNode parent) throws Exception {
+		super(null, parent);
+		this.addChild(TYPE, type);
+	}
 
 	private Primitive stringToType(String name) throws ASTConstructException {
 		for (Primitive type : Primitive.values()) {

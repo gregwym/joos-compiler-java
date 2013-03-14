@@ -3,6 +3,10 @@ package ca.uwaterloo.joos.ast.expr.primary;
 import ca.uwaterloo.joos.ast.AST.ASTConstructException;
 import ca.uwaterloo.joos.ast.ASTNode;
 import ca.uwaterloo.joos.ast.descriptor.SimpleDescriptor;
+import ca.uwaterloo.joos.ast.type.PrimitiveType;
+import ca.uwaterloo.joos.ast.type.PrimitiveType.Primitive;
+import ca.uwaterloo.joos.ast.type.ReferenceType;
+import ca.uwaterloo.joos.ast.type.Type;
 import ca.uwaterloo.joos.parser.ParseTree.LeafNode;
 import ca.uwaterloo.joos.parser.ParseTree.Node;
 
@@ -19,12 +23,34 @@ public class LiteralPrimary extends Primary {
 		super(node, parent);
 	}
 	
-	public LiteralType getType() throws ChildTypeUnmatchException {
+	public LiteralType getLiteralType() throws ChildTypeUnmatchException {
 		return (LiteralType) this.getChildByDescriptor(TYPE);
 	}
 	
 	public String getValue() throws ChildTypeUnmatchException {
 		return (String) this.getChildByDescriptor(VALUE);
+	}
+	
+	public Type getType() throws Exception {
+		Primitive primitive = null;
+		switch(this.getLiteralType()) {
+		case BOOLLIT:
+			primitive = Primitive.BOOLEAN;
+			break;
+		case CHARLIT:
+			primitive = Primitive.CHAR;
+			break;
+		case INTLIT:
+			primitive = Primitive.INT;
+			break;
+		case NULL:
+			return null;
+		case STRINGLIT:
+			return new ReferenceType("java.lang.String", this);
+		default:
+			break;
+		}
+		return new PrimitiveType(primitive, this);
 	}
 	
 	private LiteralType stringToLiteralType(String name) throws ASTConstructException {
