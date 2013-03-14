@@ -30,6 +30,7 @@ public class ReferenceType extends Type {
 			name = new SimpleName(type);
 		}
 		this.addChild(NAME, name);
+		this.fullyQualifedName = type;
 	}
 
 	public Name getName() throws ChildTypeUnmatchException {

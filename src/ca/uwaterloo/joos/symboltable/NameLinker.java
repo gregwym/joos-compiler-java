@@ -27,7 +27,9 @@ public class NameLinker extends SemanticsVisitor {
 
 	@Override
 	public boolean visit(ASTNode node) throws Exception {
-		if (node instanceof MethodInvokeExpression || node instanceof Type || node instanceof FieldAccess) {
+		if (node instanceof Type) {
+			return false;
+		} else if (node instanceof MethodInvokeExpression || node instanceof FieldAccess) {
 			return false;
 		} else if (this.linkName > 0 && node instanceof Name) {
 			String name = ((Name) node).getName();
