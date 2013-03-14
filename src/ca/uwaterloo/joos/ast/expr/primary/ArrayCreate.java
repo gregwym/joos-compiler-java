@@ -5,19 +5,17 @@ import java.util.List;
 import ca.uwaterloo.joos.ast.ASTNode;
 import ca.uwaterloo.joos.ast.descriptor.ChildDescriptor;
 import ca.uwaterloo.joos.ast.expr.Expression;
-import ca.uwaterloo.joos.ast.type.PrimitiveType;
-import ca.uwaterloo.joos.ast.type.ReferenceType;
-import ca.uwaterloo.joos.ast.type.Type;
+import ca.uwaterloo.joos.ast.type.ArrayType;
 import ca.uwaterloo.joos.parser.ParseTree.Node;
 import ca.uwaterloo.joos.parser.ParseTree.TreeNode;
 
 public class ArrayCreate extends Primary {
 	
-	public static final ChildDescriptor TYPE = new ChildDescriptor(Type.class);
+	public static final ChildDescriptor TYPE = new ChildDescriptor(ArrayType.class);
 	public static final ChildDescriptor DIMENSION = new ChildDescriptor(Expression.class);
 	
-	public Type getType() throws ChildTypeUnmatchException {
-		return (Type) this.getChildByDescriptor(TYPE);
+	public ArrayType getType() throws ChildTypeUnmatchException {
+		return (ArrayType) this.getChildByDescriptor(TYPE);
 	}
 	
 	public Expression getDimension() throws ChildTypeUnmatchException {
@@ -33,10 +31,10 @@ public class ArrayCreate extends Primary {
 		String kind = treeNode.getKind();
 
 		if (kind.equals("name")) {
-			ReferenceType type = new ReferenceType(treeNode, this);
+			ArrayType type = new ArrayType(treeNode, this);
 			this.addChild(TYPE, type);
 		} else if (kind.equals("primitivetype")) {
-			PrimitiveType type = new PrimitiveType(treeNode, this);
+			ArrayType type = new ArrayType(treeNode, this);
 			this.addChild(TYPE, type);
 		} else if (kind.equals("expr")) {
 			Expression dim = Expression.newExpression(treeNode, this);
