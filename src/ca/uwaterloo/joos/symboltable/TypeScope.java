@@ -105,6 +105,15 @@ public class TypeScope extends Scope {
 		return this.symbols.get(name);
 	}
 	
+	public TableEntry getTableEntry(ASTNode node) throws Exception {
+		if(node instanceof FieldDeclaration) {
+			return this.getFieldDecl((FieldDeclaration) node);
+		} else if(node instanceof MethodDeclaration) {
+			return this.getMethod((MethodDeclaration) node);
+		}
+		return null;
+	}
+	
 	public void setSuperScope(TypeScope superScope) {
 		this.superScope = superScope;
 	}

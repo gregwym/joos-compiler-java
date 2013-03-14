@@ -89,7 +89,7 @@ public abstract class Scope {
 		List<String> keys = new ArrayList<String>(this.symbols.keySet());
 		Collections.sort(keys);
 		for (String key : keys) {
-			System.out.println("\t\t" + key + "\t" + this.symbols.get(key).getNode());
+			System.out.println("\t\t" + this.symbols.get(key));
 		}
 		System.out.println();
 	}
