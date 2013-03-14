@@ -3,9 +3,15 @@ package ca.uwaterloo.joos.symboltable;
 import java.util.List;
 
 import ca.uwaterloo.joos.ast.ASTNode;
+import ca.uwaterloo.joos.ast.decl.BodyDeclaration;
 import ca.uwaterloo.joos.ast.decl.ClassDeclaration;
+import ca.uwaterloo.joos.ast.decl.FieldDeclaration;
+import ca.uwaterloo.joos.ast.decl.MethodDeclaration;
 import ca.uwaterloo.joos.ast.decl.TypeDeclaration;
+import ca.uwaterloo.joos.ast.decl.VariableDeclaration;
+import ca.uwaterloo.joos.ast.type.ArrayType;
 import ca.uwaterloo.joos.ast.type.ReferenceType;
+import ca.uwaterloo.joos.ast.type.Type;
 import ca.uwaterloo.joos.symboltable.SymbolTable.SymbolTableException;
 
 public class TypeLinker extends SemanticsVisitor {
@@ -25,7 +31,7 @@ public class TypeLinker extends SemanticsVisitor {
 				throw new SymbolTableException("Cannot resolve type " + refType.getName().getName());
 			}
 			
-			refType.fullyQualifedTypeName = resolved;
+			refType.setFullyQualifiedName(resolved);
 		}
 		return true;
 	}
@@ -38,7 +44,7 @@ public class TypeLinker extends SemanticsVisitor {
 			TypeScope scope = (TypeScope) this.getCurrentScope();
 			ReferenceType superClass = ((ClassDeclaration) node).getSuperClass();
 			if(superClass != null) {
-				TypeScope superScope = this.table.getType(superClass.fullyQualifedTypeName);
+				TypeScope superScope = this.table.getType(superClass.getFullyQualifiedName());
 				if(superScope == null) {
 					throw new SymbolTableException("Extending unknown super class " + node.getIdentifier());
 				}
@@ -57,7 +63,7 @@ public class TypeLinker extends SemanticsVisitor {
 			TypeScope scope = (TypeScope) this.getCurrentScope();
 			List<ReferenceType> interfaces = ((TypeDeclaration) node).getInterfaces();
 			for(ReferenceType type: interfaces) {
-				TypeScope typeScope = this.table.getType(type.fullyQualifedTypeName);
+				TypeScope typeScope = this.table.getType(type.getFullyQualifiedName());
 				if(typeScope == null) {
 					throw new SymbolTableException("Extending unknown interface " + node.getIdentifier());
 				}
@@ -66,7 +72,50 @@ public class TypeLinker extends SemanticsVisitor {
 			}
 		}
 		
+		// Add Type related scope to TableEntry
+		if(node instanceof TypeDeclaration) {
+			TypeScope typeScope = (TypeScope) this.popScope();
+			PackageScope packageScope = (PackageScope) this.getCurrentScope();
+			String typeName = ((TypeDeclaration) node).fullyQualifiedName;
+			TableEntry entry = packageScope.getType(typeName);
+			entry.setTypeScope(typeScope);
+		}
+		
+		// Is anything other than TypeDeclaration, 
+		// let super manipulate the scope stack first. 
 		super.didVisit(node);
+		
+		if(node instanceof FieldDeclaration || node instanceof MethodDeclaration) {
+			Type type = ((BodyDeclaration) node).getType();
+			if(type == null) {
+				return;
+			}
+			
+			TypeScope enclosingScope = (TypeScope) this.getCurrentScope();
+			TableEntry entry = enclosingScope.getTableEntry(node);
+			entry.setType(type);
+			
+			if(type instanceof ArrayType) {
+				type = ((ArrayType) type).getType();
+			}
+			TypeScope typeScope = this.table.getType(type.getFullyQualifiedName());
+			entry.setTypeScope(typeScope);
+		} else if(node instanceof VariableDeclaration) {
+			Type type = ((BodyDeclaration) node).getType();
+			if(type == null) {
+				return;
+			}
+			
+			BlockScope enclosingScope = (BlockScope) this.getCurrentScope();
+			TableEntry entry = enclosingScope.getVariableDecl((VariableDeclaration) node);
+			entry.setType(type);
+			
+			if(type instanceof ArrayType) {
+				type = ((ArrayType) type).getType();
+			}
+			TypeScope typeScope = this.table.getType(type.getFullyQualifiedName());
+			entry.setTypeScope(typeScope);
+		}
 	}
 
 }
