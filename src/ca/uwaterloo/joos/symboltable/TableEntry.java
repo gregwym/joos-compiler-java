@@ -45,7 +45,7 @@ public class TableEntry {
 		String str = "<" + this.getClass().getSimpleName() + "> ";
 		if(this.type != null) {
 			try {
-				str += "[" + this.type.getFullyQualifiedName() + "] ";
+				str += "[" + this.type.getFullyQualifiedName() + "]";
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
