@@ -5,7 +5,6 @@ import ca.uwaterloo.joos.ast.Modifiers;
 import ca.uwaterloo.joos.ast.decl.BodyDeclaration;
 import ca.uwaterloo.joos.ast.decl.FieldDeclaration;
 import ca.uwaterloo.joos.ast.decl.MethodDeclaration;
-import ca.uwaterloo.joos.ast.decl.VariableDeclaration;
 import ca.uwaterloo.joos.ast.expr.Expression;
 import ca.uwaterloo.joos.ast.expr.MethodInvokeExpression;
 import ca.uwaterloo.joos.ast.expr.name.Name;
@@ -30,7 +29,13 @@ public class NameLinker extends SemanticsVisitor {
 	public boolean visit(ASTNode node) throws Exception {
 		if (node instanceof Type) {
 			return false;
-		} else if (node instanceof MethodInvokeExpression || node instanceof FieldAccess) {
+		} else if (node instanceof MethodInvokeExpression) {
+			for(Expression expr: ((MethodInvokeExpression) node).getArguments()) {
+				expr.accept(this);
+			}
+			return false;
+		} else if (node instanceof FieldAccess) {
+			((FieldAccess) node).getPrimary().accept(this);
 			return false;
 		} else if (this.linkName > 0 && node instanceof Name) {
 			String name = ((Name) node).getName();

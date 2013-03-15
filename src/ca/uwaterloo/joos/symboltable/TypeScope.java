@@ -12,7 +12,9 @@ import ca.uwaterloo.joos.ast.decl.MethodDeclaration;
 import ca.uwaterloo.joos.ast.decl.ParameterDeclaration;
 import ca.uwaterloo.joos.ast.expr.name.Name;
 import ca.uwaterloo.joos.ast.expr.name.SimpleName;
+import ca.uwaterloo.joos.ast.type.Type;
 import ca.uwaterloo.joos.symboltable.SymbolTable.SymbolTableException;
+import ch.lambdaj.Lambda;
 
 public class TypeScope extends Scope {
 
@@ -80,12 +82,18 @@ public class TypeScope extends Scope {
 	}
 
 	public String signatureOfMethod(MethodDeclaration method) throws Exception {
-		String name = this.name + "." + method.getName().getName() + "(";
-		if (method instanceof ConstructorDeclaration) {
+		return this.signatureOfMethod(method.getName().getName(), 
+				method instanceof ConstructorDeclaration, 
+				Lambda.extract(method.getParameters(), Lambda.on(ParameterDeclaration.class).getType()));
+	}
+	
+	public String signatureOfMethod(String methodName, boolean isConstructor, List<Type> parameterTypes) throws Exception {
+		String name = this.name + "." + methodName + "(";
+		if (isConstructor) {
 			name += "THIS,";
 		}
-		for (ParameterDeclaration parameter : method.getParameters()) {
-			name += parameter.getType().getIdentifier() + ",";
+		for (Type parameterType : parameterTypes) {
+			name += parameterType.getIdentifier() + ",";
 		}
 		name += ")";
 		return name;

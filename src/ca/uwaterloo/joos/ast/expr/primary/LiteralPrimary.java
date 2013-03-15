@@ -44,7 +44,7 @@ public class LiteralPrimary extends Primary {
 			primitive = Primitive.INT;
 			break;
 		case NULL:
-			return null;
+			return new ReferenceType("__NULL__", this);
 		case STRINGLIT:
 			return new ReferenceType("java.lang.String", this);
 		default:
