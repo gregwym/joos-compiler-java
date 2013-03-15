@@ -1,17 +1,14 @@
 package ca.uwaterloo.joos.symboltable;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import ca.uwaterloo.joos.ast.ASTNode;
-import ca.uwaterloo.joos.ast.decl.BodyDeclaration;
 import ca.uwaterloo.joos.ast.decl.ClassDeclaration;
-import ca.uwaterloo.joos.ast.decl.FieldDeclaration;
 import ca.uwaterloo.joos.ast.decl.MethodDeclaration;
+import ca.uwaterloo.joos.ast.decl.PackageDeclaration;
 import ca.uwaterloo.joos.ast.decl.TypeDeclaration;
-import ca.uwaterloo.joos.ast.decl.VariableDeclaration;
-import ca.uwaterloo.joos.ast.type.ArrayType;
 import ca.uwaterloo.joos.ast.type.ReferenceType;
-import ca.uwaterloo.joos.ast.type.Type;
 import ca.uwaterloo.joos.symboltable.SymbolTable.SymbolTableException;
 
 public class TypeLinker extends SemanticsVisitor {
@@ -34,6 +31,21 @@ public class TypeLinker extends SemanticsVisitor {
 			refType.setFullyQualifiedName(resolved);
 		}
 		return true;
+	}
+	
+	@Override 
+	public void willVisit(ASTNode node) throws Exception {
+		if (node instanceof PackageDeclaration) {
+			PackageScope scope = this.table.getPackageByDecl((PackageDeclaration) node);
+			this.pushScope(scope);
+		} else if (node instanceof TypeDeclaration) {
+			PackageScope currentScope = (PackageScope) this.getCurrentScope();
+			String name = ((TypeDeclaration) node).getIdentifier();
+			name = currentScope.getName() + "." + name;
+			
+			TypeScope scope = this.table.getType(name);
+			this.pushScope(scope);
+		}
 	}
 	
 	@Override
@@ -72,6 +84,18 @@ public class TypeLinker extends SemanticsVisitor {
 			}
 		}
 		
+		if(node instanceof TypeDeclaration) {
+			TypeScope scope = (TypeScope) this.getCurrentScope();
+			List<TableEntry> entries = new ArrayList<TableEntry>(scope.symbols.values());
+			
+			for(TableEntry entry : entries) {
+				if(entry.getNode() instanceof MethodDeclaration) {
+					scope.symbols.remove(entry.getName());
+					scope.addMethod((MethodDeclaration) entry.getNode());
+				}
+			}
+		}
+		
 		// Add Type related scope to TableEntry
 		if(node instanceof TypeDeclaration) {
 			TypeScope typeScope = (TypeScope) this.popScope();
@@ -83,39 +107,7 @@ public class TypeLinker extends SemanticsVisitor {
 		
 		// Is anything other than TypeDeclaration, 
 		// let super manipulate the scope stack first. 
-		super.didVisit(node);
-		
-		if(node instanceof FieldDeclaration || node instanceof MethodDeclaration) {
-			Type type = ((BodyDeclaration) node).getType();
-			if(type == null) {
-				return;
-			}
-			
-			TypeScope enclosingScope = (TypeScope) this.getCurrentScope();
-			TableEntry entry = enclosingScope.getTableEntry(node);
-			entry.setType(type);
-			
-			if(type instanceof ArrayType) {
-				type = ((ArrayType) type).getType();
-			}
-			TypeScope typeScope = this.table.getType(type.getFullyQualifiedName());
-			entry.setTypeScope(typeScope);
-		} else if(node instanceof VariableDeclaration) {
-			Type type = ((BodyDeclaration) node).getType();
-			if(type == null) {
-				return;
-			}
-			
-			BlockScope enclosingScope = (BlockScope) this.getCurrentScope();
-			TableEntry entry = enclosingScope.getVariableDecl((VariableDeclaration) node);
-			entry.setType(type);
-			
-			if(type instanceof ArrayType) {
-				type = ((ArrayType) type).getType();
-			}
-			TypeScope typeScope = this.table.getType(type.getFullyQualifiedName());
-			entry.setTypeScope(typeScope);
-		}
+//		super.didVisit(node);
 	}
 
 }

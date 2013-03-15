@@ -42,7 +42,8 @@ public class ReferenceType extends Type {
 	}
 	
 	@Override
-	public String getFullyQualifiedName() {
+	public String getFullyQualifiedName() throws Exception {
+		if(this.fullyQualifedName == null) return this.getName().getName();
 		return this.fullyQualifedName;
 	}
 	

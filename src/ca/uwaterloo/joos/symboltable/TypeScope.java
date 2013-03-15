@@ -93,7 +93,7 @@ public class TypeScope extends Scope {
 			name += "THIS,";
 		}
 		for (Type parameterType : parameterTypes) {
-			name += parameterType.getIdentifier() + ",";
+			name += parameterType.getFullyQualifiedName() + ",";
 		}
 		name += ")";
 		return name;
