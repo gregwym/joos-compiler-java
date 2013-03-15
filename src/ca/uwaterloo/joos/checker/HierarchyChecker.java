@@ -12,6 +12,7 @@ import java.util.Stack;
 
 import ca.uwaterloo.joos.ast.ASTNode;
 import ca.uwaterloo.joos.ast.Modifiers;
+import ca.uwaterloo.joos.ast.body.InterfaceBody;
 import ca.uwaterloo.joos.ast.decl.ClassDeclaration;
 import ca.uwaterloo.joos.ast.decl.InterfaceDeclaration;
 import ca.uwaterloo.joos.ast.decl.MethodDeclaration;
@@ -27,6 +28,7 @@ public class HierarchyChecker extends SemanticsVisitor {
 	Map<String, TypeScope> interfaceScopes;
 	String currentPrefix;
 	static Set<String> checkedClass = new HashSet<String>();
+	Stack<TypeScope> hierachyStack = new Stack<TypeScope>();
 
 	public HierarchyChecker(SymbolTable table) {
 		super(table);
@@ -80,62 +82,54 @@ public class HierarchyChecker extends SemanticsVisitor {
 
 			}
 			checkSuperCycle();
-			//check();
+			checkOverRide();
 			checkAbstractClass();
 		}
 
-		// if (!node.fullyQualifiedName.equals("java.lang.Object")) {
-		// hierarchyMap.put(node.fullyQualifiedName, "java.lang.Object");
-		// }
-		//
-		// methodMap.put(node.fullyQualifiedName,
-		// this.table.getType(node.fullyQualifiedName));
-		// if
-		// (node.getModifiers().getModifiers().contains(Modifiers.Modifier.FINAL))
-		// {
-		//
-		// finals.add(node.fullyQualifiedName);
-		//
-		// }
-		// if (node instanceof ClassDeclaration) {
-		//
-		// classes.add(node.fullyQualifiedName);
-		// if (((ClassDeclaration) node).getSuperClass() != null) {
-		//
-		// ReferenceType EXTEND = (ReferenceType) ((ClassDeclaration)
-		// node).getSuperClass();
-		// String extendClasses = EXTEND.getFullyQualifiedName();
-		//
-		// hierarchyMap.put(node.fullyQualifiedName, extendClasses);
-		//
-		// }
-		// if (node.getInterfaces().size() != 0) {
-		// List<ReferenceType> IMPLENTS = node.getInterfaces();
-		// List<String> implentClasses = new ArrayList<String>();
-		// for (ReferenceType implent : IMPLENTS) {
-		// if (implentClasses.contains(implent.getFullyQualifiedName())) {
-		// throw new
-		// Exception("An interface must not be mentioned more than once in the same implements clause of a class");
-		// }
-		// implentClasses.add(implent.getFullyQualifiedName());
-		// }
-		// implementMap.put(node.fullyQualifiedName, implentClasses);
-		//
-		// }
-		// } else {
-		// interfaces.add(node.fullyQualifiedName);
-		// if (((InterfaceDeclaration) node).getInterfaces() != null) {
-		// List<ReferenceType> EXTEND = ((InterfaceDeclaration)
-		// node).getInterfaces();
-		// for (ReferenceType EXTENDNAME : EXTEND) {
-		// String extendClasses = EXTENDNAME.getFullyQualifiedName();
-		// hierarchyMap.put(node.fullyQualifiedName, extendClasses);
-		//
-		// }
-		//
-		// }
-		//
-		// }
+	}
+
+	private void checkOverRide() throws Exception {
+
+		System.out.println("current:" + ((TypeDeclaration) currentScope.getReferenceNode()).fullyQualifiedName);
+		appendStack(currentScope);
+		// currentScope.listSymbols();
+		Stack<TypeScope> hierachyStack2 = hierachyStack;
+		while (!hierachyStack2.empty()) {
+			TypeScope currentTopScope = hierachyStack2.pop();
+
+			System.out.println("Top" + ((TypeDeclaration) currentTopScope.getReferenceNode()).fullyQualifiedName);
+			TypeScope currentSuperScope = currentTopScope.getSuperScope();
+
+			Map<String, TypeScope> currentInterfaceScopes = currentTopScope.getInterfaceScopes();
+			ArrayList<TypeScope> currentParentScopes = new ArrayList<TypeScope>(currentInterfaceScopes.values());
+			if (currentSuperScope != null) {
+				currentParentScopes.add(currentSuperScope);
+			}
+			addMethods(currentTopScope, currentParentScopes);
+		}
+	}
+
+	private void appendStack(TypeScope currentAppendScope) {
+		TypeScope currentSuperScope = currentAppendScope.getSuperScope();
+		if (!hierachyStack.contains(currentScope)) {
+			hierachyStack.add(currentScope);
+			System.out.println("hierachyStack.add" + currentScope);
+		}
+
+		Map<String, TypeScope> currentInterfaceScopes = currentAppendScope.getInterfaceScopes();
+		ArrayList<TypeScope> currentParentScopes = new ArrayList<TypeScope>(currentInterfaceScopes.values());
+		if (currentSuperScope != null) {
+			currentParentScopes.add(currentSuperScope);
+		}
+		for (TypeScope currentParentScope : currentParentScopes) {
+
+			if (!hierachyStack.contains(currentParentScope)) {
+
+				hierachyStack.add(currentParentScope);
+				System.out.println("hierachyStack.add" + currentParentScope);
+			}
+			appendStack(currentParentScope);
+		}
 
 	}
 
@@ -143,11 +137,14 @@ public class HierarchyChecker extends SemanticsVisitor {
 		TypeDeclaration currentNode = (TypeDeclaration) currentScope.getReferenceNode();
 		Map<String, TableEntry> curerentVisibleMethods = currentScope.getVisibleSymbols();
 		ArrayList<TableEntry> visibleMethods = new ArrayList<TableEntry>(curerentVisibleMethods.values());
-		if (!currentNode.getModifiers().getModifiers().contains(Modifiers.Modifier.ABSTRACT)&&currentNode instanceof ClassDeclaration) {
+		if (!currentNode.getModifiers().getModifiers().contains(Modifiers.Modifier.ABSTRACT) && currentNode instanceof ClassDeclaration) {
 			for (TableEntry visibleMethod : visibleMethods) {
 				if (visibleMethod.getNode() instanceof MethodDeclaration) {
 					MethodDeclaration currentVisibleNode = (MethodDeclaration) visibleMethod.getNode();
 					if (currentVisibleNode.getModifiers().getModifiers().contains(Modifiers.Modifier.ABSTRACT)) {
+						throw new Exception("should be abstract");
+					}
+					if (currentVisibleNode.getParent() instanceof InterfaceBody) {
 						throw new Exception("should be abstract");
 					}
 				}
@@ -162,22 +159,16 @@ public class HierarchyChecker extends SemanticsVisitor {
 
 		Stack<String> extendCycle = new Stack<String>();
 
-		System.out.println("currentName" + ((TypeDeclaration) currentScope.getReferenceNode()).fullyQualifiedName);
 		while (!classes.empty()) {
 			TypeScope currentTopScope = classes.pop();
 			extendCycle.add(((TypeDeclaration) currentScope.getReferenceNode()).fullyQualifiedName);
 
 			TypeScope currentSuperScope = currentTopScope.getSuperScope();
-			System.out.println("currentTopName" + ((TypeDeclaration) currentTopScope.getReferenceNode()).fullyQualifiedName);
+
 			Map<String, TypeScope> currentInterfaceScopes = currentTopScope.getInterfaceScopes();
-			ArrayList<TypeScope> currentParentScopes = new ArrayList<TypeScope>(currentInterfaceScopes.values());
-			currentParentScopes.add(currentSuperScope);
-			if (currentParentScopes != null) {
-				addMethods(currentTopScope, currentParentScopes);
-			}
 			if (currentSuperScope != null) {
 				String superName = ((TypeDeclaration) currentSuperScope.getReferenceNode()).fullyQualifiedName;
-				System.out.println("superName" + superName);
+
 				if (extendCycle.contains(superName)) {
 					throw new Exception("there is a cycle in extend");
 				} else {
@@ -190,7 +181,6 @@ public class HierarchyChecker extends SemanticsVisitor {
 				for (TypeScope INTERFACE : interfaces) {
 
 					String interfaceName = ((TypeDeclaration) INTERFACE.getReferenceNode()).fullyQualifiedName;
-					System.out.println("interfaceName:" + interfaceName);
 					if (extendCycle.contains(interfaceName) && (currentScope.getReferenceNode() instanceof InterfaceDeclaration)) {
 						System.out.println("duplicate:" + interfaceName);
 
@@ -208,33 +198,28 @@ public class HierarchyChecker extends SemanticsVisitor {
 	}
 
 	private void addMethods(TypeScope currentScope, ArrayList<TypeScope> parentScopes) throws Exception {
-		Set<String> currentMethods = currentScope.getVisibleSymbols().keySet();
-		System.out.println("####" + currentScope.getName());
-		// currentPrefix =
-		// currentMethods.toArray().substring(0,MethodSig.lastIndexOf("."));
-		Set<String> simpleCurrentMethods = new HashSet<String>();
-		for (String currentMethod : currentMethods) {
-			simpleCurrentMethods.add(getSimpleSignature(currentMethod));
-			System.out.println("listMethod:" + currentMethod);
-		}
+
 		Map<String, ASTNode> parentMethods = new HashMap<String, ASTNode>();
 		for (TypeScope parentScope : parentScopes) {
+			Set<String> currentMethods = currentScope.getVisibleSymbols().keySet();
+			System.out.println("####" + currentScope.getName() + currentMethods.toString());
+			Set<String> simpleCurrentMethods = new HashSet<String>();
+			for (String currentMethod : currentMethods) {
+				simpleCurrentMethods.add(getSimpleSignature(currentMethod));
+			}
 			if (parentScope != null) {
 				Iterator<Entry<String, TableEntry>> parentMethodIterator = parentScope.getVisibleSymbols().entrySet().iterator();
 				while (parentMethodIterator.hasNext()) {
 					Map.Entry<String, TableEntry> currentParentMethod = parentMethodIterator.next();
-					// System.out.println("current key" +
-					// currentParentMethod.getKey());
 					if (currentParentMethod.getValue().getNode() instanceof MethodDeclaration) {
 						String currentParentMethodSig = currentParentMethod.getKey();
 						String currentSimpleParentMethodSig = getSimpleSignature(currentParentMethodSig);
-						System.out.println("currentParentMethodSig" + currentParentMethod.getKey());
 						if (parentMethods.keySet().contains(currentSimpleParentMethodSig)) {
-							// System.out.println("!!!!!MethodSig" +
-							// currentSimpleParentMethodSig);
+							System.out.println("parentDuplicate" + currentSimpleParentMethodSig);
+
 							MethodDeclaration existMethodNode = (MethodDeclaration) parentMethods.get(currentSimpleParentMethodSig);
 							MethodDeclaration newMethodNode = (MethodDeclaration) currentParentMethod.getValue().getNode();
-							// if(existMethodNode)
+
 							if ((existMethodNode.getType() != null) && (newMethodNode.getType() != null)) {
 								if (!existMethodNode.getType().getIdentifier().equals(newMethodNode.getType().getIdentifier())) {
 									throw new Exception("same method different return type");
@@ -245,9 +230,11 @@ public class HierarchyChecker extends SemanticsVisitor {
 								}
 
 							}
+							System.out.println("ISPUER!!" + (existMethodNode.getParent() instanceof InterfaceBody) + (newMethodNode.getParent() instanceof InterfaceBody));
+
 							boolean containProtected = existMethodNode.getModifiers().getModifiers().contains(Modifiers.Modifier.PROTECTED);
 							boolean containPublic = newMethodNode.getModifiers().getModifiers().contains(Modifiers.Modifier.PUBLIC);
-							System.out.println(existMethodNode.getModifiers().getModifiers() + ":" + newMethodNode.getModifiers().getModifiers());
+
 							if (containProtected == containPublic) {
 								throw new Exception("protected mothed can not override public");
 							}
@@ -255,15 +242,23 @@ public class HierarchyChecker extends SemanticsVisitor {
 
 							parentMethods.put(currentSimpleParentMethodSig, currentParentMethod.getValue().getNode());
 						}
-						// System.out.println("currentParentMethodSig" +
-						// currentParentMethodSig +
-						// simpleCurrentMethods.toString());
+
 						if (!currentMethods.contains(currentParentMethodSig)) {
+							System.out.println("already contain:" + simpleCurrentMethods + currentMethods);
+
 							if (simpleCurrentMethods.contains(currentSimpleParentMethodSig)) {
-								System.out.println("!!!!!" + currentScope.getName() + currentParentMethodSig);
-								MethodDeclaration currentMethodNode = (MethodDeclaration) currentScope.getSymbols().get(currentScope.getName() + currentSimpleParentMethodSig).getNode();
+								System.out.println("override" + currentParentMethodSig);
+								MethodDeclaration currentMethodNode = null;
+								String CurrentMethodkey = null;
+								for (String key : currentScope.getSymbols().keySet()) {
+									if (key.contains(currentSimpleParentMethodSig)) {
+										CurrentMethodkey = key;
+										currentMethodNode = (MethodDeclaration) currentScope.getSymbols().get(key).getNode();
+									}
+								}
+
 								MethodDeclaration currentParentMethodNode = (MethodDeclaration) currentParentMethod.getValue().getNode();
-								System.out.println("!!!!!222" + currentMethodNode.getModifiers().getModifiers() + currentParentMethodNode.getModifiers().getModifiers());
+
 								if (currentMethodNode.getModifiers().getModifiers().contains(Modifiers.Modifier.PROTECTED)) {
 									if (currentParentMethodNode.getModifiers().getModifiers().contains(Modifiers.Modifier.PUBLIC)) {
 										throw new Exception("protected mothed can not override public");
@@ -290,6 +285,12 @@ public class HierarchyChecker extends SemanticsVisitor {
 									}
 
 								}
+								if (currentMethodNode.getParent() instanceof InterfaceBody) {
+									System.out.println("replace:");
+									currentMethods.remove(CurrentMethodkey);
+									currentScope.addVisibleSymbols(currentParentMethod.getKey(), currentParentMethod.getValue());
+
+								}
 							} else {
 								currentScope.addVisibleSymbols(currentParentMethod.getKey(), currentParentMethod.getValue());
 							}
@@ -299,6 +300,7 @@ public class HierarchyChecker extends SemanticsVisitor {
 			}
 
 		}
+		currentScope.listVisibleSymbols();
 	}
 
 	private String getSimpleSignature(String MethodSig) {
