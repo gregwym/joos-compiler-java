@@ -10,6 +10,7 @@ import ca.uwaterloo.joos.ast.expr.MethodInvokeExpression;
 import ca.uwaterloo.joos.ast.expr.name.Name;
 import ca.uwaterloo.joos.ast.expr.name.SimpleName;
 import ca.uwaterloo.joos.ast.expr.primary.FieldAccess;
+import ca.uwaterloo.joos.ast.expr.primary.Primary;
 import ca.uwaterloo.joos.ast.statement.Statement;
 import ca.uwaterloo.joos.ast.type.ReferenceType;
 import ca.uwaterloo.joos.ast.type.Type;
@@ -30,6 +31,10 @@ public class NameLinker extends SemanticsVisitor {
 		if (node instanceof Type) {
 			return false;
 		} else if (node instanceof MethodInvokeExpression) {
+			Primary primary = ((MethodInvokeExpression) node).getPrimary();
+			if(primary != null) {
+				primary.accept(this);
+			}
 			for(Expression expr: ((MethodInvokeExpression) node).getArguments()) {
 				expr.accept(this);
 			}

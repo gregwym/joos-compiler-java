@@ -23,6 +23,7 @@ import ca.uwaterloo.joos.ast.expr.primary.ArrayAccess;
 import ca.uwaterloo.joos.ast.expr.primary.ArrayCreate;
 import ca.uwaterloo.joos.ast.expr.primary.FieldAccess;
 import ca.uwaterloo.joos.ast.expr.primary.LiteralPrimary;
+import ca.uwaterloo.joos.ast.expr.primary.Primary;
 import ca.uwaterloo.joos.ast.expr.primary.ThisPrimary;
 import ca.uwaterloo.joos.ast.statement.Block;
 import ca.uwaterloo.joos.ast.type.ArrayType;
@@ -49,6 +50,10 @@ public class TypeChecker extends SemanticsVisitor {
 		if(node instanceof Type) {
 			return false;
 		} else if(node instanceof MethodInvokeExpression) {
+			Primary primary = ((MethodInvokeExpression) node).getPrimary();
+			if(primary != null) {
+				primary.accept(this);
+			}
 			for(Expression expr: ((MethodInvokeExpression) node).getArguments()) {
 				expr.accept(this);
 			}
@@ -151,8 +156,9 @@ public class TypeChecker extends SemanticsVisitor {
 			
 			this.pushType(type);
 		} else if(node instanceof ArrayAccess) {
+			Type indexType = this.popType();
 			Type arrayType = this.popType();
-			if(!(arrayType instanceof ArrayType)) {
+			if(!(arrayType instanceof ArrayType) && !indexType.getFullyQualifiedName().equals("INT")) {
 				throw new Exception("Accessing array, but got type " + arrayType.getFullyQualifiedName());
 			}
 			this.pushType(((ArrayType) arrayType).getType());
@@ -189,15 +195,17 @@ public class TypeChecker extends SemanticsVisitor {
 		} else if(node instanceof InfixExpression) {
 			InfixExpression infix = (InfixExpression) node;
 			
-			Type op2Type = this.popType();
-			Type op1Type = this.popType();
-			// TODO: Check operands type
 			if(infix.getOperator().equals(InfixExpression.InfixOperator.INSTANCEOF)) {
+				Type operandType = this.popType();
+				// TODO: Match operand type with Type
 				this.pushType(new PrimitiveType(PrimitiveType.Primitive.BOOLEAN, infix));
 			}
-			else if(true /* op1Type.equals(op2Type) */){
+			else {
+				Type op2Type = this.popType();
+				Type op1Type = this.popType();
+				// TODO: Check operands type
 				this.pushType(op1Type);
-			} 
+			}
 //			else {
 //				throw new Exception("Infix trying to " + infix.getOperator().name() + " " + op1Type.getFullyQualifiedName() + " with " + op2Type.getFullyQualifiedName());
 //			}
@@ -215,15 +223,41 @@ public class TypeChecker extends SemanticsVisitor {
 			String signature = null;
 			
 			// Prepare typeScope and signature
+			Primary invokingPrimary = ((MethodInvokeExpression) node).getPrimary();
 			Name invokingName = ((MethodInvokeExpression) node).getName();
-			if(invokingName instanceof QualifiedName) {
+			if(invokingPrimary != null) {
+				Type primaryType = this.popType();
+				typeScope = this.table.getType(primaryType.getFullyQualifiedName());
+				signature = typeScope.signatureOfMethod(invokingName.getSimpleName(), false, argTypes);
+			} else if(invokingName instanceof QualifiedName) {
 				List<String> components = ((QualifiedName) invokingName).getComponents();
+				String methodName = components.get(components.size() - 1);
+				String typeName = ((QualifiedName) invokingName).getQualifiedName();
+				
 				for(i = 0; i < components.size() - 1; i++) {
 					TableEntry entry = currentScope.resolveVariableToDecl(new SimpleName(components.get(i), node));
+					if(entry == null) {
+						currentScope = null;
+						break;
+					}
 					currentScope = entry.getTypeScope();
 				}
+				
+				// Fail to resolve as a non-static method
+				if(currentScope == null) {
+					typeName = typeName.substring(0, typeName.lastIndexOf('.'));
+					typeName = this.getCurrentScope().resolveReferenceType(new ReferenceType(typeName, node), this.table);
+					if(typeName != null) {
+						currentScope = this.table.getType(typeName);
+					}
+				}
+				
+				if(currentScope == null) {
+					throw new Exception("Unable to resolve method invoke prefix " + typeName);
+				}
+				
 				typeScope = (TypeScope) currentScope;
-				signature = typeScope.signatureOfMethod(components.get(components.size() - 1), false, argTypes);
+				signature = typeScope.signatureOfMethod(methodName, false, argTypes);
 			} else if(invokingName instanceof SimpleName) {
 				typeScope = this.getParentTypeScope();
 				signature = typeScope.signatureOfMethod(invokingName.getSimpleName(), false, argTypes);
@@ -235,7 +269,11 @@ public class TypeChecker extends SemanticsVisitor {
 			}
 			
 			Type type = entry.getType();
-			this.pushType(type);
+			if(type == null) {
+				this.pushType(new ReferenceType("__VOID__", node));
+			} else {
+				this.pushType(type);
+			}
 		} else if(node instanceof FieldAccess) {
 			Type primaryType = this.popType();
 			Name fieldName = ((FieldAccess) node).getName();
