@@ -32,7 +32,7 @@ public class BlockScope extends Scope {
 			throw new SymbolTableException("Duplicate Variable Declaration of " + name);
 		}
 		
-		TableEntry entry = new TableEntry(name, var);
+		TableEntry entry = new TableEntry(name, var, this);
 
 		this.symbols.put(name, entry);
 	}
@@ -50,6 +50,11 @@ public class BlockScope extends Scope {
 		}
 		
 		return null;
+	}
+	
+	@Override
+	public TypeScope getParentTypeScope() {
+		return this.parent.getParentTypeScope();
 	}
 	
 	@Override

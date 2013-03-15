@@ -11,16 +11,18 @@ import java.util.logging.Logger;
 
 import ca.uwaterloo.joos.ast.AST;
 import ca.uwaterloo.joos.ast.visitor.ToStringVisitor;
-import ca.uwaterloo.joos.checker.HierarchyBuilder;
-import ca.uwaterloo.joos.checker.HierarchyChecker;
 import ca.uwaterloo.joos.parser.LR1;
 import ca.uwaterloo.joos.parser.LR1Parser;
 import ca.uwaterloo.joos.parser.ParseTree;
 import ca.uwaterloo.joos.scanner.DFA;
 import ca.uwaterloo.joos.scanner.Scanner;
 import ca.uwaterloo.joos.scanner.Token;
+import ca.uwaterloo.joos.symboltable.DeepDeclVisitor;
+import ca.uwaterloo.joos.symboltable.ImportVisitor;
 import ca.uwaterloo.joos.symboltable.NameLinker;
 import ca.uwaterloo.joos.symboltable.SymbolTable;
+import ca.uwaterloo.joos.symboltable.TopDeclVisitor;
+import ca.uwaterloo.joos.symboltable.TypeChecker;
 import ca.uwaterloo.joos.symboltable.TypeLinker;
 import ca.uwaterloo.joos.weeder.Weeder;
 
@@ -108,21 +110,26 @@ public class Main {
 	public SymbolTable typeLinking(List<AST> asts) throws Exception {
 		SymbolTable table = new SymbolTable();
 		
-		table.build(asts);
-//		table.listScopes();
-		
-		HierarchyBuilder hierarchyBuilder = new HierarchyBuilder();
-		
+		for (AST ast : asts) {
+			ast.getRoot().accept(new TopDeclVisitor(table));
+		}
+		logger.info("Top Declarations Constructed");
+
+		for (AST ast: asts){
+			ast.getRoot().accept(new ImportVisitor(table));
+		}
+		logger.info("Import Declarations Added");
+				
 		for(AST ast: asts) {
 			TypeLinker linker = new TypeLinker(table);
 			ast.getRoot().accept(linker);
-			ast.getRoot().accept(hierarchyBuilder);
 		}
+		logger.info("Type Linking finished");
 		
-//		table.listScopes();
-		
-		HierarchyChecker hierarchyChecker = new HierarchyChecker(hierarchyBuilder);
-		hierarchyChecker.CheckHierarchy();
+		for (AST ast: asts){
+			ast.getRoot().accept(new DeepDeclVisitor(table));
+		}
+		logger.info("Deep Declaration Constructed");
 		
 		return table;
 	}
@@ -133,10 +140,14 @@ public class Main {
 		for(AST ast: asts) {
 			ast.getRoot().accept(linker);
 		}
+	}
+	
+	public void typeChecking(List<AST> asts, SymbolTable table) throws Exception {
+		TypeChecker checker = new TypeChecker(table);
 		
-//		for(Class<?> c : linker.nameUsageParentClasses) {
-//			System.out.println(c.getName());
-//		}
+		for(AST ast: asts) {
+			ast.getRoot().accept(checker);
+		}
 	}
 	
 	public void execute(String[] args) throws Exception {
@@ -146,7 +157,10 @@ public class Main {
 		}
 		
 		SymbolTable table = typeLinking(asts);
+//		table.listScopes();
+		
 		nameLinking(asts, table);
+		typeChecking(asts, table);
 	}
 
 	/**
@@ -163,7 +177,6 @@ public class Main {
 		try {
 			instance.execute(args);
 		} catch (Exception e) {
-			System.err.println("ERROR: " + e.getLocalizedMessage() + " " + e.getClass().getName());
 			e.printStackTrace();
 			System.exit(42);
 		}

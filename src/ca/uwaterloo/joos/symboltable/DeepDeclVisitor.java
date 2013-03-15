@@ -1,11 +1,14 @@
 package ca.uwaterloo.joos.symboltable;
 
 import ca.uwaterloo.joos.ast.ASTNode;
+import ca.uwaterloo.joos.ast.decl.BodyDeclaration;
 import ca.uwaterloo.joos.ast.decl.FieldDeclaration;
 import ca.uwaterloo.joos.ast.decl.LocalVariableDeclaration;
 import ca.uwaterloo.joos.ast.decl.MethodDeclaration;
 import ca.uwaterloo.joos.ast.decl.VariableDeclaration;
 import ca.uwaterloo.joos.ast.statement.Block;
+import ca.uwaterloo.joos.ast.type.ArrayType;
+import ca.uwaterloo.joos.ast.type.Type;
 
 public class DeepDeclVisitor extends SemanticsVisitor {
 	
@@ -48,5 +51,42 @@ public class DeepDeclVisitor extends SemanticsVisitor {
 		}
 
 		return !(node instanceof VariableDeclaration);
+	}
+	
+	@Override
+	public void didVisit(ASTNode node) throws Exception {
+		super.didVisit(node);
+		
+		if(node instanceof FieldDeclaration || node instanceof MethodDeclaration) {
+			Type type = ((BodyDeclaration) node).getType();
+			if(type == null) {
+				return;
+			}
+			
+			TypeScope enclosingScope = (TypeScope) this.getCurrentScope();
+			TableEntry entry = enclosingScope.getTableEntry(node);
+			entry.setType(type);
+			
+			if(type instanceof ArrayType) {
+				type = ((ArrayType) type).getType();
+			}
+			TypeScope typeScope = this.table.getType(type.getFullyQualifiedName());
+			entry.setTypeScope(typeScope);
+		} else if(node instanceof VariableDeclaration) {
+			Type type = ((BodyDeclaration) node).getType();
+			if(type == null) {
+				return;
+			}
+			
+			BlockScope enclosingScope = (BlockScope) this.getCurrentScope();
+			TableEntry entry = enclosingScope.getVariableDecl((VariableDeclaration) node);
+			entry.setType(type);
+			
+			if(type instanceof ArrayType) {
+				type = ((ArrayType) type).getType();
+			}
+			TypeScope typeScope = this.table.getType(type.getFullyQualifiedName());
+			entry.setTypeScope(typeScope);
+		}
 	}
 }

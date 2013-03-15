@@ -14,7 +14,11 @@ public class SimpleName extends Name {
 	}
 	
 	public SimpleName(String name) throws Exception {
-		super(null, null);
+		this(name, null);
+	}
+	
+	public SimpleName(String name, ASTNode parent) throws Exception {
+		super(null, parent);
 		this.addChild(NAME, name);
 		this.setIdentifier(name);
 	}

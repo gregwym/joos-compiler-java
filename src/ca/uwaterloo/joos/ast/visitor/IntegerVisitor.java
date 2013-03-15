@@ -19,7 +19,7 @@ public abstract class IntegerVisitor extends ASTVisitor {
 
 		if (node instanceof LiteralPrimary) {
 			LiteralPrimary literalNode = (LiteralPrimary) node;
-			if (literalNode.getType().name().equals("INTLIT")) {
+			if (literalNode.getLiteralType().name().equals("INTLIT")) {
 				this.visitInteger(literalNode);
 			}
 		}

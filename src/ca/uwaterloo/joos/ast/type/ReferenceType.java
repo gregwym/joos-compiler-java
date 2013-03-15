@@ -22,7 +22,11 @@ public class ReferenceType extends Type {
 	}
 	
 	public ReferenceType(String type) throws Exception {
-		super(null, null);
+		this(type, null);
+	}
+	
+	public ReferenceType(String type, ASTNode parent) throws Exception {
+		super(null, parent);
 		Name name = null;
 		if(type.contains(".")) {
 			name = new QualifiedName(type);
@@ -38,7 +42,8 @@ public class ReferenceType extends Type {
 	}
 	
 	@Override
-	public String getFullyQualifiedName() {
+	public String getFullyQualifiedName() throws Exception {
+		if(this.fullyQualifedName == null) return this.getName().getName();
 		return this.fullyQualifedName;
 	}
 	

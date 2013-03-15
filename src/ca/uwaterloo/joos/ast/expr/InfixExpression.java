@@ -10,7 +10,6 @@ import ca.uwaterloo.joos.ast.ASTNode;
 import ca.uwaterloo.joos.ast.descriptor.ChildDescriptor;
 import ca.uwaterloo.joos.ast.descriptor.ChildListDescriptor;
 import ca.uwaterloo.joos.ast.descriptor.SimpleDescriptor;
-import ca.uwaterloo.joos.ast.expr.UnaryExpression.UnaryOperator;
 import ca.uwaterloo.joos.ast.type.ArrayType;
 import ca.uwaterloo.joos.ast.type.ReferenceType;
 import ca.uwaterloo.joos.ast.type.Type;
@@ -38,8 +37,8 @@ public class InfixExpression extends Expression {
 		return null;
 	}
 	
-	public UnaryOperator getOperator() throws ChildTypeUnmatchException {
-		return (UnaryOperator) this.getChildByDescriptor(OPERATOR);
+	public InfixOperator getOperator() throws ChildTypeUnmatchException {
+		return (InfixOperator) this.getChildByDescriptor(OPERATOR);
 	}
 	
 	@SuppressWarnings("unchecked")

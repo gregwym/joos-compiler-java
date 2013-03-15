@@ -8,8 +8,8 @@ import ca.uwaterloo.joos.ast.decl.MethodDeclaration;
 import ca.uwaterloo.joos.ast.expr.Expression;
 import ca.uwaterloo.joos.ast.expr.MethodInvokeExpression;
 import ca.uwaterloo.joos.ast.expr.name.Name;
-import ca.uwaterloo.joos.ast.expr.name.SimpleName;
 import ca.uwaterloo.joos.ast.expr.primary.FieldAccess;
+import ca.uwaterloo.joos.ast.expr.primary.Primary;
 import ca.uwaterloo.joos.ast.statement.Statement;
 import ca.uwaterloo.joos.ast.type.ReferenceType;
 import ca.uwaterloo.joos.ast.type.Type;
@@ -29,7 +29,17 @@ public class NameLinker extends SemanticsVisitor {
 	public boolean visit(ASTNode node) throws Exception {
 		if (node instanceof Type) {
 			return false;
-		} else if (node instanceof MethodInvokeExpression || node instanceof FieldAccess) {
+		} else if (node instanceof MethodInvokeExpression) {
+			Primary primary = ((MethodInvokeExpression) node).getPrimary();
+			if(primary != null) {
+				primary.accept(this);
+			}
+			for(Expression expr: ((MethodInvokeExpression) node).getArguments()) {
+				expr.accept(this);
+			}
+			return false;
+		} else if (node instanceof FieldAccess) {
+			((FieldAccess) node).getPrimary().accept(this);
 			return false;
 		} else if (this.linkName > 0 && node instanceof Name) {
 			String name = ((Name) node).getName();
@@ -50,15 +60,13 @@ public class NameLinker extends SemanticsVisitor {
 			// Try to resolve as static field access
 			if (result == null) {
 				String typeName = name;
-				String fieldName = null;
 				while (typeName.contains(".")) {
-					fieldName = typeName.substring(typeName.lastIndexOf('.') + 1, typeName.length());
 					typeName = typeName.substring(0, typeName.lastIndexOf('.'));
 					String resolvedName = currentScope.resolveReferenceType(new ReferenceType(typeName), this.table);
 
 					if (resolvedName != null) {
 						TypeScope typeScope = this.table.getType(resolvedName);
-						result = typeScope.resolveVariableToDecl(new SimpleName(fieldName));
+						result = typeScope.getWithinPackage().getType(resolvedName);
 					}
 
 					if (result != null) {
@@ -68,7 +76,7 @@ public class NameLinker extends SemanticsVisitor {
 			}
 
 			if (result != null) {
-				((Name) node).originalDeclaration = result;
+				((Name) node).setOriginalDeclaration(result);
 				logger.finer(name + " => " + result.getName() + "\tParent: " + node.getParent());
 			} else {
 				throw new Exception("Fail to resolve " + name + " in scope " + currentScope);
@@ -79,10 +87,11 @@ public class NameLinker extends SemanticsVisitor {
 
 	@Override
 	public void willVisit(ASTNode node) throws Exception {
-		if (node instanceof Statement || node instanceof Expression) {
+		if (node instanceof Statement || node instanceof Expression || node instanceof FieldDeclaration) {
 			if (!(node instanceof Name))
 				linkName++;
-		} else if (node instanceof MethodDeclaration || node instanceof FieldDeclaration) {
+		}
+		if (node instanceof MethodDeclaration || node instanceof FieldDeclaration) {
 			// Change the inStatic flag according to the Method and Filed
 			// declaration scopes method
 			Modifiers modifiers = ((BodyDeclaration) node).getModifiers();
@@ -93,10 +102,11 @@ public class NameLinker extends SemanticsVisitor {
 
 	@Override
 	public void didVisit(ASTNode node) throws Exception {
-		if (node instanceof Statement || node instanceof Expression) {
+		if (node instanceof Statement || node instanceof Expression || node instanceof FieldDeclaration) {
 			if (!(node instanceof Name))
 				linkName--;
-		} else if (node instanceof MethodDeclaration || node instanceof FieldDeclaration) {
+		}
+		if (node instanceof MethodDeclaration || node instanceof FieldDeclaration) {
 			inStatic = false;
 		}
 		super.didVisit(node);

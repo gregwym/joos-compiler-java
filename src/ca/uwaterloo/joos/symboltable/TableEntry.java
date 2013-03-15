@@ -8,12 +8,15 @@ public class TableEntry {
 
 	private String name;
 	private ASTNode node;
+	private Scope withinScope;
+	
 	private Type type;
 	private TypeScope typeScope;
 
-	public TableEntry(String name, ASTNode inode) {
+	public TableEntry(String name, ASTNode inode, Scope withinScope) {
 		this.name = name;
 		this.node = inode;
+		this.withinScope = withinScope;
 	}
 
 	public ASTNode getNode() {
@@ -22,6 +25,10 @@ public class TableEntry {
 
 	public String getName() {
 		return name;
+	}
+	
+	public Scope getWithinScope() {
+		return withinScope;
 	}
 	
 	public Type getType() {
