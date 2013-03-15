@@ -99,12 +99,14 @@ public class TypeScope extends Scope {
 		return name;
 	}
 
-	public void addMethod(MethodDeclaration node) throws Exception {
+	public TableEntry addMethod(MethodDeclaration node) throws Exception {
 		String name = this.signatureOfMethod(node);
 		if (this.symbols.containsKey(name)) {
 			throw new SymbolTableException("Duplicate Method Declaraion " + name);
 		}
-		this.symbols.put(name, new TableEntry(name, node));
+		TableEntry entry = new TableEntry(name, node);
+		this.symbols.put(name, entry);
+		return entry;
 	}
 
 	public TableEntry getMethod(MethodDeclaration node) throws Exception {

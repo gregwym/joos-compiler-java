@@ -5,7 +5,11 @@ import java.util.List;
 import java.util.Stack;
 
 import ca.uwaterloo.joos.ast.ASTNode;
+import ca.uwaterloo.joos.ast.Modifiers;
+import ca.uwaterloo.joos.ast.Modifiers.Modifier;
+import ca.uwaterloo.joos.ast.decl.BodyDeclaration;
 import ca.uwaterloo.joos.ast.decl.FieldDeclaration;
+import ca.uwaterloo.joos.ast.decl.MethodDeclaration;
 import ca.uwaterloo.joos.ast.decl.TypeDeclaration;
 import ca.uwaterloo.joos.ast.decl.VariableDeclaration;
 import ca.uwaterloo.joos.ast.expr.AssignmentExpression;
@@ -37,10 +41,13 @@ public class TypeChecker extends SemanticsVisitor {
 
 	private Stack<Type> typeStack;
 	private int checkType = 0;
+	private boolean inStatic = false;
 
 	public TypeChecker(SymbolTable table) {
 		super(table);
 		this.typeStack = new Stack<Type>();
+		this.checkType = 0;
+		this.inStatic = false;
 	}
 
 	@Override
@@ -72,6 +79,12 @@ public class TypeChecker extends SemanticsVisitor {
 		if (node instanceof FieldDeclaration || node instanceof Block) {
 			this.checkType++;
 		}
+		if (node instanceof MethodDeclaration || node instanceof FieldDeclaration) {
+			// Change the inStatic flag according to the Method and Filed
+			// declaration scopes method
+			Modifiers modifiers = ((BodyDeclaration) node).getModifiers();
+			inStatic = modifiers.containModifier(Modifiers.Modifier.STATIC);
+		}
 		super.willVisit(node);
 	}
 
@@ -91,6 +104,34 @@ public class TypeChecker extends SemanticsVisitor {
 			return this.typeStack.peek();
 		return null;
 	}
+	
+	private boolean isAssignable(Type varType, Type assignType) throws Exception {
+		if (assignType instanceof ArrayType && varType instanceof ArrayType) {
+			assignType = ((ArrayType) assignType).getType();
+			varType = ((ArrayType) varType).getType();
+		}
+
+		if (assignType.getClass().equals(varType.getClass())) {
+			if (assignType instanceof PrimitiveType) {
+				// TODO: check whether all primitive types are both way
+				// assignable
+			} else if (assignType instanceof ReferenceType && !assignType.getFullyQualifiedName().equals("__NULL__")) {
+				String fullName = assignType.getFullyQualifiedName();
+				TypeScope typeScope = this.table.getType(fullName);
+				boolean result = typeScope.isSubclassOf(varType.getFullyQualifiedName());
+				if (result == false) {
+					return false;
+				}
+			}
+		} else if (varType instanceof ArrayType && assignType.getFullyQualifiedName().equals("__NULL__")) {
+
+		} else if (assignType instanceof ArrayType && varType.getFullyQualifiedName().matches("^java.(lang.Object|lang.Cloneable|io.Serializable)$")) {
+
+		} else {
+			return false;
+		}
+		return true;
+	}
 
 	@Override
 	public void didVisit(ASTNode node) throws Exception {
@@ -108,6 +149,9 @@ public class TypeChecker extends SemanticsVisitor {
 			this.pushType(((LiteralPrimary) node).getType());
 		} else if (node instanceof ThisPrimary) {
 			String typeName = this.getParentTypeScope().getName();
+			if (this.inStatic) {
+				throw new Exception("Trying to access THIS within static scope " + this.getCurrentScope());
+			}
 			this.pushType(new ReferenceType(typeName, node));
 		} else if (node instanceof SimpleName) {
 			Type nameType = ((SimpleName) node).getOriginalDeclaration().getType();
@@ -119,6 +163,7 @@ public class TypeChecker extends SemanticsVisitor {
 			TableEntry entry = qualifiedName.getOriginalDeclaration();
 			Type type = entry.getType();
 			TypeScope typeScope = entry.getTypeScope();
+			TypeScope currentTypeScope = this.getParentTypeScope();
 			for (String component : components.subList(1, components.size())) {
 				if (type instanceof ArrayType) {
 					if (component.equals("length")) {
@@ -130,6 +175,10 @@ public class TypeChecker extends SemanticsVisitor {
 				}
 				entry = typeScope.resolveVariableToDecl(new SimpleName(component, node));
 				if (entry != null) {
+					VariableDeclaration fieldNode = (VariableDeclaration) entry.getNode();
+					if (fieldNode.getModifiers().containModifier(Modifier.PROTECTED) && !typeScope.isSubclassOf(currentTypeScope.getName())) {
+						throw new Exception("Cannot access PROTECTED field " + entry.getName() + " from QualifiedName " + currentTypeScope.getName());
+					}
 					type = entry.getType();
 					typeScope = entry.getTypeScope();
 				}
@@ -198,13 +247,22 @@ public class TypeChecker extends SemanticsVisitor {
 			Type exprType = this.popType();
 			Type castType = ((CastExpression) node).getType();
 			// TODO: Check whether is valid casting;
+			if(this.isAssignable(castType, exprType) == false && this.isAssignable(exprType, castType) == false) {
+				throw new Exception("Cannot cast " + exprType.getFullyQualifiedName() + " to " + castType.getFullyQualifiedName());
+			}
 			this.pushType(castType);
 		} else if (node instanceof InfixExpression) {
 			InfixExpression infix = (InfixExpression) node;
 
 			if (infix.getOperator().equals(InfixExpression.InfixOperator.INSTANCEOF)) {
 				Type operandType = this.popType();
+				Type rhsType = infix.getRHS();
 				// TODO: Match operand type with Type
+				if(rhsType instanceof PrimitiveType) {
+					throw new Exception("Cannot instanceof a PrimitiveType");
+				} else if(this.isAssignable(operandType, rhsType) == false && this.isAssignable(rhsType, operandType) == false) {
+					throw new Exception("Cannot instancof " + operandType.getFullyQualifiedName() + " with " + rhsType.getFullyQualifiedName());
+				}
 				this.pushType(new PrimitiveType(PrimitiveType.Primitive.BOOLEAN, infix));
 			} else {
 				Type op2Type = this.popType();
@@ -227,6 +285,7 @@ public class TypeChecker extends SemanticsVisitor {
 				argTypes.add(0, this.popType());
 			}
 
+			TypeScope currentTypeScope = this.getParentTypeScope();
 			Scope currentScope = this.getCurrentScope();
 			TypeScope typeScope = null;
 			String signature = null;
@@ -242,12 +301,18 @@ public class TypeChecker extends SemanticsVisitor {
 				List<String> components = ((QualifiedName) invokingName).getComponents();
 				String methodName = components.get(components.size() - 1);
 				String qualifiedName = ((QualifiedName) invokingName).getQualifiedName();
-
+				
 				for (i = 0; i < components.size() - 1; i++) {
 					TableEntry entry = currentScope.resolveVariableToDecl(new SimpleName(components.get(i), node));
 					if (entry == null) {
 						currentScope = null;
 						break;
+					}
+					VariableDeclaration fieldNode = (VariableDeclaration) entry.getNode();
+					if (fieldNode instanceof FieldDeclaration && 
+							fieldNode.getModifiers().containModifier(Modifier.PROTECTED) && 
+							!currentTypeScope.isSubclassOf(currentScope.getName())) {
+						throw new Exception("Cannot access PROTECTED field " + entry.getName() + " from " + currentTypeScope.getName());
 					}
 					currentScope = entry.getTypeScope();
 				}
@@ -293,6 +358,12 @@ public class TypeChecker extends SemanticsVisitor {
 			if (entry == null) {
 				throw new Exception("Unknown method " + signature);
 			}
+			
+			MethodDeclaration fieldNode = (MethodDeclaration) entry.getNode();
+			if (fieldNode.getModifiers().containModifier(Modifier.PROTECTED) && 
+					!typeScope.isSubclassOf(currentTypeScope.getName())) {
+				throw new Exception("Cannot access PROTECTED method " + entry.getName() + " from " + currentTypeScope.getName());
+			}
 
 			Type type = entry.getType();
 			if (type == null) {
@@ -312,20 +383,28 @@ public class TypeChecker extends SemanticsVisitor {
 				}
 			} else {
 				TypeScope typeScope = this.table.getType(primaryType.getFullyQualifiedName());
+				TypeScope currentTypeScope = this.getParentTypeScope();
 				TableEntry entry = typeScope.resolveVariableToDecl(fieldName);
 				if (entry == null) {
 					throw new Exception("Unknown field " + fieldName.getName() + " in primary type " + primaryType.getFullyQualifiedName());
 				}
+				
+				VariableDeclaration fieldNode = (VariableDeclaration) entry.getNode();
+				if (fieldNode.getModifiers().containModifier(Modifier.PROTECTED) && !typeScope.isSubclassOf(currentTypeScope.getName())) {
+					throw new Exception("Cannot access PROTECTED field " + entry.getName() + " from FieldAccess " + currentTypeScope.getName());
+				}
+				
 				type = entry.getType();
 			}
 			this.pushType(type);
 		} else if (node instanceof AssignmentExpression) {
 			Type exprType = this.popType();
-			Type lhsType = this.popType();
-			if (!exprType.equals(lhsType)) {
-				throw new Exception("Assigning " + lhsType.getFullyQualifiedName() + " with " + exprType.getFullyQualifiedName());
+			Type varType = this.popType();
+			
+			if(this.isAssignable(varType, exprType) == false) {
+				throw new Exception("Cannot assign " + varType.getFullyQualifiedName() + " with " + exprType.getFullyQualifiedName());
 			}
-			this.pushType(lhsType);
+			this.pushType(varType);
 		}
 
 		/* Type Consumers */
@@ -336,29 +415,8 @@ public class TypeChecker extends SemanticsVisitor {
 				Type initType = this.popType();
 				Type varType = this.popType();
 
-				if (initType instanceof ArrayType && varType instanceof ArrayType) {
-					initType = ((ArrayType) initType).getType();
-					varType = ((ArrayType) varType).getType();
-				}
-
-				if (initType.getClass().equals(varType.getClass())) {
-					if (initType instanceof PrimitiveType) {
-						// TODO: check whether all primitive types are both way
-						// assignable
-					} else if (initType instanceof ReferenceType && !initType.getFullyQualifiedName().equals("__NULL__")) {
-						String fullName = initType.getFullyQualifiedName();
-						TypeScope typeScope = this.table.getType(fullName);
-						boolean result = typeScope.isSubclassOf(varType.getFullyQualifiedName());
-						if (result == false) {
-							throw new Exception("Cannot initialize " + varType.getFullyQualifiedName() + " with " + initType.getFullyQualifiedName());
-						}
-					}
-				} else if (varType instanceof ArrayType && initType.getFullyQualifiedName().equals("__NULL__")) {
-
-				} else if (initType instanceof ArrayType && varType.getFullyQualifiedName().matches("^java.(lang.Object|lang.Cloneable|io.Serializable)$")) {
-
-				} else {
-					throw new Exception("Initialing " + varType.getFullyQualifiedName() + " with " + initType.getFullyQualifiedName());
+				if(this.isAssignable(varType, initType) == false) {
+					throw new Exception("Cannot initialize " + varType.getFullyQualifiedName() + " with " + initType.getFullyQualifiedName());
 				}
 			}
 		}
@@ -366,7 +424,10 @@ public class TypeChecker extends SemanticsVisitor {
 		if (node instanceof FieldDeclaration || node instanceof Block) {
 			this.checkType--;
 		}
-
+		if (node instanceof MethodDeclaration || node instanceof FieldDeclaration) {
+			inStatic = false;
+		}
+		
 		super.didVisit(node);
 	}
 

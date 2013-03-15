@@ -88,7 +88,9 @@ public class TypeLinker extends SemanticsVisitor {
 			for(TableEntry entry : entries) {
 				if(entry.getNode() instanceof MethodDeclaration) {
 					scope.symbols.remove(entry.getName());
-					scope.addMethod((MethodDeclaration) entry.getNode());
+					TableEntry newEntry = scope.addMethod((MethodDeclaration) entry.getNode());
+					newEntry.setType(entry.getType());
+					newEntry.setTypeScope(entry.getTypeScope());
 				}
 			}
 		}
