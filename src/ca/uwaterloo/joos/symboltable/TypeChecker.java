@@ -1,14 +1,11 @@
 package ca.uwaterloo.joos.symboltable;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Set;
 import java.util.Stack;
 
 import ca.uwaterloo.joos.ast.ASTNode;
-import ca.uwaterloo.joos.ast.ASTNode.ChildTypeUnmatchException;
 import ca.uwaterloo.joos.ast.Modifiers;
 import ca.uwaterloo.joos.ast.Modifiers.Modifier;
 import ca.uwaterloo.joos.ast.decl.BodyDeclaration;
@@ -93,11 +90,11 @@ public class TypeChecker extends SemanticsVisitor {
 			// declaration scopes method
 			Modifiers modifiers = ((BodyDeclaration) node).getModifiers();
 			inStatic = modifiers.containModifier(Modifiers.Modifier.STATIC);
-			
+
 		}
-		
-		if (node instanceof MethodDeclaration){
-			this.methodReturnType = ((MethodDeclaration)node).getType();
+
+		if (node instanceof MethodDeclaration) {
+			this.methodReturnType = ((MethodDeclaration) node).getType();
 		}
 		super.willVisit(node);
 	}
@@ -118,62 +115,72 @@ public class TypeChecker extends SemanticsVisitor {
 			return this.typeStack.peek();
 		return null;
 	}
-	
+
 	private boolean isAssignable(Type varType, Type assignType, boolean castop) throws Exception {
-		//TODO MATT: Clean This
-		//TODO ensure that the correct type is passed when assigning to an index of an array
+		// TODO MATT: Clean This
+		// TODO ensure that the correct type is passed when assigning to an
+		// index of an array
 		if (assignType instanceof ArrayType && varType instanceof ArrayType) {
 			assignType = ((ArrayType) assignType).getType();
 			varType = ((ArrayType) varType).getType();
 		}
 
-		if (varType.equals(assignType)) return true;//Can assign between two same types
-		
+		if (varType.equals(assignType))
+			return true;// Can assign between two same types
+
 		if (assignType.getClass().equals(varType.getClass())) {
-			//Both either Primitive or Reference types
+			// Both either Primitive or Reference types
 			if (assignType instanceof PrimitiveType) {
-				//Given our supported types, casts between two primitives are always allowed
-				
-				if (castop) return true; 
-				//From - to primitive
+				// Given our supported types, casts between two primitives are
+				// always allowed
+
+				if (castop)
+					return true;
+				// From - to primitive
 				// TODO: don't allow narrowing conversions
 				PrimitiveType aType = (PrimitiveType) assignType;
 				PrimitiveType vType = (PrimitiveType) varType;
-				
-				if (aType.getPrimitive().equals(Primitive.INT)){
-					if (vType.getPrimitive().equals(Primitive.INT)) return true;
-					return false; //Only assignable to INT
+
+				if (aType.getPrimitive().equals(Primitive.INT)) {
+					if (vType.getPrimitive().equals(Primitive.INT))
+						return true;
+					return false; // Only assignable to INT
 				}
 
-				if (aType.getPrimitive().equals(Primitive.BYTE)){
-					//Short Int long float double
-					if (vType.getPrimitive().equals(Primitive.BYTE)) return true;
-					if (vType.getPrimitive().equals(Primitive.INT)) return true;
-					if (vType.getPrimitive().equals(Primitive.SHORT)) return true;
+				if (aType.getPrimitive().equals(Primitive.BYTE)) {
+					// Short Int long float double
+					if (vType.getPrimitive().equals(Primitive.BYTE))
+						return true;
+					if (vType.getPrimitive().equals(Primitive.INT))
+						return true;
+					if (vType.getPrimitive().equals(Primitive.SHORT))
+						return true;
 					return false;
 				}
 
-				if (aType.getPrimitive().equals(Primitive.BOOLEAN)){
-					//Boolean
-					if (vType.getPrimitive().equals(Primitive.BOOLEAN)) return true;
+				if (aType.getPrimitive().equals(Primitive.BOOLEAN)) {
+					// Boolean
+					if (vType.getPrimitive().equals(Primitive.BOOLEAN))
+						return true;
 					return false;
 				}
-				
 
-				if (aType.getPrimitive().equals(Primitive.CHAR)){
-					//int long float double
-					if (vType.getPrimitive().equals(Primitive.INT)) return true;
+				if (aType.getPrimitive().equals(Primitive.CHAR)) {
+					// int long float double
+					if (vType.getPrimitive().equals(Primitive.INT))
+						return true;
 					return false;
 				}
-				
 
-				if (aType.getPrimitive().equals(Primitive.SHORT)){
-					//int long float double
-					if (vType.getPrimitive().equals(Primitive.INT)) return true;
-					if (vType.getPrimitive().equals(Primitive.SHORT)) return true;
+				if (aType.getPrimitive().equals(Primitive.SHORT)) {
+					// int long float double
+					if (vType.getPrimitive().equals(Primitive.INT))
+						return true;
+					if (vType.getPrimitive().equals(Primitive.SHORT))
+						return true;
 					return false;
 				}
-				
+
 			} else if (assignType instanceof ReferenceType && !assignType.getFullyQualifiedName().equals("__NULL__")) {
 				String fullName = assignType.getFullyQualifiedName();
 				TypeScope typeScope = this.table.getType(fullName);
@@ -191,17 +198,15 @@ public class TypeChecker extends SemanticsVisitor {
 		}
 		return true;
 	}
-	
+
 	private boolean isAccessible(boolean staticAccess, TableEntry entry, TypeScope accessingTypeScope, TypeScope currentTypeScope) throws Exception {
 		TypeScope declaredTypeScope = entry.getWithinScope().getParentTypeScope();
-		logger.info("Checking accessibility static: " + staticAccess + " entry " + entry.getName() + 
-				" within type " + declaredTypeScope.getName() + " access type " + accessingTypeScope.getName() + 
-				" from type " + currentTypeScope.getName());
+		logger.info("Checking accessibility static: " + staticAccess + " entry " + entry.getName() + " within type " + declaredTypeScope.getName() + " access type " + accessingTypeScope.getName() + " from type " + currentTypeScope.getName());
 		BodyDeclaration fieldNode = (BodyDeclaration) entry.getNode();
 		Modifiers modifiers = fieldNode.getModifiers();
 		boolean isStatic = modifiers != null && fieldNode.getModifiers().containModifier(Modifier.STATIC);
 		boolean isProtected = modifiers != null && fieldNode.getModifiers().containModifier(Modifier.PROTECTED);
-		
+
 		// Check whether is accessing static in non-static way
 		if (isStatic != staticAccess) {
 			throw new Exception("Cannot access " + entry.getName() + " in not matching way. staticAccess: " + staticAccess);
@@ -210,8 +215,8 @@ public class TypeChecker extends SemanticsVisitor {
 		if (isProtected) {
 			if (isStatic && !currentTypeScope.isSubclassOf(declaredTypeScope.getName())) {
 				throw new Exception("Cannot access static PROTECTED " + entry.getName() + " from " + currentTypeScope.getName());
-			} 
-			else if (!isStatic && !accessingTypeScope.isSubclassOf(currentTypeScope.getName())) { //  || currentTypeScope.isSubclassOf(declaredTypeScope.getName())
+			} else if (!isStatic && !accessingTypeScope.isSubclassOf(currentTypeScope.getName())) { // ||
+																									// currentTypeScope.isSubclassOf(declaredTypeScope.getName())
 				throw new Exception("Cannot access PROTECTED " + entry.getName() + " from " + currentTypeScope.getName());
 			} else if (!isStatic && accessingTypeScope.isSubclassOf(currentTypeScope.getName()) && !currentTypeScope.isSubclassOf(declaredTypeScope.getName())) {
 				throw new Exception("Cannot access subclass PROTECTED " + entry.getName() + " from " + currentTypeScope.getName());
@@ -230,7 +235,7 @@ public class TypeChecker extends SemanticsVisitor {
 		}
 
 		logger.info("Did visit " + node);
-		
+
 		/* Type Providers */
 		if (node instanceof LiteralPrimary) {
 			this.pushType(((LiteralPrimary) node).getType());
@@ -250,7 +255,7 @@ public class TypeChecker extends SemanticsVisitor {
 			TableEntry entry = qualifiedName.getOriginalDeclaration();
 			ASTNode entryNode = entry.getNode();
 			boolean staticAccess = entryNode instanceof TypeDeclaration;
-			
+
 			Type type = entry.getType();
 			TypeScope typeScope = entry.getTypeScope();
 			TypeScope currentTypeScope = this.getCurrentScope().getParentTypeScope();
@@ -266,7 +271,7 @@ public class TypeChecker extends SemanticsVisitor {
 				entry = typeScope.resolveVariableToDecl(new SimpleName(component, node));
 				if (entry != null) {
 					this.isAccessible(staticAccess, entry, typeScope, currentTypeScope);
-					
+
 					staticAccess = false;
 					type = entry.getType();
 					typeScope = entry.getTypeScope();
@@ -298,10 +303,9 @@ public class TypeChecker extends SemanticsVisitor {
 			if (entry == null) {
 				throw new Exception("Unknown constructor " + signature);
 			}
-			
+
 			ConstructorDeclaration constructorNode = (ConstructorDeclaration) entry.getNode();
-			if(constructorNode.getModifiers().containModifier(Modifier.PROTECTED) &&
-					typeScope.getWithinPackage() != this.getCurrentScope().getParentTypeScope().getWithinPackage()) {
+			if (constructorNode.getModifiers().containModifier(Modifier.PROTECTED) && typeScope.getWithinPackage() != this.getCurrentScope().getParentTypeScope().getWithinPackage()) {
 				throw new Exception("Cannot access constructor " + entry.getName() + " from scope " + this.getCurrentScope().getName());
 			}
 
@@ -318,9 +322,7 @@ public class TypeChecker extends SemanticsVisitor {
 
 			if (dimType == null) {
 				throw new Exception("Dimension of array expecting INT but got NULL");
-			} else if ((!dimType.getFullyQualifiedName().equals("INT")) &&
-					(!dimType.getFullyQualifiedName().equals("BYTE"))&&
-					(!dimType.getFullyQualifiedName().equals("SHORT"))) {
+			} else if ((!dimType.getFullyQualifiedName().equals("INT")) && (!dimType.getFullyQualifiedName().equals("BYTE")) && (!dimType.getFullyQualifiedName().equals("SHORT"))) {
 				throw new Exception("Dimension of array expecting numeric but got " + dimType.getFullyQualifiedName());
 			}
 			this.pushType(((ArrayCreate) node).getType());
@@ -343,7 +345,7 @@ public class TypeChecker extends SemanticsVisitor {
 			Type exprType = this.popType();
 			Type castType = ((CastExpression) node).getType();
 			// TODO: Check whether is valid casting;
-			if(this.isAssignable(castType, exprType, true) == false && this.isAssignable(exprType, castType, true) == false) {
+			if (this.isAssignable(castType, exprType, true) == false && this.isAssignable(exprType, castType, true) == false) {
 				throw new Exception("Cannot cast " + exprType.getFullyQualifiedName() + " to " + castType.getFullyQualifiedName());
 			}
 			this.pushType(castType);
@@ -354,9 +356,9 @@ public class TypeChecker extends SemanticsVisitor {
 				Type operandType = this.popType();
 				Type rhsType = infix.getRHS();
 				// TODO: Match operand type with Type
-				if(rhsType instanceof PrimitiveType) {
+				if (rhsType instanceof PrimitiveType) {
 					throw new Exception("Cannot instanceof a PrimitiveType");
-				} else if(this.isAssignable(operandType, rhsType, false) == false && this.isAssignable(rhsType, operandType, false) == false) {
+				} else if (this.isAssignable(operandType, rhsType, false) == false && this.isAssignable(rhsType, operandType, false) == false) {
 					throw new Exception("Cannot instancof " + operandType.getFullyQualifiedName() + " with " + rhsType.getFullyQualifiedName());
 				}
 				this.pushType(new PrimitiveType(PrimitiveType.Primitive.BOOLEAN, infix));
@@ -373,28 +375,23 @@ public class TypeChecker extends SemanticsVisitor {
 			// op1Type.getFullyQualifiedName() + " with " +
 			// op2Type.getFullyQualifiedName());
 			// }
-		}else if (node instanceof IfStatement){
-			
+		} else if (node instanceof IfStatement) {
+
 			IfStatement IFNode = (IfStatement) node;
-			
+
 			ASTNode AE = IFNode.getIfCondition();
-			//TODO Expand on this to check only what an if can be
-			//If conditional can be an assignment only if the assignment can be
-			//converted to boolean
-			if (AE instanceof InfixExpression){
-				//Get the Infix node and process it with type of expression
-				//expressionType((InfixExpression)AE);
+			// TODO Expand on this to check only what an if can be
+			// If conditional can be an assignment only if the assignment can be
+			// converted to boolean
+			if (AE instanceof InfixExpression) {
+				// Get the Infix node and process it with type of expression
+				// expressionType((InfixExpression)AE);
 			}
-			
-			if (AE instanceof AssignmentExpression){
-				System.out.println(((AssignmentExpression) AE).getExpression());
-			}
-			
-			//Check the conditional such that it returns type boolean
-			//getExpressionType (IfStatement.conditional node...)
+
+			// Check the conditional such that it returns type boolean
+			// getExpressionType (IfStatement.conditional node...)
 		}
-		
-		
+
 		else if (node instanceof MethodInvokeExpression) {
 
 			// Fetch all argument types
@@ -421,9 +418,7 @@ public class TypeChecker extends SemanticsVisitor {
 				List<String> components = ((QualifiedName) invokingName).getComponents();
 				String methodName = components.get(components.size() - 1);
 				String qualifiedName = ((QualifiedName) invokingName).getQualifiedName();
-				
-				
-				
+
 				for (i = 0; i < components.size() - 1; i++) {
 					// Resolve as field access into currentScope
 					TableEntry entry = currentScope.resolveVariableToDecl(new SimpleName(components.get(i), node));
@@ -433,7 +428,7 @@ public class TypeChecker extends SemanticsVisitor {
 					}
 					// Check whether has permission to access the field
 					this.isAccessible(staticAccess, entry, currentScope.getParentTypeScope(), currentTypeScope);
-					
+
 					currentScope = entry.getTypeScope();
 				}
 
@@ -461,7 +456,7 @@ public class TypeChecker extends SemanticsVisitor {
 								break;
 							}
 							this.isAccessible(staticAccess, entry, currentScope.getParentTypeScope(), currentTypeScope);
-							
+
 							staticAccess = false;
 							currentScope = entry.getTypeScope();
 						}
@@ -485,7 +480,7 @@ public class TypeChecker extends SemanticsVisitor {
 			if (entry == null) {
 				throw new Exception("Unknown method " + signature);
 			}
-			
+
 			// Check method permission
 			this.isAccessible(staticAccess, entry, typeScope, currentTypeScope);
 
@@ -512,17 +507,17 @@ public class TypeChecker extends SemanticsVisitor {
 				if (entry == null) {
 					throw new Exception("Unknown field " + fieldName.getName() + " in primary type " + primaryType.getFullyQualifiedName());
 				}
-				
+
 				this.isAccessible(false, entry, typeScope, currentTypeScope);
-				
+
 				type = entry.getType();
 			}
 			this.pushType(type);
 		} else if (node instanceof AssignmentExpression) {
 			Type exprType = this.popType();
 			Type varType = this.popType();
-			
-			if(this.isAssignable(varType, exprType, false) == false) {
+
+			if (this.isAssignable(varType, exprType, false) == false) {
 				throw new Exception("Cannot assign " + varType.getFullyQualifiedName() + " with " + exprType.getFullyQualifiedName());
 			}
 			this.pushType(varType);
@@ -536,14 +531,13 @@ public class TypeChecker extends SemanticsVisitor {
 				Type initType = this.popType();
 				Type varType = this.popType();
 
-				if(this.isAssignable(varType, initType, false) == false) {
+				if (this.isAssignable(varType, initType, false) == false) {
 					throw new Exception("Cannot initialize " + varType.getFullyQualifiedName() + " with " + initType.getFullyQualifiedName());
 				}
 			}
-		}
-		else if (node instanceof ReturnStatement){
-			//Type retType = this.popType();
-			if (this.isAssignable(this.methodReturnType, this.popType(), false)==false){
+		} else if (node instanceof ReturnStatement) {
+			// Type retType = this.popType();
+			if (this.isAssignable(this.methodReturnType, this.popType(), false) == false) {
 				throw new Exception("Invalid Return Type");
 			}
 		}
@@ -554,70 +548,78 @@ public class TypeChecker extends SemanticsVisitor {
 		if (node instanceof MethodDeclaration || node instanceof FieldDeclaration) {
 			inStatic = false;
 		}
-		
+
 		super.didVisit(node);
 	}
 
-	
 	private Type expressionType(Type op1Type, Type op2Type, InfixOperator operator) throws Exception {
-		
-		if (operator.equals(InfixOperator.PLUS) &&
-				((op1Type.getFullyQualifiedName().equals("java.lang.String")) || 
-						(op2Type.getFullyQualifiedName().equals("java.lang.String") ))) return new ReferenceType("java.lang.String");
-		
-		
-		if (operator.equals(InfixOperator.BAND) || operator.equals(InfixOperator.BOR)){
-			if (op1Type instanceof ReferenceType && op2Type instanceof ReferenceType) throw new Exception ("Invalid bitwise operation");
-			else if (op1Type instanceof PrimitiveType && 
-					((PrimitiveType) op1Type).getPrimitive().equals(Primitive.BOOLEAN)) return op1Type;
-			else if (op2Type instanceof PrimitiveType && 
-					((PrimitiveType) op2Type).getPrimitive().equals(Primitive.BOOLEAN)) return op2Type;
-			
-			else throw new Exception ("Invalid bitwise operation");
+
+		if (operator.equals(InfixOperator.PLUS) && ((op1Type.getFullyQualifiedName().equals("java.lang.String")) || (op2Type.getFullyQualifiedName().equals("java.lang.String"))))
+			return new ReferenceType("java.lang.String");
+
+		if (operator.equals(InfixOperator.BAND) || operator.equals(InfixOperator.BOR)) {
+			if (op1Type instanceof ReferenceType && op2Type instanceof ReferenceType)
+				throw new Exception("Invalid bitwise operation");
+			else if (op1Type instanceof PrimitiveType && ((PrimitiveType) op1Type).getPrimitive().equals(Primitive.BOOLEAN))
+				return op1Type;
+			else if (op2Type instanceof PrimitiveType && ((PrimitiveType) op2Type).getPrimitive().equals(Primitive.BOOLEAN))
+				return op2Type;
+
+			else
+				throw new Exception("Invalid bitwise operation");
 		}
-		
-		if (op1Type.equals(op2Type)) return op1Type;
-		
-		//For now ignore ALL operations performed with differing Reference types.
-		
-		if (op1Type instanceof ReferenceType || op2Type instanceof ReferenceType) throw new Exception ("Invalid non-String reference type operation");
-		 
-		//If the types are the same, return that type
-		
-		
-		//Otherwise, operation between two different Primitive types
-		//Always convert to type with 
-		if (op1Type instanceof PrimitiveType){
-			//Any operation between two primitive types allowed
+
+		if (op1Type.equals(op2Type))
+			return op1Type;
+
+		// For now ignore ALL operations performed with differing Reference
+		// types.
+
+		if (op1Type instanceof ReferenceType || op2Type instanceof ReferenceType)
+			throw new Exception("Invalid non-String reference type operation");
+
+		// If the types are the same, return that type
+
+		// Otherwise, operation between two different Primitive types
+		// Always convert to type with
+		if (op1Type instanceof PrimitiveType) {
+			// Any operation between two primitive types allowed
 			PrimitiveType type1 = (PrimitiveType) op1Type;
 			PrimitiveType type2 = (PrimitiveType) op2Type;
-			List<PrimitiveType>types =new ArrayList<PrimitiveType>();
+			List<PrimitiveType> types = new ArrayList<PrimitiveType>();
 			types.add(type1);
 			types.add(type2);
-			if (types.get(0).getPrimitive().equals(Primitive.BYTE)){
-				if (types.get(1).getPrimitive().equals(Primitive.INT))return types.get(1);
-				if (types.get(1).getPrimitive().equals(Primitive.SHORT))return types.get(1);
+			if (types.get(0).getPrimitive().equals(Primitive.BYTE)) {
+				if (types.get(1).getPrimitive().equals(Primitive.INT))
+					return types.get(1);
+				if (types.get(1).getPrimitive().equals(Primitive.SHORT))
+					return types.get(1);
 			}
 
-			if (types.get(0).getPrimitive().equals(Primitive.CHAR)){
-				if (types.get(1).getPrimitive().equals(Primitive.INT))return types.get(1);
+			if (types.get(0).getPrimitive().equals(Primitive.CHAR)) {
+				if (types.get(1).getPrimitive().equals(Primitive.INT))
+					return types.get(1);
 			}
-			if (types.get(0).getPrimitive().equals(Primitive.INT)){
-				if (types.get(1).getPrimitive().equals(Primitive.BYTE))return types.get(0);
-				if (types.get(1).getPrimitive().equals(Primitive.CHAR))return types.get(0);
+			if (types.get(0).getPrimitive().equals(Primitive.INT)) {
+				if (types.get(1).getPrimitive().equals(Primitive.BYTE))
+					return types.get(0);
+				if (types.get(1).getPrimitive().equals(Primitive.CHAR))
+					return types.get(0);
 			}
-			if (types.get(0).getPrimitive().equals(Primitive.SHORT)){
-				if (types.get(1).getPrimitive().equals(Primitive.INT)) return types.get(1);
-				if (types.get(1).getPrimitive().equals(Primitive.BYTE))return types.get(1);
+			if (types.get(0).getPrimitive().equals(Primitive.SHORT)) {
+				if (types.get(1).getPrimitive().equals(Primitive.INT))
+					return types.get(1);
+				if (types.get(1).getPrimitive().equals(Primitive.BYTE))
+					return types.get(1);
 			}
-			
-			throw new Exception ("Invalid type operation between " + type1.getPrimitive() + " and " + type2.getPrimitive());
+
+			throw new Exception("Invalid type operation between " + type1.getPrimitive() + " and " + type2.getPrimitive());
 		}
-		
-		if (op1Type instanceof ReferenceType){
-			
+
+		if (op1Type instanceof ReferenceType) {
+
 		}
-		
+
 		return null;
 	}
 
