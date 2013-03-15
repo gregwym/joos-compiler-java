@@ -11,7 +11,7 @@ import java.util.logging.Logger;
 
 import ca.uwaterloo.joos.ast.AST;
 import ca.uwaterloo.joos.ast.visitor.ToStringVisitor;
-import ca.uwaterloo.joos.checker.HierarchyBuilder;
+import ca.uwaterloo.joos.checker.HierarchyChecker;
 import ca.uwaterloo.joos.checker.HierarchyChecker;
 import ca.uwaterloo.joos.parser.LR1;
 import ca.uwaterloo.joos.parser.LR1Parser;
@@ -111,18 +111,19 @@ public class Main {
 		table.build(asts);
 //		table.listScopes();
 		
-		HierarchyBuilder hierarchyBuilder = new HierarchyBuilder();
-		
+		//HierarchyChecker hierarchyBuilder = new HierarchyChecker();
+		//table.listScopes();
 		for(AST ast: asts) {
+			HierarchyChecker hierarchyChecker = new HierarchyChecker(table);
 			TypeLinker linker = new TypeLinker(table);
 			ast.getRoot().accept(linker);
-			ast.getRoot().accept(hierarchyBuilder);
+			ast.getRoot().accept(hierarchyChecker);
 		}
 		
-//		table.listScopes();
 		
-		HierarchyChecker hierarchyChecker = new HierarchyChecker(hierarchyBuilder);
-		hierarchyChecker.CheckHierarchy();
+//		
+		
+//		hierarchyChecker.CheckHierarchy();
 		
 		return table;
 	}
