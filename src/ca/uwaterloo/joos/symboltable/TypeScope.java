@@ -137,6 +137,21 @@ public class TypeScope extends Scope {
 	public Map<String, TypeScope> getInterfaceScopes() {
 		return this.interfaceScopes;
 	}
+	
+	public boolean isSubclassOf(String fullyQualifiedName) {
+		if(this.name.equals(fullyQualifiedName)) {
+			return true;
+		}
+		for(TypeScope typeScope: this.interfaceScopes.values()) {
+			if(typeScope.isSubclassOf(fullyQualifiedName)) {
+				return true;
+			}
+		}
+		if(this.superScope != null) {
+			return this.superScope.isSubclassOf(fullyQualifiedName);
+		}
+		return false;
+	}
 
 	@Override
 	public String resolveSimpleNameType(SimpleName name) throws Exception {

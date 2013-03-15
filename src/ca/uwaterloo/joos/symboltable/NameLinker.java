@@ -8,7 +8,6 @@ import ca.uwaterloo.joos.ast.decl.MethodDeclaration;
 import ca.uwaterloo.joos.ast.expr.Expression;
 import ca.uwaterloo.joos.ast.expr.MethodInvokeExpression;
 import ca.uwaterloo.joos.ast.expr.name.Name;
-import ca.uwaterloo.joos.ast.expr.name.SimpleName;
 import ca.uwaterloo.joos.ast.expr.primary.FieldAccess;
 import ca.uwaterloo.joos.ast.expr.primary.Primary;
 import ca.uwaterloo.joos.ast.statement.Statement;
@@ -61,15 +60,13 @@ public class NameLinker extends SemanticsVisitor {
 			// Try to resolve as static field access
 			if (result == null) {
 				String typeName = name;
-				String fieldName = null;
 				while (typeName.contains(".")) {
-					fieldName = typeName.substring(typeName.lastIndexOf('.') + 1, typeName.length());
 					typeName = typeName.substring(0, typeName.lastIndexOf('.'));
 					String resolvedName = currentScope.resolveReferenceType(new ReferenceType(typeName), this.table);
 
 					if (resolvedName != null) {
 						TypeScope typeScope = this.table.getType(resolvedName);
-						result = typeScope.resolveVariableToDecl(new SimpleName(fieldName));
+						result = typeScope.getWithinPackage().getType(resolvedName);
 					}
 
 					if (result != null) {

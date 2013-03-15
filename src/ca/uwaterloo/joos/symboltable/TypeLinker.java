@@ -52,11 +52,20 @@ public class TypeLinker extends SemanticsVisitor {
 	public void didVisit(ASTNode node) throws Exception {
 		
 		// Add super classes and implemented interface to current TypeScope
-		if(node instanceof ClassDeclaration) {
+		if(node instanceof TypeDeclaration) {
 			TypeScope scope = (TypeScope) this.getCurrentScope();
-			ReferenceType superClass = ((ClassDeclaration) node).getSuperClass();
-			if(superClass != null) {
-				TypeScope superScope = this.table.getType(superClass.getFullyQualifiedName());
+			List<ReferenceType> interfaces = ((TypeDeclaration) node).getInterfaces();
+			for(ReferenceType type: interfaces) {
+				TypeScope typeScope = this.table.getType(type.getFullyQualifiedName());
+				if(typeScope == null) {
+					throw new SymbolTableException("Extending unknown interface " + node.getIdentifier());
+				}
+				logger.finer("Adding " + typeScope.getName() + " as interface to " + node);
+				scope.addInterfaceScope(typeScope);
+			}
+			
+			if(node instanceof ClassDeclaration && ((ClassDeclaration) node).getSuperClass() != null) {
+				TypeScope superScope = this.table.getType(((ClassDeclaration) node).getSuperClass().getFullyQualifiedName());
 				if(superScope == null) {
 					throw new SymbolTableException("Extending unknown super class " + node.getIdentifier());
 				}
@@ -69,18 +78,6 @@ public class TypeLinker extends SemanticsVisitor {
 				}
 				logger.finer("Adding java.lang.Object as super to " + node);
 				scope.setSuperScope(superScope);
-			}
-		}
-		if(node instanceof TypeDeclaration) {
-			TypeScope scope = (TypeScope) this.getCurrentScope();
-			List<ReferenceType> interfaces = ((TypeDeclaration) node).getInterfaces();
-			for(ReferenceType type: interfaces) {
-				TypeScope typeScope = this.table.getType(type.getFullyQualifiedName());
-				if(typeScope == null) {
-					throw new SymbolTableException("Extending unknown interface " + node.getIdentifier());
-				}
-				logger.finer("Adding " + typeScope.getName() + " as interface to " + node);
-				scope.addInterfaceScope(typeScope);
 			}
 		}
 		

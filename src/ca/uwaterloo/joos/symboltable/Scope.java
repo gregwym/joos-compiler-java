@@ -56,7 +56,7 @@ public abstract class Scope {
 		Name name = type.getName();
 		if (name instanceof QualifiedName) {
 			TypeScope match = table.getType(name.getName());
-			return match.getName();
+			if(match != null) return match.getName();
 		} else if (name instanceof SimpleName) {
 			return this.resolveSimpleNameType((SimpleName) name);
 		}
