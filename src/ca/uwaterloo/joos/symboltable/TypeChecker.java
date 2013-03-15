@@ -392,8 +392,6 @@ public class TypeChecker extends SemanticsVisitor {
 						break;
 					}
 					VariableDeclaration fieldNode = (VariableDeclaration) entry.getNode();
-			//TODO At this point, we may need to reach back further, the Decl may itself be Declared originally elsewhere
-					
 					if (fieldNode instanceof FieldDeclaration && 
 							fieldNode.getModifiers().containModifier(Modifier.PROTECTED) && 
 							!currentTypeScope.isSubclassOf(currentScope.getName())) {
