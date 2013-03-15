@@ -1,6 +1,7 @@
 package ca.uwaterloo.joos.symboltable;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -21,15 +22,23 @@ public class TypeScope extends Scope {
 	protected Map<String, PackageScope> onDemandImport;
 	protected TypeScope superScope;
 	protected Map<String, TypeScope> interfaceScopes;
+	protected Map<String, TableEntry> visibleSymbols;
 
 	public TypeScope(String name, PackageScope withinPackage, ASTNode referenceNode) {
 		super(name, referenceNode);
-
+		this.visibleSymbols = this.symbols;
 		this.withinPackage = withinPackage;
 		this.singleImport = new HashMap<String, TypeScope>();
 		this.onDemandImport = new HashMap<String, PackageScope>();
 		this.superScope = null;
 		this.interfaceScopes = new HashMap<String, TypeScope>();
+	}
+
+	public Map<String, TableEntry> getVisibleSymbols() {
+		return this.visibleSymbols;
+	}
+	public void addVisibleSymbols(String name, TableEntry entry) {
+		visibleSymbols.put(name, entry);
 	}
 
 	public PackageScope getWithinPackage() {
@@ -104,19 +113,23 @@ public class TypeScope extends Scope {
 		String name = this.signatureOfMethod(node);
 		return this.symbols.get(name);
 	}
-	
+
 	public void setSuperScope(TypeScope superScope) {
 		this.superScope = superScope;
 	}
-	
+
 	public TypeScope getSuperScope() {
 		return this.superScope;
 	}
-	
-	public void addInterfaceScope(TypeScope interfaceScope) {
-		this.interfaceScopes.put(interfaceScope.getName(), interfaceScope);
+
+	public void addInterfaceScope(TypeScope interfaceScope) throws Exception {
+		if (interfaceScopes.containsKey(interfaceScope.getName())) {
+			throw new Exception("can not implement the same interface twice");
+		} else {
+			this.interfaceScopes.put(interfaceScope.getName(), interfaceScope);
+		}
 	}
-	
+
 	public Map<String, TypeScope> getInterfaceScopes() {
 		return this.interfaceScopes;
 	}
@@ -162,47 +175,58 @@ public class TypeScope extends Scope {
 
 		return null;
 	}
-	
+
 	@Override
 	public TableEntry resolveVariableToDecl(Name name) throws Exception {
 		TableEntry result = super.resolveVariableToDecl(name);
-		if(result == null && this.superScope != null) {
+		if (result == null && this.superScope != null) {
 			result = this.superScope.resolveVariableToDecl(name);
 		}
 		return result;
 	}
+	public void listVisibleSymbols() {
+		//System.out.println("\tReferences to: " + this.referenceNode);
+		System.out.println("\tSymbols:");
+		List<String> keys = new ArrayList<String>(this.visibleSymbols.keySet());
+		Collections.sort(keys);
+		for (String key : keys) {
+			System.out.println("\t\t" + key + "\t" + this.visibleSymbols.get(key).getNode());
+		}
+		System.out.println();
 
+	}
 	@Override
 	public void listSymbols() {
 		System.out.println("\tPackage:");
 		System.out.println("\t\t" + this.withinPackage);
 
-		if(this.singleImport.size() > 0) {
+		if (this.singleImport.size() > 0) {
 			System.out.println("\tSingle Type Imports:");
 			for (Scope scope : this.singleImport.values()) {
 				System.out.println("\t\t" + scope);
 			}
 		}
-		
-		if(this.onDemandImport.size() > 0) {
+
+		if (this.onDemandImport.size() > 0) {
 			System.out.println("\tOnDemand Imports:");
 			for (Scope scope : this.onDemandImport.values()) {
 				System.out.println("\t\t" + scope);
 			}
 		}
-		
-		if(this.superScope != null) {
+
+		if (this.superScope != null) {
 			System.out.println("\tSuper Scope:");
 			System.out.println("\t\t" + this.superScope);
 		}
 
-		if(this.interfaceScopes.size() > 0) {
+		if (this.interfaceScopes.size() > 0) {
 			System.out.println("\tInterface Scopes:");
 			for (Scope scope : this.interfaceScopes.values()) {
 				System.out.println("\t\t" + scope);
 			}
 		}
-		
+
 		super.listSymbols();
 	}
+
 }

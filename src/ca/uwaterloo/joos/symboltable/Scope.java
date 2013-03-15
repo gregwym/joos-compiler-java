@@ -27,6 +27,10 @@ public abstract class Scope {
 	protected Map<String, TableEntry> symbols;
 	protected ASTNode referenceNode;
 
+	public Map<String, TableEntry> getSymbols() {
+		return this.symbols;
+	}
+
 	public Scope(String name, ASTNode referenceNode) {
 		this.name = name;
 		this.symbols = new HashMap<String, TableEntry>();
