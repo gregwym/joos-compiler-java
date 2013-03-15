@@ -30,19 +30,6 @@ public abstract class SemanticsVisitor extends ASTVisitor {
 		return this.viewStack.peek();
 	}
 	
-	protected TypeScope getParentTypeScope() {
-		Stack<Scope> reversedStack = new Stack<Scope>();
-		reversedStack.addAll(this.viewStack);
-		while(!reversedStack.isEmpty()) {
-			Scope scope = reversedStack.pop();
-			logger.info("getParentTypeScope: poping " + scope);
-			if(scope instanceof TypeScope) {
-				return (TypeScope) scope; 
-			}
-		}
-		return null;
-	}
-	
 	protected void pushScope(Scope table) {
 		logger.finer("Pushing scope " + table.toString());
 		this.viewStack.push(table);

@@ -8,6 +8,7 @@ import ca.uwaterloo.joos.ast.ASTNode;
 import ca.uwaterloo.joos.ast.Modifiers;
 import ca.uwaterloo.joos.ast.Modifiers.Modifier;
 import ca.uwaterloo.joos.ast.decl.BodyDeclaration;
+import ca.uwaterloo.joos.ast.decl.ConstructorDeclaration;
 import ca.uwaterloo.joos.ast.decl.FieldDeclaration;
 import ca.uwaterloo.joos.ast.decl.MethodDeclaration;
 import ca.uwaterloo.joos.ast.decl.TypeDeclaration;
@@ -132,6 +133,34 @@ public class TypeChecker extends SemanticsVisitor {
 		}
 		return true;
 	}
+	
+	private boolean isAccessible(boolean staticAccess, TableEntry entry, TypeScope accessingTypeScope, TypeScope currentTypeScope) throws Exception {
+		TypeScope declaredTypeScope = entry.getWithinScope().getParentTypeScope();
+		logger.info("Checking accessibility static: " + staticAccess + " entry " + entry.getName() + 
+				" within type " + declaredTypeScope.getName() + " access type " + accessingTypeScope.getName() + 
+				" from type " + currentTypeScope.getName());
+		BodyDeclaration fieldNode = (BodyDeclaration) entry.getNode();
+		Modifiers modifiers = fieldNode.getModifiers();
+		boolean isStatic = modifiers != null && fieldNode.getModifiers().containModifier(Modifier.STATIC);
+		boolean isProtected = modifiers != null && fieldNode.getModifiers().containModifier(Modifier.PROTECTED);
+		
+		// Check whether is accessing static in non-static way
+		if (isStatic != staticAccess) {
+			throw new Exception("Cannot access " + entry.getName() + " in not matching way. staticAccess: " + staticAccess);
+		}
+		// Check whether has permission to access
+		if (isProtected) {
+			if (isStatic && !currentTypeScope.isSubclassOf(declaredTypeScope.getName())) {
+				throw new Exception("Cannot access static PROTECTED " + entry.getName() + " from " + currentTypeScope.getName());
+			} 
+			else if (!isStatic && !accessingTypeScope.isSubclassOf(currentTypeScope.getName())) { //  || currentTypeScope.isSubclassOf(declaredTypeScope.getName())
+				throw new Exception("Cannot access PROTECTED " + entry.getName() + " from " + currentTypeScope.getName());
+			} else if (!isStatic && accessingTypeScope.isSubclassOf(currentTypeScope.getName()) && !currentTypeScope.isSubclassOf(declaredTypeScope.getName())) {
+				throw new Exception("Cannot access subclass PROTECTED " + entry.getName() + " from " + currentTypeScope.getName());
+			}
+		}
+		return true;
+	}
 
 	@Override
 	public void didVisit(ASTNode node) throws Exception {
@@ -148,7 +177,7 @@ public class TypeChecker extends SemanticsVisitor {
 		if (node instanceof LiteralPrimary) {
 			this.pushType(((LiteralPrimary) node).getType());
 		} else if (node instanceof ThisPrimary) {
-			String typeName = this.getParentTypeScope().getName();
+			String typeName = this.getCurrentScope().getParentTypeScope().getName();
 			if (this.inStatic) {
 				throw new Exception("Trying to access THIS within static scope " + this.getCurrentScope());
 			}
@@ -161,24 +190,26 @@ public class TypeChecker extends SemanticsVisitor {
 			List<String> components = qualifiedName.getComponents();
 
 			TableEntry entry = qualifiedName.getOriginalDeclaration();
+			ASTNode entryNode = entry.getNode();
+			boolean staticAccess = entryNode instanceof TypeDeclaration;
+			
 			Type type = entry.getType();
 			TypeScope typeScope = entry.getTypeScope();
-			TypeScope currentTypeScope = this.getParentTypeScope();
+			TypeScope currentTypeScope = this.getCurrentScope().getParentTypeScope();
 			for (String component : components.subList(1, components.size())) {
 				if (type instanceof ArrayType) {
 					if (component.equals("length")) {
 						type = new PrimitiveType(Primitive.INT, node);
 						break;
 					} else {
-						throw new Exception("Unkown ArrayType field " + component + " in " + qualifiedName.getName());
+						throw new Exception("QN: Unkown ArrayType field " + component + " in " + qualifiedName.getName());
 					}
 				}
 				entry = typeScope.resolveVariableToDecl(new SimpleName(component, node));
 				if (entry != null) {
-					VariableDeclaration fieldNode = (VariableDeclaration) entry.getNode();
-					if (fieldNode.getModifiers().containModifier(Modifier.PROTECTED) && !typeScope.isSubclassOf(currentTypeScope.getName())) {
-						throw new Exception("Cannot access PROTECTED field " + entry.getName() + " from QualifiedName " + currentTypeScope.getName());
-					}
+					this.isAccessible(staticAccess, entry, typeScope, currentTypeScope);
+					
+					staticAccess = false;
 					type = entry.getType();
 					typeScope = entry.getTypeScope();
 				}
@@ -206,9 +237,14 @@ public class TypeChecker extends SemanticsVisitor {
 
 			String signature = typeScope.signatureOfMethod(type.getName().getSimpleName(), true, argTypes);
 			TableEntry entry = typeScope.getSymbols().get(signature);
-
 			if (entry == null) {
 				throw new Exception("Unknown constructor " + signature);
+			}
+			
+			ConstructorDeclaration constructorNode = (ConstructorDeclaration) entry.getNode();
+			if(constructorNode.getModifiers().containModifier(Modifier.PROTECTED) &&
+					typeScope.getWithinPackage() != this.getCurrentScope().getParentTypeScope().getWithinPackage()) {
+				throw new Exception("Cannot access constructor " + entry.getName() + " from scope " + this.getCurrentScope().getName());
 			}
 
 			this.pushType(type);
@@ -285,10 +321,11 @@ public class TypeChecker extends SemanticsVisitor {
 				argTypes.add(0, this.popType());
 			}
 
-			TypeScope currentTypeScope = this.getParentTypeScope();
+			TypeScope currentTypeScope = this.getCurrentScope().getParentTypeScope();
 			Scope currentScope = this.getCurrentScope();
 			TypeScope typeScope = null;
 			String signature = null;
+			boolean staticAccess = false;
 
 			// Prepare typeScope and signature
 			Primary invokingPrimary = ((MethodInvokeExpression) node).getPrimary();
@@ -302,24 +339,26 @@ public class TypeChecker extends SemanticsVisitor {
 				String methodName = components.get(components.size() - 1);
 				String qualifiedName = ((QualifiedName) invokingName).getQualifiedName();
 				
+				
+				
 				for (i = 0; i < components.size() - 1; i++) {
+					// Resolve as field access into currentScope
 					TableEntry entry = currentScope.resolveVariableToDecl(new SimpleName(components.get(i), node));
 					if (entry == null) {
 						currentScope = null;
 						break;
 					}
-					VariableDeclaration fieldNode = (VariableDeclaration) entry.getNode();
-					if (fieldNode instanceof FieldDeclaration && 
-							fieldNode.getModifiers().containModifier(Modifier.PROTECTED) && 
-							!currentTypeScope.isSubclassOf(currentScope.getName())) {
-						throw new Exception("Cannot access PROTECTED field " + entry.getName() + " from " + currentTypeScope.getName());
-					}
+					// Check whether has permission to access the field
+					this.isAccessible(staticAccess, entry, currentScope.getParentTypeScope(), currentTypeScope);
+					
 					currentScope = entry.getTypeScope();
 				}
 
-				// Fail to resolve as a non-static method
+				// Try to resolve as a static method
 				if (currentScope == null) {
+					staticAccess = true;
 					String typeName = qualifiedName;
+					// Find the TypeScope portion, start from the longest name
 					for (i = components.size() - 1; i > 0; i--) {
 						typeName = Lambda.join(components.subList(0, i), ".");
 						typeName = this.getCurrentScope().resolveReferenceType(new ReferenceType(typeName, node), this.table);
@@ -328,6 +367,7 @@ public class TypeChecker extends SemanticsVisitor {
 							break;
 						}
 					}
+					// Resolve as static field access
 					if (currentScope != null) {
 						String fieldName = null;
 						for (; i < components.size() - 1; i++) {
@@ -337,6 +377,9 @@ public class TypeChecker extends SemanticsVisitor {
 								currentScope = null;
 								break;
 							}
+							this.isAccessible(staticAccess, entry, currentScope.getParentTypeScope(), currentTypeScope);
+							
+							staticAccess = false;
 							currentScope = entry.getTypeScope();
 						}
 					}
@@ -348,9 +391,10 @@ public class TypeChecker extends SemanticsVisitor {
 
 				typeScope = (TypeScope) currentScope;
 				signature = typeScope.signatureOfMethod(methodName, false, argTypes);
-				logger.info("Method " + qualifiedName + " resolved to signature " + signature);
+				logger.finer("Method " + qualifiedName + " resolved to signature " + signature);
 			} else if (invokingName instanceof SimpleName) {
-				typeScope = this.getParentTypeScope();
+				staticAccess = this.inStatic;
+				typeScope = this.getCurrentScope().getParentTypeScope();
 				signature = typeScope.signatureOfMethod(invokingName.getSimpleName(), false, argTypes);
 			}
 
@@ -359,11 +403,8 @@ public class TypeChecker extends SemanticsVisitor {
 				throw new Exception("Unknown method " + signature);
 			}
 			
-			MethodDeclaration fieldNode = (MethodDeclaration) entry.getNode();
-			if (fieldNode.getModifiers().containModifier(Modifier.PROTECTED) && 
-					!typeScope.isSubclassOf(currentTypeScope.getName())) {
-				throw new Exception("Cannot access PROTECTED method " + entry.getName() + " from " + currentTypeScope.getName());
-			}
+			// Check method permission
+			this.isAccessible(staticAccess, entry, typeScope, currentTypeScope);
 
 			Type type = entry.getType();
 			if (type == null) {
@@ -383,16 +424,13 @@ public class TypeChecker extends SemanticsVisitor {
 				}
 			} else {
 				TypeScope typeScope = this.table.getType(primaryType.getFullyQualifiedName());
-				TypeScope currentTypeScope = this.getParentTypeScope();
+				TypeScope currentTypeScope = this.getCurrentScope().getParentTypeScope();
 				TableEntry entry = typeScope.resolveVariableToDecl(fieldName);
 				if (entry == null) {
 					throw new Exception("Unknown field " + fieldName.getName() + " in primary type " + primaryType.getFullyQualifiedName());
 				}
 				
-				VariableDeclaration fieldNode = (VariableDeclaration) entry.getNode();
-				if (fieldNode.getModifiers().containModifier(Modifier.PROTECTED) && !typeScope.isSubclassOf(currentTypeScope.getName())) {
-					throw new Exception("Cannot access PROTECTED field " + entry.getName() + " from FieldAccess " + currentTypeScope.getName());
-				}
+				this.isAccessible(false, entry, typeScope, currentTypeScope);
 				
 				type = entry.getType();
 			}

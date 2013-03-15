@@ -43,6 +43,8 @@ public abstract class Scope {
 	public ASTNode getReferenceNode() {
 		return this.referenceNode;
 	}
+	
+	public abstract TypeScope getParentTypeScope();
 
 	protected List<TableEntry> entriesWithSuffix(Collection<TableEntry> entries, String suffix) {
 		return Lambda.select(entries, Lambda.having(Lambda.on(TableEntry.class).getName(), Matchers.endsWith(suffix)));

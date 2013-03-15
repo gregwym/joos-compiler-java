@@ -37,6 +37,11 @@ public class TypeScope extends Scope {
 	public PackageScope getWithinPackage() {
 		return withinPackage;
 	}
+	
+	@Override
+	public TypeScope getParentTypeScope() {
+		return this;
+	}
 
 	public void addSingleImport(String simpleName, TypeScope scope) throws SymbolTableException {
 		// Check name clash with type
@@ -68,7 +73,7 @@ public class TypeScope extends Scope {
 
 	public void addFieldDecl(FieldDeclaration field) throws Exception {
 		String name = this.nameForDecl(field);
-		TableEntry entry = new TableEntry(name, field);
+		TableEntry entry = new TableEntry(name, field, this);
 
 		if (this.symbols.containsKey(name)) {
 			throw new SymbolTableException("Duplicate Field Declarations: " + name);
@@ -104,7 +109,7 @@ public class TypeScope extends Scope {
 		if (this.symbols.containsKey(name)) {
 			throw new SymbolTableException("Duplicate Method Declaraion " + name);
 		}
-		TableEntry entry = new TableEntry(name, node);
+		TableEntry entry = new TableEntry(name, node, this);
 		this.symbols.put(name, entry);
 		return entry;
 	}
