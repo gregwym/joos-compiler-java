@@ -35,6 +35,7 @@ import ca.uwaterloo.joos.ast.expr.primary.ThisPrimary;
 import ca.uwaterloo.joos.ast.statement.Block;
 import ca.uwaterloo.joos.ast.statement.IfStatement;
 import ca.uwaterloo.joos.ast.statement.ReturnStatement;
+import ca.uwaterloo.joos.ast.statement.WhileStatement;
 import ca.uwaterloo.joos.ast.type.ArrayType;
 import ca.uwaterloo.joos.ast.type.PrimitiveType;
 import ca.uwaterloo.joos.ast.type.PrimitiveType.Primitive;
@@ -395,21 +396,6 @@ public class TypeChecker extends SemanticsVisitor {
 			// op1Type.getFullyQualifiedName() + " with " +
 			// op2Type.getFullyQualifiedName());
 			// }
-		} else if (node instanceof IfStatement) {
-
-			IfStatement IFNode = (IfStatement) node;
-
-			ASTNode AE = IFNode.getIfCondition();
-			// TODO Expand on this to check only what an if can be
-			// If conditional can be an assignment only if the assignment can be
-			// converted to boolean
-			if (AE instanceof InfixExpression) {
-				// Get the Infix node and process it with type of expression
-				// expressionType((InfixExpression)AE);
-			}
-
-			// Check the conditional such that it returns type boolean
-			// getExpressionType (IfStatement.conditional node...)
 		}
 
 		else if (node instanceof MethodInvokeExpression) {
@@ -564,6 +550,16 @@ public class TypeChecker extends SemanticsVisitor {
 				}
 			} else if (this.isAssignable(this.methodReturnType, this.popType(), false) == false) {
 				throw new Exception("Invalid Return Type");
+			}
+		} else if (node instanceof IfStatement) {
+			Type condType = this.popType();
+			if (!condType.getFullyQualifiedName().equals("BOOLEAN")) {
+				throw new Exception("If statement's condition expecting BOOLEAN but got " + condType.getFullyQualifiedName());
+			}
+		} else if (node instanceof WhileStatement) {
+			Type condType = this.popType();
+			if (!condType.getFullyQualifiedName().equals("BOOLEAN")) {
+				throw new Exception("While statement's condition expecting BOOLEAN but got " + condType.getFullyQualifiedName());
 			}
 		}
 
