@@ -16,11 +16,19 @@ import ca.uwaterloo.joos.symboltable.TableEntry;
 
 public abstract class Name extends Expression implements Lefthand {
 	
-	public TableEntry originalDeclaration;
+	protected TableEntry originalDeclaration;
 
 	public Name(Node node, ASTNode parent) throws Exception {
 		super(node, parent);
 		this.setIdentifier(this.getName());
+	}
+
+	public TableEntry getOriginalDeclaration() {
+		return originalDeclaration;
+	}
+
+	public void setOriginalDeclaration(TableEntry originalDeclaration) {
+		this.originalDeclaration = originalDeclaration;
 	}
 
 	public abstract String getName() throws Exception;

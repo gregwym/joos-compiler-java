@@ -10,7 +10,6 @@ import java.util.logging.Logger;
 import org.hamcrest.Matchers;
 
 import ca.uwaterloo.joos.Main;
-import ca.uwaterloo.joos.ast.AST;
 import ca.uwaterloo.joos.ast.ASTNode;
 import ca.uwaterloo.joos.ast.decl.PackageDeclaration;
 import ch.lambdaj.Lambda;
@@ -35,12 +34,12 @@ public class SymbolTable {
 	public PackageScope getPackageByDecl(PackageDeclaration packDecl) throws Exception {
 		// Get Package Name
 		String name = null;
-		if(packDecl.getPackageName() == null) {
+		if (packDecl.getPackageName() == null) {
 			name = "__default__";
 		} else {
-			name = packDecl.getPackageName().getName(); 
+			name = packDecl.getPackageName().getName();
 		}
-		
+
 		// Find the scope
 		Scope scope = this.scopes.get(name);
 		if (scope == null) {
@@ -50,13 +49,13 @@ public class SymbolTable {
 		}
 		return (PackageScope) scope;
 	}
-	
+
 	public PackageScope getPackage(String name) throws Exception {
 		// Get Package Name
-		if(name == null) {
+		if (name == null) {
 			name = "__default__";
 		}
-		
+
 		// Find the scope
 		Scope scope = this.scopes.get(name);
 		if (scope != null && !(scope instanceof PackageScope)) {
@@ -64,11 +63,9 @@ public class SymbolTable {
 		}
 		return (PackageScope) scope;
 	}
-	
+
 	public List<? extends Scope> getScopesByPrefix(String prefix, Class<?> scopeClass) {
-		return Lambda.select(
-				Lambda.select(this.scopes.values(), Matchers.instanceOf(scopeClass)), 
-				Lambda.having(Lambda.on(Scope.class).getName(), Matchers.startsWith(prefix)));
+		return Lambda.select(Lambda.select(this.scopes.values(), Matchers.instanceOf(scopeClass)), Lambda.having(Lambda.on(Scope.class).getName(), Matchers.startsWith(prefix)));
 	}
 
 	public TypeScope getType(String name) throws Exception {
@@ -78,7 +75,7 @@ public class SymbolTable {
 		}
 		return (TypeScope) scope;
 	}
-	
+
 	public BlockScope getBlock(String name) throws Exception {
 		Scope scope = this.scopes.get(name);
 		if (scope != null && !(scope instanceof BlockScope)) {
@@ -96,7 +93,7 @@ public class SymbolTable {
 		Scope scope = this.scopes.get(name);
 		return scope != null && scope instanceof TypeScope;
 	}
-	
+
 	public boolean containBlock(String name) {
 		Scope scope = this.scopes.get(name);
 		return scope != null && scope instanceof BlockScope;
@@ -133,7 +130,7 @@ public class SymbolTable {
 		this.scopes.put(typeName, scope);
 		return scope;
 	}
-	
+
 	public BlockScope addBlock(String blockName, Scope parent, ASTNode referenceNode) throws Exception {
 		// Check for prefix conflict
 		if (this.scopes.containsKey(blockName)) {
@@ -143,25 +140,6 @@ public class SymbolTable {
 		BlockScope scope = new BlockScope(blockName, parent, referenceNode);
 		this.scopes.put(blockName, scope);
 		return scope;
-	}
-
-	public void build(List<AST> asts) throws Exception {
-//		logger.setLevel(Level.FINER);
-
-		for (AST ast : asts) {
-			ast.getRoot().accept(new TopDeclVisitor(this));
-		}
-		logger.info("Building Symbol Table Pass 1 Finished");
-
-		for (AST ast: asts){
-			ast.getRoot().accept(new ImportVisitor(this));
-		}
-		logger.info("Building Symbol Table Pass 2 Finished");
-
-		for (AST ast: asts){
-			ast.getRoot().accept(new DeepDeclVisitor(this));
-		}
-		logger.info("Building Symbol Table Pass 3 Finished");
 	}
 
 	public void listScopes() {

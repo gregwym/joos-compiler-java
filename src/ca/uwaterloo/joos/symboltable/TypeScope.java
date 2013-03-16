@@ -5,6 +5,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.hamcrest.Matchers;
+
 import ca.uwaterloo.joos.ast.ASTNode;
 import ca.uwaterloo.joos.ast.decl.ConstructorDeclaration;
 import ca.uwaterloo.joos.ast.decl.FieldDeclaration;
@@ -12,7 +14,9 @@ import ca.uwaterloo.joos.ast.decl.MethodDeclaration;
 import ca.uwaterloo.joos.ast.decl.ParameterDeclaration;
 import ca.uwaterloo.joos.ast.expr.name.Name;
 import ca.uwaterloo.joos.ast.expr.name.SimpleName;
+import ca.uwaterloo.joos.ast.type.Type;
 import ca.uwaterloo.joos.symboltable.SymbolTable.SymbolTableException;
+import ch.lambdaj.Lambda;
 
 public class TypeScope extends Scope {
 
@@ -34,6 +38,11 @@ public class TypeScope extends Scope {
 
 	public PackageScope getWithinPackage() {
 		return withinPackage;
+	}
+	
+	@Override
+	public TypeScope getParentTypeScope() {
+		return this;
 	}
 
 	public void addSingleImport(String simpleName, TypeScope scope) throws SymbolTableException {
@@ -66,7 +75,7 @@ public class TypeScope extends Scope {
 
 	public void addFieldDecl(FieldDeclaration field) throws Exception {
 		String name = this.nameForDecl(field);
-		TableEntry entry = new TableEntry(name, field);
+		TableEntry entry = new TableEntry(name, field, this);
 
 		if (this.symbols.containsKey(name)) {
 			throw new SymbolTableException("Duplicate Field Declarations: " + name);
@@ -80,23 +89,35 @@ public class TypeScope extends Scope {
 	}
 
 	public String signatureOfMethod(MethodDeclaration method) throws Exception {
-		String name = this.name + "." + method.getName().getName() + "(";
-		if (method instanceof ConstructorDeclaration) {
+		return this.signatureOfMethod(method.getName().getName(), 
+				method instanceof ConstructorDeclaration, 
+				Lambda.extract(method.getParameters(), Lambda.on(ParameterDeclaration.class).getType()));
+	}
+	
+	public String signatureOfMethod(String methodName, boolean isConstructor, List<Type> parameterTypes) throws Exception {
+		return this.name + "." + this.localSignatureOfMethod(methodName, isConstructor, parameterTypes);
+	}
+	
+	public String localSignatureOfMethod(String methodName, boolean isConstructor, List<Type> parameterTypes) throws Exception {
+		String name = methodName + "(";
+		if (isConstructor) {
 			name += "THIS,";
 		}
-		for (ParameterDeclaration parameter : method.getParameters()) {
-			name += parameter.getType().getIdentifier() + ",";
+		for (Type parameterType : parameterTypes) {
+			name += parameterType.getFullyQualifiedName() + ",";
 		}
 		name += ")";
 		return name;
 	}
 
-	public void addMethod(MethodDeclaration node) throws Exception {
+	public TableEntry addMethod(MethodDeclaration node) throws Exception {
 		String name = this.signatureOfMethod(node);
 		if (this.symbols.containsKey(name)) {
 			throw new SymbolTableException("Duplicate Method Declaraion " + name);
 		}
-		this.symbols.put(name, new TableEntry(name, node));
+		TableEntry entry = new TableEntry(name, node, this);
+		this.symbols.put(name, entry);
+		return entry;
 	}
 
 	public TableEntry getMethod(MethodDeclaration node) throws Exception {
@@ -128,6 +149,21 @@ public class TypeScope extends Scope {
 	
 	public Map<String, TypeScope> getInterfaceScopes() {
 		return this.interfaceScopes;
+	}
+	
+	public boolean isSubclassOf(String fullyQualifiedName) {
+		if(this.name.equals(fullyQualifiedName)) {
+			return true;
+		}
+		for(TypeScope typeScope: this.interfaceScopes.values()) {
+			if(typeScope.isSubclassOf(fullyQualifiedName)) {
+				return true;
+			}
+		}
+		if(this.superScope != null) {
+			return this.superScope.isSubclassOf(fullyQualifiedName);
+		}
+		return false;
 	}
 
 	@Override
@@ -177,6 +213,29 @@ public class TypeScope extends Scope {
 		TableEntry result = super.resolveVariableToDecl(name);
 		if(result == null && this.superScope != null) {
 			result = this.superScope.resolveVariableToDecl(name);
+		}
+		return result;
+	}
+	
+	public TableEntry resolveMethodToDecl(String localSignature) throws Exception {
+		TableEntry result = null;
+		
+		// Resolve in the interface first
+		for(TypeScope interfaceScope : this.interfaceScopes.values()) {
+			result = interfaceScope.resolveMethodToDecl(localSignature);
+			if(result != null) return result;
+		}
+		
+		// Resolve in locally
+		List<TableEntry> entries = Lambda.select(this.symbols.values(), 
+				Lambda.having(Lambda.on(TableEntry.class).getName(), Matchers.endsWith("." + localSignature)));
+		if(entries.size() > 0) {
+			result = entries.get(0);
+		} 
+		
+		// Resolve in super classes
+		else if(this.superScope != null){
+			result = this.superScope.resolveMethodToDecl(localSignature);
 		}
 		return result;
 	}

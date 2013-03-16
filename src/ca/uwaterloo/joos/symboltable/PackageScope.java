@@ -16,12 +16,17 @@ public class PackageScope extends Scope {
 
 	public void addType(TypeDeclaration type){
 		String name = this.name + "." + type.getIdentifier();
-		TableEntry entry = new TableEntry(name, type);
+		TableEntry entry = new TableEntry(name, type, this);
 		symbols.put(name, entry);
 	}
 	
 	public TableEntry getType(String key){
 		return symbols.get(key);
+	}
+	
+	@Override
+	public TypeScope getParentTypeScope() {
+		return null;
 	}
 
 	@Override
@@ -37,4 +42,5 @@ public class PackageScope extends Scope {
 		
 		return null;
 	}
+
 }

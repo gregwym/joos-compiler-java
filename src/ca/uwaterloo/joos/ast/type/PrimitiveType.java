@@ -17,6 +17,11 @@ public class PrimitiveType extends Type {
 	public PrimitiveType(Node node, ASTNode parent) throws Exception {
 		super(node, parent);
 	}
+	
+	public PrimitiveType(Primitive type, ASTNode parent) throws Exception {
+		super(null, parent);
+		this.addChild(TYPE, type);
+	}
 
 	private Primitive stringToType(String name) throws ASTConstructException {
 		for (Primitive type : Primitive.values()) {
@@ -26,13 +31,13 @@ public class PrimitiveType extends Type {
 		throw new ASTConstructException("Unknown primitive type " + name);
 	}
 
-	public Primitive getPrimitiveType() throws ChildTypeUnmatchException {
+	public Primitive getPrimitive() throws ChildTypeUnmatchException {
 		return (Primitive) this.getChildByDescriptor(PrimitiveType.TYPE);
 	}
 	
 	@Override
 	public String getFullyQualifiedName() throws ChildTypeUnmatchException {
-		return this.getPrimitiveType().name();
+		return this.getPrimitive().name();
 	}
 
 	@Override
@@ -45,7 +50,7 @@ public class PrimitiveType extends Type {
 	public String getIdentifier() {
 		String name = null;
 		try {
-			name = this.getPrimitiveType().name();
+			name = this.getPrimitive().name();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
