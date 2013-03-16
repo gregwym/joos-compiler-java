@@ -404,7 +404,7 @@ public class TypeChecker extends SemanticsVisitor {
 			TypeScope currentTypeScope = this.getCurrentScope().getParentTypeScope();
 			Scope currentScope = this.getCurrentScope();
 			TypeScope typeScope = null;
-			String signature = null;
+			String localSignature = null;
 			boolean staticAccess = false;
 
 			// Prepare typeScope and signature
@@ -413,7 +413,7 @@ public class TypeChecker extends SemanticsVisitor {
 			if (invokingPrimary != null) {
 				Type primaryType = this.popType();
 				typeScope = this.table.getType(primaryType.getFullyQualifiedName());
-				signature = typeScope.signatureOfMethod(invokingName.getSimpleName(), false, argTypes);
+				localSignature = typeScope.localSignatureOfMethod(invokingName.getSimpleName(), false, argTypes);
 			} else if (invokingName instanceof QualifiedName) {
 				List<String> components = ((QualifiedName) invokingName).getComponents();
 				String methodName = components.get(components.size() - 1);
@@ -468,17 +468,17 @@ public class TypeChecker extends SemanticsVisitor {
 				}
 
 				typeScope = (TypeScope) currentScope;
-				signature = typeScope.signatureOfMethod(methodName, false, argTypes);
-				logger.finer("Method " + qualifiedName + " resolved to signature " + signature);
+				localSignature = typeScope.localSignatureOfMethod(methodName, false, argTypes);
+				logger.finer("Method " + qualifiedName + " resolved to signature " + localSignature);
 			} else if (invokingName instanceof SimpleName) {
 				staticAccess = this.inStatic;
 				typeScope = this.getCurrentScope().getParentTypeScope();
-				signature = typeScope.signatureOfMethod(invokingName.getSimpleName(), false, argTypes);
+				localSignature = typeScope.localSignatureOfMethod(invokingName.getSimpleName(), false, argTypes);
 			}
 
-			TableEntry entry = typeScope.getSymbols().get(signature);
+			TableEntry entry = typeScope.resolveMethodToDecl(localSignature);
 			if (entry == null) {
-				throw new Exception("Unknown method " + signature);
+				throw new Exception("Unknown method " + localSignature + " in scope " + typeScope.getName());
 			}
 
 			// Check method permission
@@ -536,8 +536,11 @@ public class TypeChecker extends SemanticsVisitor {
 				}
 			}
 		} else if (node instanceof ReturnStatement) {
-			// Type retType = this.popType();
-			if (this.isAssignable(this.methodReturnType, this.popType(), false) == false) {
+			if (this.methodReturnType == null) {
+				if(((ReturnStatement)node).getExpression() != null) {
+					throw new Exception("Returning with value in void method");
+				}
+			} else if (this.isAssignable(this.methodReturnType, this.popType(), false) == false) {
 				throw new Exception("Invalid Return Type");
 			}
 		}
@@ -546,6 +549,7 @@ public class TypeChecker extends SemanticsVisitor {
 			this.checkType--;
 		}
 		if (node instanceof MethodDeclaration || node instanceof FieldDeclaration) {
+			methodReturnType = null;
 			inStatic = false;
 		}
 
