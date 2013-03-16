@@ -218,12 +218,23 @@ public class TypeScope extends Scope {
 	}
 	
 	public TableEntry resolveMethodToDecl(String localSignature) throws Exception {
+		TableEntry result = null;
+		
+		// Resolve in the interface first
+		for(TypeScope interfaceScope : this.interfaceScopes.values()) {
+			result = interfaceScope.resolveMethodToDecl(localSignature);
+			if(result != null) return result;
+		}
+		
+		// Resolve in locally
 		List<TableEntry> entries = Lambda.select(this.symbols.values(), 
 				Lambda.having(Lambda.on(TableEntry.class).getName(), Matchers.endsWith("." + localSignature)));
-		TableEntry result = null;
 		if(entries.size() > 0) {
 			result = entries.get(0);
-		} else if(this.superScope != null){
+		} 
+		
+		// Resolve in super classes
+		else if(this.superScope != null){
 			result = this.superScope.resolveMethodToDecl(localSignature);
 		}
 		return result;
