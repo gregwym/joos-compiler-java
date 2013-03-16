@@ -1,10 +1,14 @@
 package ca.uwaterloo.joos.symboltable;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import ca.uwaterloo.joos.ast.ASTNode;
 import ca.uwaterloo.joos.ast.Modifiers;
 import ca.uwaterloo.joos.ast.decl.BodyDeclaration;
 import ca.uwaterloo.joos.ast.decl.FieldDeclaration;
 import ca.uwaterloo.joos.ast.decl.MethodDeclaration;
+import ca.uwaterloo.joos.ast.expr.AssignmentExpression;
 import ca.uwaterloo.joos.ast.expr.Expression;
 import ca.uwaterloo.joos.ast.expr.MethodInvokeExpression;
 import ca.uwaterloo.joos.ast.expr.name.Name;
@@ -18,11 +22,15 @@ public class NameLinker extends SemanticsVisitor {
 
 	private int linkName = 0;
 	private boolean inStatic = false;
+	private int checkForwardRef = -1;
+	private Set<String> visitedFields;
 
 	public NameLinker(SymbolTable table) {
 		super(table);
 		this.linkName = 0;
 		this.inStatic = false;
+		this.checkForwardRef = -1;
+		this.visitedFields = new HashSet<String>();
 	}
 
 	@Override
@@ -54,6 +62,18 @@ public class NameLinker extends SemanticsVisitor {
 				FieldDeclaration field = (FieldDeclaration) result.getNode();
 				if (!field.getModifiers().containModifier(Modifiers.Modifier.STATIC)) {
 					throw new Exception("Non static scope " + currentScope + " accessing static field " + name);
+				}
+			}
+			
+			// Check Forward Referencing
+			if (this.checkForwardRef == 1 && result != null && 
+					result.getWithinScope() == this.getCurrentScope().getParentTypeScope() &&
+					!this.visitedFields.contains(result.getName())) {
+				ASTNode parentNode = node.getParent();
+				if(parentNode instanceof AssignmentExpression && node == ((AssignmentExpression) parentNode).getLeftHand()) {
+					
+				} else {
+					throw new Exception("Forward referencing " + result.getName() + " in scope " + this.getCurrentScope());
 				}
 			}
 
@@ -97,6 +117,10 @@ public class NameLinker extends SemanticsVisitor {
 			Modifiers modifiers = ((BodyDeclaration) node).getModifiers();
 			inStatic = modifiers.containModifier(Modifiers.Modifier.STATIC);
 		}
+		
+		if (node instanceof FieldDeclaration) {
+			this.checkForwardRef = 0;
+		}
 		super.willVisit(node);
 	}
 
@@ -108,6 +132,14 @@ public class NameLinker extends SemanticsVisitor {
 		}
 		if (node instanceof MethodDeclaration || node instanceof FieldDeclaration) {
 			inStatic = false;
+		}
+		
+		if (node instanceof FieldDeclaration) {
+			String fieldName = this.getCurrentScope().getParentTypeScope().resolveVariableToDecl(((FieldDeclaration) node).getName()).getName();
+			this.visitedFields.add(fieldName);
+			this.checkForwardRef = -1;
+		} else if (this.checkForwardRef == 0 && node instanceof Name && node.getParent() instanceof FieldDeclaration) {
+			this.checkForwardRef = 1;
 		}
 		super.didVisit(node);
 	}
