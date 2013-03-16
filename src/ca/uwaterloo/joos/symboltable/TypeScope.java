@@ -5,6 +5,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.hamcrest.Matchers;
+
 import ca.uwaterloo.joos.ast.ASTNode;
 import ca.uwaterloo.joos.ast.decl.ConstructorDeclaration;
 import ca.uwaterloo.joos.ast.decl.FieldDeclaration;
@@ -93,7 +95,11 @@ public class TypeScope extends Scope {
 	}
 	
 	public String signatureOfMethod(String methodName, boolean isConstructor, List<Type> parameterTypes) throws Exception {
-		String name = this.name + "." + methodName + "(";
+		return this.name + "." + this.localSignatureOfMethod(methodName, isConstructor, parameterTypes);
+	}
+	
+	public String localSignatureOfMethod(String methodName, boolean isConstructor, List<Type> parameterTypes) throws Exception {
+		String name = methodName + "(";
 		if (isConstructor) {
 			name += "THIS,";
 		}
@@ -207,6 +213,29 @@ public class TypeScope extends Scope {
 		TableEntry result = super.resolveVariableToDecl(name);
 		if(result == null && this.superScope != null) {
 			result = this.superScope.resolveVariableToDecl(name);
+		}
+		return result;
+	}
+	
+	public TableEntry resolveMethodToDecl(String localSignature) throws Exception {
+		TableEntry result = null;
+		
+		// Resolve in the interface first
+		for(TypeScope interfaceScope : this.interfaceScopes.values()) {
+			result = interfaceScope.resolveMethodToDecl(localSignature);
+			if(result != null) return result;
+		}
+		
+		// Resolve in locally
+		List<TableEntry> entries = Lambda.select(this.symbols.values(), 
+				Lambda.having(Lambda.on(TableEntry.class).getName(), Matchers.endsWith("." + localSignature)));
+		if(entries.size() > 0) {
+			result = entries.get(0);
+		} 
+		
+		// Resolve in super classes
+		else if(this.superScope != null){
+			result = this.superScope.resolveMethodToDecl(localSignature);
 		}
 		return result;
 	}
