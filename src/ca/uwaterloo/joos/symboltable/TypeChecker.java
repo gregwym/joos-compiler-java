@@ -61,7 +61,7 @@ public class TypeChecker extends SemanticsVisitor {
 		if (node instanceof TypeDeclaration) {
 			if (this.getCurrentScope().getName().startsWith("java."))
 				return false;
-			
+
 			// Check the existence of super zero-arg constructor
 			TypeScope superScope = this.getCurrentScope().getParentTypeScope().getSuperScope();
 			if (superScope != null) {
@@ -71,13 +71,13 @@ public class TypeChecker extends SemanticsVisitor {
 				}
 			}
 		}
-		
+
 		if (node instanceof ConstructorDeclaration) {
-			if(!this.getCurrentScope().getParentTypeScope().getName().endsWith("." + node.getIdentifier())) {
+			if (!this.getCurrentScope().getParentTypeScope().getName().endsWith("." + node.getIdentifier())) {
 				throw new Exception("Constructor name " + node.getIdentifier() + " does not match Type name " + this.getCurrentScope().getParentTypeScope().getName());
 			}
 		}
-		
+
 		if (node instanceof Type) {
 			return false;
 		} else if (node instanceof MethodInvokeExpression) {
@@ -559,7 +559,7 @@ public class TypeChecker extends SemanticsVisitor {
 			}
 		} else if (node instanceof ReturnStatement) {
 			if (this.methodReturnType == null) {
-				if(((ReturnStatement)node).getExpression() != null) {
+				if (((ReturnStatement) node).getExpression() != null) {
 					throw new Exception("Returning with value in void method");
 				}
 			} else if (this.isAssignable(this.methodReturnType, this.popType(), false) == false) {
@@ -579,9 +579,19 @@ public class TypeChecker extends SemanticsVisitor {
 	}
 
 	private Type expressionType(Type op1Type, Type op2Type, InfixOperator operator) throws Exception {
+		if (operator.equals(InfixOperator.MINUS) && ((op1Type.getFullyQualifiedName().equals("java.lang.String")) && (op2Type.getFullyQualifiedName().equals("java.lang.String")))) {
+			throw new Exception("can not minus string two strings");
 
-		if (operator.equals(InfixOperator.PLUS) && ((op1Type.getFullyQualifiedName().equals("java.lang.String")) || (op2Type.getFullyQualifiedName().equals("java.lang.String"))))
-			return new ReferenceType("java.lang.String");
+		}
+		if (operator.equals(InfixOperator.PLUS) && ((op1Type.getFullyQualifiedName().equals("java.lang.String")) || (op2Type.getFullyQualifiedName().equals("java.lang.String")))) {
+			System.out.println("op1Type" + op1Type.getFullyQualifiedName() + "op2Type" + op2Type.getFullyQualifiedName());
+			if (op1Type.getFullyQualifiedName().equals("__VOID__") || op2Type.getFullyQualifiedName().equals("__VOID__")) {
+				throw new Exception("can not concat string and void");
+			} else {
+				return new ReferenceType("java.lang.String");
+			}
+
+		}
 
 		if (operator.equals(InfixOperator.BAND) || operator.equals(InfixOperator.BOR)) {
 			if (op1Type instanceof ReferenceType && op2Type instanceof ReferenceType)
@@ -594,15 +604,50 @@ public class TypeChecker extends SemanticsVisitor {
 			else
 				throw new Exception("Invalid bitwise operation");
 		}
+		if (operator.equals(InfixOperator.AND) | operator.equals(InfixOperator.OR)) {
+			if (op1Type instanceof ReferenceType | op2Type instanceof ReferenceType) {
+				System.out.println("op1Type" + op1Type.getFullyQualifiedName() + "op2Type" + op2Type.getFullyQualifiedName());
+				throw new Exception("Invalid referrence comparasion2");
+			} else {
+				PrimitiveType type1 = (PrimitiveType) op1Type;
+				PrimitiveType type2 = (PrimitiveType) op2Type;
+				if (!(type1.getPrimitive().equals(Primitive.BOOLEAN) && type2.getPrimitive().equals(Primitive.BOOLEAN))) {
+					throw new Exception("Invalid referrence & |");
+				} else {
+					return new PrimitiveType(Primitive.BOOLEAN);
+				}
 
+			}
+		}
+		if (operator.equals(InfixOperator.EQ)) {
+			if (op1Type.getFullyQualifiedName().equals("__VOID__") || op2Type.getFullyQualifiedName().equals("__VOID__")) {
+				throw new Exception("equation is not allowed for void");
+			} else {
+				if (!op1Type.getFullyQualifiedName().equals(op2Type.getFullyQualifiedName())) {
+					throw new Exception("equation incompatible");
+				} else {
+					return new PrimitiveType(Primitive.BOOLEAN);
+				}
+			}
+		}
+		if (operator.equals(InfixOperator.GT) | operator.equals(InfixOperator.GEQ) | operator.equals(InfixOperator.LEQ)) {
+			if (op1Type instanceof ReferenceType | op2Type instanceof ReferenceType) {
+				System.out.println("op1Type" + op1Type.getFullyQualifiedName() + "op2Type" + op2Type.getFullyQualifiedName());
+				throw new Exception("Invalid referrence comparasion1");
+			} else {
+
+				return new PrimitiveType(Primitive.BOOLEAN);
+			}
+		}
 		if (op1Type.equals(op2Type))
 			return op1Type;
 
 		// For now ignore ALL operations performed with differing Reference
 		// types.
 
-		if (op1Type instanceof ReferenceType || op2Type instanceof ReferenceType)
+		if ((op1Type instanceof ReferenceType || op2Type instanceof ReferenceType) && (!operator.equals(InfixOperator.EQ))) {
 			throw new Exception("Invalid non-String reference type operation");
+		}
 
 		// If the types are the same, return that type
 
@@ -648,5 +693,4 @@ public class TypeChecker extends SemanticsVisitor {
 
 		return null;
 	}
-
 }

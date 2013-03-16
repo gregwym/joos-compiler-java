@@ -18,6 +18,10 @@ public class PrimitiveType extends Type {
 		super(node, parent);
 	}
 	
+	public PrimitiveType(Primitive type) throws Exception {
+		this(type, null);
+	}
+	
 	public PrimitiveType(Primitive type, ASTNode parent) throws Exception {
 		super(null, parent);
 		this.addChild(TYPE, type);
