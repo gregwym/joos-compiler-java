@@ -532,6 +532,8 @@ public class TypeChecker extends SemanticsVisitor {
 			if (this.isAssignable(varType, exprType, false) == false) {
 				throw new Exception("Cannot assign " + varType.getFullyQualifiedName() + " with " + exprType.getFullyQualifiedName());
 			}
+			// TODO: should not push if nothing out there is going to use this type
+			// or should use stack of type stacks, so can pop all remained type after left a block
 			this.pushType(varType);
 		}
 
