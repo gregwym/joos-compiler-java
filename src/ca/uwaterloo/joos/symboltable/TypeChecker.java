@@ -33,6 +33,7 @@ import ca.uwaterloo.joos.ast.expr.primary.LiteralPrimary;
 import ca.uwaterloo.joos.ast.expr.primary.Primary;
 import ca.uwaterloo.joos.ast.expr.primary.ThisPrimary;
 import ca.uwaterloo.joos.ast.statement.Block;
+import ca.uwaterloo.joos.ast.statement.ForStatement;
 import ca.uwaterloo.joos.ast.statement.IfStatement;
 import ca.uwaterloo.joos.ast.statement.ReturnStatement;
 import ca.uwaterloo.joos.ast.statement.WhileStatement;
@@ -140,6 +141,9 @@ public class TypeChecker extends SemanticsVisitor {
 		if (assignType instanceof ArrayType && varType instanceof ArrayType) {
 			assignType = ((ArrayType) assignType).getType();
 			varType = ((ArrayType) varType).getType();
+			if (varType instanceof PrimitiveType && !assignType.equals(varType)) {
+				return false;
+			}
 		}
 
 		if (varType.equals(assignType))
@@ -343,7 +347,7 @@ public class TypeChecker extends SemanticsVisitor {
 
 			if (dimType == null) {
 				throw new Exception("Dimension of array expecting INT but got NULL");
-			} else if ((!dimType.getFullyQualifiedName().equals("INT")) && (!dimType.getFullyQualifiedName().equals("BYTE")) && (!dimType.getFullyQualifiedName().equals("SHORT"))) {
+			} else if (!dimType.getFullyQualifiedName().matches("^(INT|BYTE|SHORT|CHAR)$")) {
 				throw new Exception("Dimension of array expecting numeric but got " + dimType.getFullyQualifiedName());
 			}
 			this.pushType(((ArrayCreate) node).getType());
@@ -551,15 +555,29 @@ public class TypeChecker extends SemanticsVisitor {
 			} else if (this.isAssignable(this.methodReturnType, this.popType(), false) == false) {
 				throw new Exception("Invalid Return Type");
 			}
+			if (this.methodReturnType != null) {
+				this.pushType(this.methodReturnType);
+			}
 		} else if (node instanceof IfStatement) {
+			this.popType();
+			if(((IfStatement) node).getElseStatement() != null) {
+				this.popType();
+			}
 			Type condType = this.popType();
 			if (!condType.getFullyQualifiedName().equals("BOOLEAN")) {
 				throw new Exception("If statement's condition expecting BOOLEAN but got " + condType.getFullyQualifiedName());
 			}
 		} else if (node instanceof WhileStatement) {
+			this.popType();
 			Type condType = this.popType();
 			if (!condType.getFullyQualifiedName().equals("BOOLEAN")) {
 				throw new Exception("While statement's condition expecting BOOLEAN but got " + condType.getFullyQualifiedName());
+			}
+		} else if (node instanceof ForStatement) {
+			this.popScope();
+			Type condType = this.popType();
+			if (!condType.getFullyQualifiedName().equals("BOOLEAN")) {
+				throw new Exception("For statement's condition expecting BOOLEAN but got " + condType.getFullyQualifiedName());
 			}
 		}
 
@@ -580,7 +598,6 @@ public class TypeChecker extends SemanticsVisitor {
 
 		}
 		if (operator.equals(InfixOperator.PLUS) && ((op1Type.getFullyQualifiedName().equals("java.lang.String")) || (op2Type.getFullyQualifiedName().equals("java.lang.String")))) {
-			System.out.println("op1Type" + op1Type.getFullyQualifiedName() + "op2Type" + op2Type.getFullyQualifiedName());
 			if (op1Type.getFullyQualifiedName().equals("__VOID__") || op2Type.getFullyQualifiedName().equals("__VOID__")) {
 				throw new Exception("can not concat string and void");
 			} else {
@@ -600,9 +617,8 @@ public class TypeChecker extends SemanticsVisitor {
 			else
 				throw new Exception("Invalid bitwise operation");
 		}
-		if (operator.equals(InfixOperator.AND) | operator.equals(InfixOperator.OR)) {
+		if (operator.equals(InfixOperator.AND) || operator.equals(InfixOperator.OR)) {
 			if (op1Type instanceof ReferenceType | op2Type instanceof ReferenceType) {
-				System.out.println("op1Type" + op1Type.getFullyQualifiedName() + "op2Type" + op2Type.getFullyQualifiedName());
 				throw new Exception("Invalid referrence comparasion2");
 			} else {
 				PrimitiveType type1 = (PrimitiveType) op1Type;
@@ -615,7 +631,7 @@ public class TypeChecker extends SemanticsVisitor {
 
 			}
 		}
-		if (operator.equals(InfixOperator.EQ)) {
+		if (operator.equals(InfixOperator.EQ) || operator.equals(InfixOperator.NEQ)) {
 			if (op1Type.getFullyQualifiedName().equals("__VOID__") || op2Type.getFullyQualifiedName().equals("__VOID__")) {
 				throw new Exception("equation is not allowed for void");
 			} else {
@@ -626,9 +642,8 @@ public class TypeChecker extends SemanticsVisitor {
 				}
 			}
 		}
-		if (operator.equals(InfixOperator.GT) | operator.equals(InfixOperator.GEQ) | operator.equals(InfixOperator.LEQ)) {
-			if (op1Type instanceof ReferenceType | op2Type instanceof ReferenceType) {
-				System.out.println("op1Type" + op1Type.getFullyQualifiedName() + "op2Type" + op2Type.getFullyQualifiedName());
+		if (operator.equals(InfixOperator.GT) || operator.equals(InfixOperator.GEQ) || operator.equals(InfixOperator.LEQ) || operator.equals(InfixOperator.LT)) {
+			if (op1Type instanceof ReferenceType || op2Type instanceof ReferenceType) {
 				throw new Exception("Invalid referrence comparasion1");
 			} else {
 
@@ -672,19 +687,19 @@ public class TypeChecker extends SemanticsVisitor {
 					return types.get(0);
 				if (types.get(1).getPrimitive().equals(Primitive.CHAR))
 					return types.get(0);
+				if (types.get(1).getPrimitive().equals(Primitive.SHORT))
+					return types.get(0);
 			}
 			if (types.get(0).getPrimitive().equals(Primitive.SHORT)) {
 				if (types.get(1).getPrimitive().equals(Primitive.INT))
 					return types.get(1);
 				if (types.get(1).getPrimitive().equals(Primitive.BYTE))
-					return types.get(1);
+					return types.get(0);
+				if (types.get(1).getPrimitive().equals(Primitive.CHAR))
+					return types.get(0);
 			}
 
 			throw new Exception("Invalid type operation between " + type1.getPrimitive() + " and " + type2.getPrimitive());
-		}
-
-		if (op1Type instanceof ReferenceType) {
-
 		}
 
 		return null;

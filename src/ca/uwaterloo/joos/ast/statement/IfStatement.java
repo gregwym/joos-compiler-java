@@ -57,7 +57,7 @@ public class IfStatement extends Statement {
 	}
 
 	public Statement getElseStatement() throws ChildTypeUnmatchException {
-		return (Statement) this.getChildByDescriptor(IFSTATEMENT);
+		return (Statement) this.getChildByDescriptor(ELSESTATEMENT);
 	}
 
 }
