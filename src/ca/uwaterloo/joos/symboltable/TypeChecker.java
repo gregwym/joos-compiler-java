@@ -59,9 +59,25 @@ public class TypeChecker extends SemanticsVisitor {
 	@Override
 	public boolean visit(ASTNode node) throws Exception {
 		if (node instanceof TypeDeclaration) {
-			if (this.getCurrentScope().getName().contains("java"))
+			if (this.getCurrentScope().getName().startsWith("java."))
 				return false;
+			
+			// Check the existence of super zero-arg constructor
+			TypeScope superScope = this.getCurrentScope().getParentTypeScope().getSuperScope();
+			if (superScope != null) {
+				String constructorSignature = superScope.localSignatureOfMethod(superScope.getReferenceNode().getIdentifier(), true, new ArrayList<Type>());
+				if (superScope.resolveMethodToDecl(constructorSignature) == null) {
+					throw new Exception("Cannot find zero-argument constructor in super scope " + superScope.getName() + " for type " + this.getCurrentScope().getName());
+				}
+			}
 		}
+		
+		if (node instanceof ConstructorDeclaration) {
+			if(!this.getCurrentScope().getParentTypeScope().getName().endsWith("." + node.getIdentifier())) {
+				throw new Exception("Constructor name " + node.getIdentifier() + " does not match Type name " + this.getCurrentScope().getParentTypeScope().getName());
+			}
+		}
+		
 		if (node instanceof Type) {
 			return false;
 		} else if (node instanceof MethodInvokeExpression) {
@@ -291,6 +307,10 @@ public class TypeChecker extends SemanticsVisitor {
 			ReferenceType type = ((ClassCreateExpression) node).getType();
 			String typeName = type.getFullyQualifiedName();
 			TypeScope typeScope = this.table.getType(typeName);
+			TypeDeclaration typeDecl = (TypeDeclaration) typeScope.getReferenceNode();
+			if (typeDecl.getModifiers().containModifier(Modifier.ABSTRACT)) {
+				throw new Exception("Cannot instantiate ABSTRACT type " + typeName);
+			}
 
 			List<Expression> arguments = ((ClassCreateExpression) node).getArguments();
 			List<Type> argTypes = new LinkedList<Type>();
@@ -471,9 +491,11 @@ public class TypeChecker extends SemanticsVisitor {
 				localSignature = typeScope.localSignatureOfMethod(methodName, false, argTypes);
 				logger.finer("Method " + qualifiedName + " resolved to signature " + localSignature);
 			} else if (invokingName instanceof SimpleName) {
-				staticAccess = this.inStatic;
 				typeScope = this.getCurrentScope().getParentTypeScope();
 				localSignature = typeScope.localSignatureOfMethod(invokingName.getSimpleName(), false, argTypes);
+				if (this.inStatic) {
+					throw new Exception("Cannot access to non-static method " + localSignature + " in static scope");
+				}
 			}
 
 			TableEntry entry = typeScope.resolveMethodToDecl(localSignature);
