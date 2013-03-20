@@ -26,6 +26,10 @@ public abstract class Scope {
 	protected LinkedHashMap<String, TableEntry> symbols;
 	protected ASTNode referenceNode;
 
+	public Map<String, TableEntry> getSymbols() {
+		return this.symbols;
+	}
+
 	public Scope(String name, ASTNode referenceNode) {
 		this.name = name;
 		this.symbols = new LinkedHashMap<String, TableEntry>();
