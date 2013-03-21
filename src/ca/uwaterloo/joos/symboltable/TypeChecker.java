@@ -4,7 +4,10 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Stack;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
+import ca.uwaterloo.joos.Main;
 import ca.uwaterloo.joos.ast.ASTNode;
 import ca.uwaterloo.joos.ast.Modifiers;
 import ca.uwaterloo.joos.ast.Modifiers.Modifier;
@@ -36,6 +39,7 @@ import ca.uwaterloo.joos.ast.statement.Block;
 import ca.uwaterloo.joos.ast.statement.ForStatement;
 import ca.uwaterloo.joos.ast.statement.IfStatement;
 import ca.uwaterloo.joos.ast.statement.ReturnStatement;
+import ca.uwaterloo.joos.ast.statement.Statement;
 import ca.uwaterloo.joos.ast.statement.WhileStatement;
 import ca.uwaterloo.joos.ast.type.ArrayType;
 import ca.uwaterloo.joos.ast.type.PrimitiveType;
@@ -46,16 +50,18 @@ import ch.lambdaj.Lambda;
 
 public class TypeChecker extends SemanticsVisitor {
 
-	private Stack<Type> typeStack;
+	private static final Logger logger = Main.getLogger(TypeChecker.class);
+	private Stack<Stack<Type>> typeStacks;
 	private int checkType = 0;
 	private boolean inStatic = false;
 	private Type methodReturnType = null;
 
 	public TypeChecker(SymbolTable table) {
 		super(table);
-		this.typeStack = new Stack<Type>();
+		this.typeStacks = new Stack<Stack<Type>>();
 		this.checkType = 0;
 		this.inStatic = false;
+		logger.setLevel(Level.FINER);
 	}
 
 	@Override
@@ -100,6 +106,10 @@ public class TypeChecker extends SemanticsVisitor {
 
 	@Override
 	public void willVisit(ASTNode node) throws Exception {
+		if (node instanceof TypeDeclaration || node instanceof Block) {
+			this.pushTypeStack();
+		}
+		
 		if (node instanceof FieldDeclaration || node instanceof Block) {
 			this.checkType++;
 		}
@@ -108,7 +118,6 @@ public class TypeChecker extends SemanticsVisitor {
 			// declaration scopes method
 			Modifiers modifiers = ((BodyDeclaration) node).getModifiers();
 			inStatic = modifiers.containModifier(Modifiers.Modifier.STATIC);
-
 		}
 
 		if (node instanceof MethodDeclaration) {
@@ -116,21 +125,38 @@ public class TypeChecker extends SemanticsVisitor {
 		}
 		super.willVisit(node);
 	}
+	
+	protected Stack<Type> getCurrentTypeStack() {
+		if (!this.typeStacks.isEmpty())
+			return this.typeStacks.peek();
+		return null;
+	}
+	
+	protected void pushTypeStack() {
+		logger.finer("Pushing new Type Stack");
+		this.typeStacks.push(new Stack<Type>());
+	}
+	
+	protected void popTypeStack() {
+		Stack<Type> popping = this.typeStacks.pop();
+		logger.finer("Popping Type Stack " + popping);
+	}
 
 	protected void pushType(Type type) throws Exception {
-		logger.info("Pushing " + type.getFullyQualifiedName());
-		this.typeStack.push(type);
+		logger.finer("Pushing " + type.getFullyQualifiedName());
+		this.getCurrentTypeStack().push(type);
 	}
 
 	protected Type popType() throws Exception {
-		Type type = this.typeStack.pop();
-		logger.info("Poping " + type.getFullyQualifiedName());
+		Type type = this.getCurrentTypeStack().pop();
+		logger.finer("Popping " + type.getFullyQualifiedName());
 		return type;
 	}
 
 	protected Type getCurrentType() {
-		if (!this.typeStack.isEmpty())
-			return this.typeStack.peek();
+		Stack<Type> current = this.getCurrentTypeStack();
+		if (current != null && !current.isEmpty())
+			return current.peek();
 		return null;
 	}
 
@@ -222,7 +248,7 @@ public class TypeChecker extends SemanticsVisitor {
 
 	private boolean isAccessible(boolean staticAccess, TableEntry entry, TypeScope accessingTypeScope, TypeScope currentTypeScope) throws Exception {
 		TypeScope declaredTypeScope = entry.getWithinScope().getParentTypeScope();
-		logger.info("Checking accessibility static: " + staticAccess + " entry " + entry.getName() + " within type " + declaredTypeScope.getName() + " access type " + accessingTypeScope.getName() + " from type " + currentTypeScope.getName());
+		logger.fine("Checking accessibility static: " + staticAccess + " entry " + entry.getName() + " within type " + declaredTypeScope.getName() + " access type " + accessingTypeScope.getName() + " from type " + currentTypeScope.getName());
 		BodyDeclaration fieldNode = (BodyDeclaration) entry.getNode();
 		Modifiers modifiers = fieldNode.getModifiers();
 		boolean isStatic = modifiers != null && fieldNode.getModifiers().containModifier(Modifier.STATIC);
@@ -250,12 +276,16 @@ public class TypeChecker extends SemanticsVisitor {
 	public void didVisit(ASTNode node) throws Exception {
 		int i = 0;
 
+		if (node instanceof TypeDeclaration || node instanceof Block) {
+			this.popTypeStack();
+		}
+		
 		if (this.checkType == 0) {
 			super.didVisit(node);
 			return;
 		}
 
-		logger.info("Did visit " + node);
+		logger.fine("Did visit " + node);
 
 		/* Type Providers */
 		if (node instanceof LiteralPrimary) {
@@ -554,24 +584,37 @@ public class TypeChecker extends SemanticsVisitor {
 				this.pushType(new ReferenceType("__VOID__", node));
 			}
 		} else if (node instanceof IfStatement) {
-			this.popType();
-			if(((IfStatement) node).getElseStatement() != null) {
+			Statement statement = ((IfStatement) node).getIfStatement();
+			if(statement != null && !(statement instanceof Block)) {
 				this.popType();
 			}
+			statement = ((IfStatement) node).getElseStatement();
+			if(statement != null && !(statement instanceof Block)) {
+				this.popType();
+			}
+			
 			Type condType = this.popType();
 			if (!condType.getFullyQualifiedName().equals("BOOLEAN")) {
 				throw new Exception("If statement's condition expecting BOOLEAN but got " + condType.getFullyQualifiedName());
 			}
 			this.pushType(new ReferenceType("__VOID__", node));
 		} else if (node instanceof WhileStatement) {
-			this.popType();
+			Statement statement = ((WhileStatement) node).getWhileStatement();
+			if(statement != null && !(statement instanceof Block)) {
+				this.popType();
+			}
+			
 			Type condType = this.popType();
 			if (!condType.getFullyQualifiedName().equals("BOOLEAN")) {
 				throw new Exception("While statement's condition expecting BOOLEAN but got " + condType.getFullyQualifiedName());
 			}
 			this.pushType(new ReferenceType("__VOID__", node));
 		} else if (node instanceof ForStatement) {
-			this.popScope();
+			Statement statement = ((ForStatement) node).getForStatement();
+			if(statement != null && !(statement instanceof Block)) {
+				this.popType();
+			}
+			
 			Type condType = this.popType();
 			if (!condType.getFullyQualifiedName().equals("BOOLEAN")) {
 				throw new Exception("For statement's condition expecting BOOLEAN but got " + condType.getFullyQualifiedName());
