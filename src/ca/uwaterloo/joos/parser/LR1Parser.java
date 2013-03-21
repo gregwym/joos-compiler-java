@@ -5,6 +5,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Stack;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import ca.uwaterloo.joos.Main;
@@ -54,6 +55,7 @@ public class LR1Parser {
 	}
 
 	public LR1Parser(LR1 lr1) {
+		logger.setLevel(Level.WARNING);
 		this.lr1 = lr1;
 	}
 
