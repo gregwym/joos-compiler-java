@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.logging.Logger;
 
 import ca.uwaterloo.joos.ast.AST;
-import ca.uwaterloo.joos.ast.visitor.ToStringVisitor;
+import ca.uwaterloo.joos.checker.HierarchyChecker;
 import ca.uwaterloo.joos.parser.LR1;
 import ca.uwaterloo.joos.parser.LR1Parser;
 import ca.uwaterloo.joos.parser.ParseTree;
@@ -119,7 +119,7 @@ public class Main {
 			ast.getRoot().accept(new ImportVisitor(table));
 		}
 		logger.info("Import Declarations Added");
-				
+
 		for(AST ast: asts) {
 			TypeLinker linker = new TypeLinker(table);
 			ast.getRoot().accept(linker);
@@ -130,6 +130,12 @@ public class Main {
 			ast.getRoot().accept(new DeepDeclVisitor(table));
 		}
 		logger.info("Deep Declaration Constructed");
+		
+//		for(AST ast: asts) {
+//			HierarchyChecker hierarchyChecker = new HierarchyChecker(table);
+//			ast.getRoot().accept(hierarchyChecker);
+//		}
+//		logger.info("Hierarchy Checking finished");
 		
 		return table;
 	}

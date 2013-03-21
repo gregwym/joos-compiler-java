@@ -7,32 +7,33 @@ import ca.uwaterloo.joos.ast.ASTNode;
 import ca.uwaterloo.joos.ast.decl.ClassDeclaration;
 import ca.uwaterloo.joos.ast.decl.MethodDeclaration;
 import ca.uwaterloo.joos.ast.decl.PackageDeclaration;
+import ca.uwaterloo.joos.ast.decl.InterfaceDeclaration;
 import ca.uwaterloo.joos.ast.decl.TypeDeclaration;
 import ca.uwaterloo.joos.ast.type.ReferenceType;
 import ca.uwaterloo.joos.symboltable.SymbolTable.SymbolTableException;
 
 public class TypeLinker extends SemanticsVisitor {
-	
+
 	public TypeLinker(SymbolTable table) {
 		super(table);
 	}
 
 	@Override
 	public boolean visit(ASTNode node) throws Exception {
-		if(node instanceof ReferenceType) {
+		if (node instanceof ReferenceType) {
 			ReferenceType refType = (ReferenceType) node;
-			
+
 			Scope currentScope = this.getCurrentScope();
 			String resolved = currentScope.resolveReferenceType(refType, this.table);
-			if(resolved == null) {
+			if (resolved == null) {
 				throw new SymbolTableException("Cannot resolve type " + refType.getName().getName());
 			}
-			
+
 			refType.setFullyQualifiedName(resolved);
 		}
 		return true;
 	}
-	
+
 	@Override 
 	public void willVisit(ASTNode node) throws Exception {
 		if (node instanceof PackageDeclaration) {
@@ -47,10 +48,16 @@ public class TypeLinker extends SemanticsVisitor {
 			this.pushScope(scope);
 		}
 	}
-	
+
 	@Override
 	public void didVisit(ASTNode node) throws Exception {
-		
+		if (node instanceof InterfaceDeclaration) {
+			TypeScope scope = (TypeScope) this.getCurrentScope();
+			List<ReferenceType> interfaceClass = ((InterfaceDeclaration) node).getInterfaces();
+			if(interfaceClass.size()==0){
+				TypeScope superScope = this.table.getType("java.lang.Object");
+				scope.addInterfaceScope(superScope);}
+		}
 		// Add super classes and implemented interface to current TypeScope
 		if(node instanceof TypeDeclaration) {
 			TypeScope scope = (TypeScope) this.getCurrentScope();
@@ -73,14 +80,14 @@ public class TypeLinker extends SemanticsVisitor {
 				scope.setSuperScope(superScope);
 			} else if (!scope.getName().equals("java.lang.Object")) {
 				TypeScope superScope = this.table.getType("java.lang.Object");
-				if(superScope == null) {
+				if (superScope == null) {
 					throw new SymbolTableException("Extending unknown super class " + node.getIdentifier());
 				}
 				logger.finer("Adding java.lang.Object as super to " + node);
 				scope.setSuperScope(superScope);
 			}
 		}
-		
+
 		if(node instanceof TypeDeclaration) {
 			TypeScope scope = (TypeScope) this.getCurrentScope();
 			List<TableEntry> entries = new ArrayList<TableEntry>(scope.symbols.values());
