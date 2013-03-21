@@ -6,7 +6,6 @@ package ca.uwaterloo.joos.ast.statement;
 import java.util.List;
 
 import ca.uwaterloo.joos.ast.ASTNode;
-import ca.uwaterloo.joos.ast.ASTNode.ChildTypeUnmatchException;
 import ca.uwaterloo.joos.ast.descriptor.ChildDescriptor;
 import ca.uwaterloo.joos.ast.expr.Expression;
 import ca.uwaterloo.joos.parser.ParseTree.LeafNode;
@@ -28,6 +27,10 @@ public class WhileStatement extends Statement {
 	 */
 	public WhileStatement(Node node, ASTNode parent) throws Exception {
 		super(node, parent);
+	}
+	
+	public Expression getWhileCondition() throws ChildTypeUnmatchException {
+		return (Expression) this.getChildByDescriptor(WHILECONDITION);
 	}
 	
 	public Statement getWhileStatement() throws ChildTypeUnmatchException {

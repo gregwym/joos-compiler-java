@@ -21,6 +21,7 @@ import ca.uwaterloo.joos.ast.expr.AssignmentExpression;
 import ca.uwaterloo.joos.ast.expr.CastExpression;
 import ca.uwaterloo.joos.ast.expr.ClassCreateExpression;
 import ca.uwaterloo.joos.ast.expr.Expression;
+import ca.uwaterloo.joos.ast.expr.ForInit;
 import ca.uwaterloo.joos.ast.expr.InfixExpression;
 import ca.uwaterloo.joos.ast.expr.InfixExpression.InfixOperator;
 import ca.uwaterloo.joos.ast.expr.MethodInvokeExpression;
@@ -611,14 +612,28 @@ public class TypeChecker extends SemanticsVisitor {
 			this.pushType(new ReferenceType("__VOID__", node));
 		} else if (node instanceof ForStatement) {
 			Statement statement = ((ForStatement) node).getForStatement();
-			if(statement != null && !(statement instanceof Block)) {
+			if (statement != null && !(statement instanceof Block)) {
 				this.popType();
 			}
 			
-			Type condType = this.popType();
-			if (!condType.getFullyQualifiedName().equals("BOOLEAN")) {
-				throw new Exception("For statement's condition expecting BOOLEAN but got " + condType.getFullyQualifiedName());
+			Expression update = ((ForStatement) node).getForUpdate();
+			if (update != null) {
+				this.popType();
 			}
+			
+			Expression condition = ((ForStatement) node).getForCondition();
+			if (condition != null) {
+				Type condType = this.popType();
+				if (!condType.getFullyQualifiedName().equals("BOOLEAN")) {
+					throw new Exception("For statement's condition expecting BOOLEAN but got " + condType.getFullyQualifiedName());
+				}
+			}
+			
+			ForInit init = ((ForStatement) node).getForInit();
+			if (init != null) {
+				this.popType();
+			}
+			
 			this.pushType(new ReferenceType("__VOID__", node));
 		}
 

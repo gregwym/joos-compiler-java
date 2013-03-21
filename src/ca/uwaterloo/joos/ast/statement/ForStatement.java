@@ -33,6 +33,22 @@ public class ForStatement extends Statement {
 	public ForStatement(Node node, ASTNode parent) throws Exception {
 		super(node, parent);
 	}
+	
+	public ForInit getForInit() throws ChildTypeUnmatchException {
+		return (ForInit) this.getChildByDescriptor(INIT);
+	}
+	
+	public Expression getForCondition() throws ChildTypeUnmatchException {
+		return (Expression) this.getChildByDescriptor(TEST);
+	}
+	
+	public Expression getForUpdate() throws ChildTypeUnmatchException {
+		return (Expression) this.getChildByDescriptor(UPDATE);
+	}
+
+	public Statement getForStatement() throws ChildTypeUnmatchException {
+		return (Statement) this.getChildByDescriptor(STATEMENT);
+	}
 
 	@Override
 	public List<Node> processTreeNode(TreeNode treeNode) throws Exception {
@@ -62,10 +78,6 @@ public class ForStatement extends Statement {
 	@Override
 	public void processLeafNode(LeafNode leafNode) throws Exception {
 
-	}
-
-	public Statement getForStatement() throws ChildTypeUnmatchException {
-		return (Statement) this.getChildByDescriptor(STATEMENT);
 	}
 
 }
