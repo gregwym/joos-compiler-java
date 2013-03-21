@@ -369,7 +369,7 @@ public class TypeChecker extends SemanticsVisitor {
 		} else if (node instanceof CastExpression) {
 			Type exprType = this.popType();
 			Type castType = ((CastExpression) node).getType();
-			// TODO: Check whether is valid casting;
+
 			if (this.isAssignable(castType, exprType, true) == false && this.isAssignable(exprType, castType, true) == false) {
 				throw new Exception("Cannot cast " + exprType.getFullyQualifiedName() + " to " + castType.getFullyQualifiedName());
 			}
@@ -380,7 +380,6 @@ public class TypeChecker extends SemanticsVisitor {
 			if (infix.getOperator().equals(InfixExpression.InfixOperator.INSTANCEOF)) {
 				Type operandType = this.popType();
 				Type rhsType = infix.getRHS();
-				// TODO: Match operand type with Type
 				if (rhsType instanceof PrimitiveType) {
 					throw new Exception("Cannot instanceof a PrimitiveType");
 				} else if (this.isAssignable(operandType, rhsType, false) == false && this.isAssignable(rhsType, operandType, false) == false) {
@@ -391,15 +390,8 @@ public class TypeChecker extends SemanticsVisitor {
 				Type op2Type = this.popType();
 				Type op1Type = this.popType();
 				Type resultType = expressionType(op1Type, op2Type, infix.getOperator());
-				// TODO: Check operands type
 				this.pushType(resultType);
 			}
-			// else {
-			// throw new Exception("Infix trying to " +
-			// infix.getOperator().name() + " " +
-			// op1Type.getFullyQualifiedName() + " with " +
-			// op2Type.getFullyQualifiedName());
-			// }
 		}
 
 		else if (node instanceof MethodInvokeExpression) {
@@ -532,8 +524,6 @@ public class TypeChecker extends SemanticsVisitor {
 			if (this.isAssignable(varType, exprType, false) == false) {
 				throw new Exception("Cannot assign " + varType.getFullyQualifiedName() + " with " + exprType.getFullyQualifiedName());
 			}
-			// TODO: should not push if nothing out there is going to use this type
-			// or should use stack of type stacks, so can pop all remained type after left a block
 			this.pushType(varType);
 		}
 
@@ -549,6 +539,7 @@ public class TypeChecker extends SemanticsVisitor {
 					throw new Exception("Cannot initialize " + varType.getFullyQualifiedName() + " with " + initType.getFullyQualifiedName());
 				}
 			}
+			this.pushType(new ReferenceType("__VOID__", node));
 		} else if (node instanceof ReturnStatement) {
 			if (this.methodReturnType == null) {
 				if (((ReturnStatement) node).getExpression() != null) {
@@ -559,6 +550,8 @@ public class TypeChecker extends SemanticsVisitor {
 			}
 			if (this.methodReturnType != null) {
 				this.pushType(this.methodReturnType);
+			} else {
+				this.pushType(new ReferenceType("__VOID__", node));
 			}
 		} else if (node instanceof IfStatement) {
 			this.popType();
@@ -569,18 +562,21 @@ public class TypeChecker extends SemanticsVisitor {
 			if (!condType.getFullyQualifiedName().equals("BOOLEAN")) {
 				throw new Exception("If statement's condition expecting BOOLEAN but got " + condType.getFullyQualifiedName());
 			}
+			this.pushType(new ReferenceType("__VOID__", node));
 		} else if (node instanceof WhileStatement) {
 			this.popType();
 			Type condType = this.popType();
 			if (!condType.getFullyQualifiedName().equals("BOOLEAN")) {
 				throw new Exception("While statement's condition expecting BOOLEAN but got " + condType.getFullyQualifiedName());
 			}
+			this.pushType(new ReferenceType("__VOID__", node));
 		} else if (node instanceof ForStatement) {
 			this.popScope();
 			Type condType = this.popType();
 			if (!condType.getFullyQualifiedName().equals("BOOLEAN")) {
 				throw new Exception("For statement's condition expecting BOOLEAN but got " + condType.getFullyQualifiedName());
 			}
+			this.pushType(new ReferenceType("__VOID__", node));
 		}
 
 		if (node instanceof FieldDeclaration || node instanceof Block) {
