@@ -3,8 +3,10 @@ package ca.uwaterloo.joos.symboltable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import org.hamcrest.Matchers;
 
@@ -26,11 +28,10 @@ public class TypeScope extends Scope {
 	protected Map<String, PackageScope> onDemandImport;
 	protected TypeScope superScope;
 	protected Map<String, TypeScope> interfaceScopes;
-	protected Map<String, TableEntry> visibleSymbols;
+	protected Map<String, TableEntry> visibleSymbols = new HashMap<String, TableEntry>();
 
 	public TypeScope(String name, PackageScope withinPackage, ASTNode referenceNode) {
 		super(name, referenceNode);
-		this.visibleSymbols = this.symbols;
 		this.withinPackage = withinPackage;
 		this.singleImport = new HashMap<String, TypeScope>();
 		this.onDemandImport = new HashMap<String, PackageScope>();
@@ -41,14 +42,15 @@ public class TypeScope extends Scope {
 	public Map<String, TableEntry> getVisibleSymbols() {
 		return this.visibleSymbols;
 	}
+
 	public void addVisibleSymbols(String name, TableEntry entry) {
-		visibleSymbols.put(name, entry);
+		this.visibleSymbols.put(name, entry);
 	}
 
 	public PackageScope getWithinPackage() {
 		return withinPackage;
 	}
-	
+
 	@Override
 	public TypeScope getParentTypeScope() {
 		return this;
@@ -91,6 +93,7 @@ public class TypeScope extends Scope {
 		}
 
 		this.symbols.put(name, entry);
+		this.visibleSymbols.put(name, entry);
 	}
 
 	public TableEntry getFieldDecl(FieldDeclaration field) throws Exception {
@@ -98,15 +101,13 @@ public class TypeScope extends Scope {
 	}
 
 	public String signatureOfMethod(MethodDeclaration method) throws Exception {
-		return this.signatureOfMethod(method.getName().getName(), 
-				method instanceof ConstructorDeclaration, 
-				Lambda.extract(method.getParameters(), Lambda.on(ParameterDeclaration.class).getType()));
+		return this.signatureOfMethod(method.getName().getName(), method instanceof ConstructorDeclaration, Lambda.extract(method.getParameters(), Lambda.on(ParameterDeclaration.class).getType()));
 	}
-	
+
 	public String signatureOfMethod(String methodName, boolean isConstructor, List<Type> parameterTypes) throws Exception {
 		return this.name + "." + this.localSignatureOfMethod(methodName, isConstructor, parameterTypes);
 	}
-	
+
 	public String localSignatureOfMethod(String methodName, boolean isConstructor, List<Type> parameterTypes) throws Exception {
 		String name = methodName + "(";
 		if (isConstructor) {
@@ -126,6 +127,7 @@ public class TypeScope extends Scope {
 		}
 		TableEntry entry = new TableEntry(name, node, this);
 		this.symbols.put(name, entry);
+		this.visibleSymbols.put(name, entry);
 		return entry;
 	}
 
@@ -136,9 +138,9 @@ public class TypeScope extends Scope {
 	}
 
 	public TableEntry getTableEntry(ASTNode node) throws Exception {
-		if(node instanceof FieldDeclaration) {
+		if (node instanceof FieldDeclaration) {
 			return this.getFieldDecl((FieldDeclaration) node);
-		} else if(node instanceof MethodDeclaration) {
+		} else if (node instanceof MethodDeclaration) {
 			return this.getMethod((MethodDeclaration) node);
 		}
 		return null;
@@ -163,17 +165,17 @@ public class TypeScope extends Scope {
 	public Map<String, TypeScope> getInterfaceScopes() {
 		return this.interfaceScopes;
 	}
-	
+
 	public boolean isSubclassOf(String fullyQualifiedName) {
-		if(this.name.equals(fullyQualifiedName)) {
+		if (this.name.equals(fullyQualifiedName)) {
 			return true;
 		}
-		for(TypeScope typeScope: this.interfaceScopes.values()) {
-			if(typeScope.isSubclassOf(fullyQualifiedName)) {
+		for (TypeScope typeScope : this.interfaceScopes.values()) {
+			if (typeScope.isSubclassOf(fullyQualifiedName)) {
 				return true;
 			}
 		}
-		if(this.superScope != null) {
+		if (this.superScope != null) {
 			return this.superScope.isSubclassOf(fullyQualifiedName);
 		}
 		return false;
@@ -232,29 +234,29 @@ public class TypeScope extends Scope {
 
 	public TableEntry resolveMethodToDecl(String localSignature) throws Exception {
 		TableEntry result = null;
-		
+
 		// Resolve in the interface first
-		for(TypeScope interfaceScope : this.interfaceScopes.values()) {
+		for (TypeScope interfaceScope : this.interfaceScopes.values()) {
 			result = interfaceScope.resolveMethodToDecl(localSignature);
-			if(result != null) return result;
+			if (result != null)
+				return result;
 		}
-		
+
 		// Resolve in locally
-		List<TableEntry> entries = Lambda.select(this.symbols.values(), 
-				Lambda.having(Lambda.on(TableEntry.class).getName(), Matchers.endsWith("." + localSignature)));
-		if(entries.size() > 0) {
+		List<TableEntry> entries = Lambda.select(this.symbols.values(), Lambda.having(Lambda.on(TableEntry.class).getName(), Matchers.endsWith("." + localSignature)));
+		if (entries.size() > 0) {
 			result = entries.get(0);
-		} 
-		
+		}
+
 		// Resolve in super classes
-		else if(this.superScope != null){
+		else if (this.superScope != null) {
 			result = this.superScope.resolveMethodToDecl(localSignature);
 		}
 		return result;
 	}
 
 	public void listVisibleSymbols() {
-		//System.out.println("\tReferences to: " + this.referenceNode);
+		// System.out.println("\tReferences to: " + this.referenceNode);
 		System.out.println("\tSymbols:");
 		List<String> keys = new ArrayList<String>(this.visibleSymbols.keySet());
 		Collections.sort(keys);
@@ -263,7 +265,7 @@ public class TypeScope extends Scope {
 		}
 		System.out.println();
 	}
-	
+
 	@Override
 	public void listSymbols() {
 		System.out.println("\tPackage:");
