@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Stack;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import ca.uwaterloo.joos.Main;
@@ -62,14 +61,14 @@ public class TypeChecker extends SemanticsVisitor {
 		this.typeStacks = new Stack<Stack<Type>>();
 		this.checkType = 0;
 		this.inStatic = false;
-		logger.setLevel(Level.FINER);
+//		logger.setLevel(Level.FINER);
 	}
 
 	@Override
 	public boolean visit(ASTNode node) throws Exception {
 		if (node instanceof TypeDeclaration) {
-			if (this.getCurrentScope().getName().startsWith("java."))
-				return false;
+//			if (this.getCurrentScope().getName().startsWith("java"))
+//				return false;
 
 			// Check the existence of super zero-arg constructor
 			TypeScope superScope = this.getCurrentScope().getParentTypeScope().getSuperScope();
@@ -385,13 +384,12 @@ public class TypeChecker extends SemanticsVisitor {
 		} else if (node instanceof UnaryExpression) {
 			Type exprType = this.popType();
 			UnaryOperator operator = ((UnaryExpression) node).getOperator();
-			if (operator.equals(UnaryOperator.NOT) && !exprType.getFullyQualifiedName().equals("BOOLEAN")) {
-				throw new Exception("Unary Expression NOT expecting BOOLEAN but got " + exprType.getFullyQualifiedName());
-			} else {
+			if (operator.equals(UnaryOperator.NOT)) {
+				if (!exprType.getFullyQualifiedName().equals("BOOLEAN")) {
+					throw new Exception("Unary Expression NOT expecting BOOLEAN but got " + exprType.getFullyQualifiedName());
+				}
 				this.pushType(exprType);
-			}
-
-			if (operator.equals(UnaryOperator.MINUS)) {
+			} else if (operator.equals(UnaryOperator.MINUS)) {
 				if (!(exprType instanceof PrimitiveType) || exprType.getFullyQualifiedName().equals("BOOLEAN")) {
 					throw new Exception("Unary Expression MINUS expecting BYTE, CHAR, INT or SHORT but got " + exprType.getFullyQualifiedName());
 				}
@@ -662,49 +660,56 @@ public class TypeChecker extends SemanticsVisitor {
 
 		}
 
-		if (operator.equals(InfixOperator.BAND) || operator.equals(InfixOperator.BOR)) {
-			if (op1Type instanceof ReferenceType && op2Type instanceof ReferenceType)
-				throw new Exception("Invalid bitwise operation");
-			else if (op1Type instanceof PrimitiveType && ((PrimitiveType) op1Type).getPrimitive().equals(Primitive.BOOLEAN))
-				return op1Type;
-			else if (op2Type instanceof PrimitiveType && ((PrimitiveType) op2Type).getPrimitive().equals(Primitive.BOOLEAN))
-				return op2Type;
-
-			else
-				throw new Exception("Invalid bitwise operation");
-		}
-		if (operator.equals(InfixOperator.AND) || operator.equals(InfixOperator.OR)) {
-			if (op1Type instanceof ReferenceType | op2Type instanceof ReferenceType) {
-				throw new Exception("Invalid referrence comparasion2");
-			} else {
-				PrimitiveType type1 = (PrimitiveType) op1Type;
-				PrimitiveType type2 = (PrimitiveType) op2Type;
-				if (!(type1.getPrimitive().equals(Primitive.BOOLEAN) && type2.getPrimitive().equals(Primitive.BOOLEAN))) {
-					throw new Exception("Invalid referrence & |");
-				} else {
-					return new PrimitiveType(Primitive.BOOLEAN);
-				}
-
+		if (operator.equals(InfixOperator.AND) || operator.equals(InfixOperator.OR) || 
+				operator.equals(InfixOperator.BAND) || operator.equals(InfixOperator.BOR)) {
+			if (op1Type instanceof ReferenceType || op2Type instanceof ReferenceType) {
+				throw new Exception("Invalid referrence comparasion");
 			}
+			
+			PrimitiveType type1 = (PrimitiveType) op1Type;
+			PrimitiveType type2 = (PrimitiveType) op2Type;
+			if (!(type1.getPrimitive().equals(Primitive.BOOLEAN) && type2.getPrimitive().equals(Primitive.BOOLEAN))) {
+				throw new Exception("Invalid operands for & | && ||");
+			}
+			return new PrimitiveType(Primitive.BOOLEAN);
 		}
 		if (operator.equals(InfixOperator.EQ) || operator.equals(InfixOperator.NEQ)) {
-			if (op1Type.getFullyQualifiedName().equals("__VOID__") || op2Type.getFullyQualifiedName().equals("__VOID__")) {
-				throw new Exception("equation is not allowed for void");
-			} else {
-				if (!op1Type.getFullyQualifiedName().equals(op2Type.getFullyQualifiedName())) {
-					throw new Exception("equation incompatible");
-				} else {
-					return new PrimitiveType(Primitive.BOOLEAN);
+			if (op1Type instanceof ReferenceType && op2Type instanceof ReferenceType) {
+				if (op1Type.getFullyQualifiedName().equals("__VOID__") || op2Type.getFullyQualifiedName().equals("__VOID__")) {
+					throw new Exception("Equation is not allowed with VOID");
+				} else if (op1Type.getFullyQualifiedName().equals("__NULL__") || op2Type.getFullyQualifiedName().equals("__NULL__")) {
+					// Let it through
+				} else if (!(this.isAssignable(op1Type, op2Type, false) || this.isAssignable(op2Type, op1Type, false))) {
+					throw new Exception("Equation is not allowed between " + op1Type.getFullyQualifiedName() + " and " + op2Type.getFullyQualifiedName());
 				}
+			} else if (op1Type instanceof PrimitiveType && op2Type instanceof PrimitiveType) {
+				PrimitiveType type1 = (PrimitiveType) op1Type;
+				PrimitiveType type2 = (PrimitiveType) op2Type;
+				if ((type1.getPrimitive().equals(Primitive.BOOLEAN) || 
+						type1.getPrimitive().equals(Primitive.BOOLEAN)) && 
+						!type1.getPrimitive().equals(type2.getPrimitive())) {
+					throw new Exception("Equation is not allowed between " + op1Type.getFullyQualifiedName() + " and " + op2Type.getFullyQualifiedName());
+				}
+			} else {
+				throw new Exception("Equation is not allowed between " + op1Type.getFullyQualifiedName() + " and " + op2Type.getFullyQualifiedName());
 			}
+			
+			return new PrimitiveType(Primitive.BOOLEAN);
 		}
 		if (operator.equals(InfixOperator.GT) || operator.equals(InfixOperator.GEQ) || operator.equals(InfixOperator.LEQ) || operator.equals(InfixOperator.LT)) {
 			if (op1Type instanceof ReferenceType || op2Type instanceof ReferenceType) {
 				throw new Exception("Invalid referrence comparasion1");
-			} else {
-
-				return new PrimitiveType(Primitive.BOOLEAN);
+			} else if (op1Type instanceof PrimitiveType && op2Type instanceof PrimitiveType) {
+				PrimitiveType type1 = (PrimitiveType) op1Type;
+				PrimitiveType type2 = (PrimitiveType) op2Type;
+				if ((type1.getPrimitive().equals(Primitive.BOOLEAN) || 
+						type1.getPrimitive().equals(Primitive.BOOLEAN)) && 
+						!type1.getPrimitive().equals(type2.getPrimitive())) {
+					throw new Exception("Comparison is not allowed between " + op1Type.getFullyQualifiedName() + " and " + op2Type.getFullyQualifiedName());
+				}
 			}
+			
+			return new PrimitiveType(Primitive.BOOLEAN);
 		}
 		if (op1Type.equals(op2Type))
 			return op1Type;
