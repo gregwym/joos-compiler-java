@@ -17,6 +17,7 @@ import org.junit.runners.Parameterized.Parameters;
 
 import ca.uwaterloo.joos.Main;
 import ca.uwaterloo.joos.ast.AST;
+import ca.uwaterloo.joos.symboltable.SymbolTable.SymbolTableException;
 
 
 @SuppressWarnings("serial")
@@ -66,13 +67,11 @@ public class A2Test {
 	private File testFileList;
 
 	public A2Test(File testFileInput) {
-//		System.out.println("A2Test:   " + testFileInput);
 		this.testFileList = testFileInput;
 		if (!testFileInput.isFile()) {
 			extractFiles(testFileInput);
 		} else {
 			this.testFiles.add(testFileInput.getPath());
-//			System.out.println("testFiles:   " + testFiles.get(0));
 		}
 		extractFiles(new File("stdlib/2.0"));
 	}
@@ -81,7 +80,7 @@ public class A2Test {
 	public void Test() {
 		Exception fileException = null;
 		if (testFileList.getName().contains("Je")) {
-			fileException = new A2Exception();
+			fileException = new SymbolTableException("");
 		}
 
 		Exception realException = null;
@@ -109,7 +108,9 @@ public class A2Test {
 				System.out.println("Expecting: NoException" + "\t" + "but got: " + realException.getClass().getSimpleName() + " " + realException.getMessage() + "\t\t" + "[" + testFileList.getName() + "]");
 				fail("Fail to let it through");
 			} else if (!realException.getClass().getSimpleName().equals(fileException.getClass().getSimpleName())) {
-
+//				System.out.println("Expecting: " + fileException.getClass().getSimpleName() + "\t"
+//				+ "but got: " + realException.getClass().getSimpleName() + "\t\t"
+//				+ "[" + testFileList.getName() + "]");
 			}
 		}
 		

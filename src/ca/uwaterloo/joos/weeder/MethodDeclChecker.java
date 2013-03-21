@@ -5,6 +5,7 @@ import ca.uwaterloo.joos.ast.Modifiers.Modifier;
 import ca.uwaterloo.joos.ast.decl.ClassDeclaration;
 import ca.uwaterloo.joos.ast.decl.MethodDeclaration;
 import ca.uwaterloo.joos.ast.visitor.MethodDeclVisitor;
+import ca.uwaterloo.joos.weeder.Weeder.WeedException;
 
 public class MethodDeclChecker extends MethodDeclVisitor {
 
@@ -29,13 +30,9 @@ public class MethodDeclChecker extends MethodDeclVisitor {
 			if (insideClass) {
 				classDeclNode = (ClassDeclaration) astNode;
 				if (!(classDeclNode.getModifiers().getModifiers().contains(Modifier.ABSTRACT))) {
-					throw new Exception("class contains abstract Method must be abstract");
+					throw new WeedException("class contains abstract Method must be abstract");
 				}
 			}
-			
-
 		}
-
 	}
-
 }
