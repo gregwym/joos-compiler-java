@@ -18,16 +18,16 @@ import ca.uwaterloo.joos.symboltable.SemanticsVisitor;
 import ca.uwaterloo.joos.symboltable.SymbolTable;
 
 //TODO: Determine if all code is reachable.
-//		This can be done by examining all statement and control blocks.
+//		Ensure that all local variables have an initializer (separate visitor..?)
 
 public class ReachabilityVisitor extends SemanticsVisitor{
 	//Current reachable status. Switches to false once a return
 	//statement is found. Set to true at the end of a return statement.
 	public boolean reachable = true;
+	public int always = 0;
 //	static int DEBUG_Numbers = 0; //Trach the number of existing Reachability Visitors
 	public ReachabilityVisitor(SymbolTable table) {
 		super(table);
-//		System.out.println("NEW INST!");
 //		DEBUG_Numbers ++;
 		// TODO Might not need table...
 		
@@ -45,7 +45,9 @@ public class ReachabilityVisitor extends SemanticsVisitor{
 		}
 		
 		if (node instanceof IfStatement){
+			
 			reachable = true;
+			always = ConditionalChecker.condCheck(node);
 			ReachabilityVisitor innerrv = new ReachabilityVisitor(this.table);
 			IfStatement Inode = (IfStatement) node;
 			
@@ -53,12 +55,25 @@ public class ReachabilityVisitor extends SemanticsVisitor{
 			Inode.getIfStatement().accept(innerrv);
 			//An If statement must end with a return statement
 			//Thus, the new visitor has reachable set to false. Reset it
-			if (innerrv.reachable == false) reachable = false;
+			reachable = innerrv.reachable;
 			innerrv.reset(); 
-			if (Inode.getElseStatement() != null)Inode.getElseStatement().accept(innerrv);
-//			DEBUG_Numbers --;
-			if (innerrv.reachable == false) reachable = false;
-//			System.out.println("WV: PING " + reachable + " " + node);
+			if (Inode.getElseStatement() != null){
+				if (always == 1) throw new Exception ("Else block after always returning if");
+				Inode.getElseStatement().accept(innerrv);
+				reachable = innerrv.reachable;
+			}
+			
+			if (always == 0) reachable = true;
+			
+		}
+		
+		if (node instanceof ForStatement){
+			always = ConditionalChecker.condCheck(node);
+			
+		}
+		
+		if (node instanceof WhileStatement){
+			always = ConditionalChecker.condCheck(node);
 			
 		}
 		//TODO Throw exception on constant false conditions
@@ -74,9 +89,9 @@ public class ReachabilityVisitor extends SemanticsVisitor{
 	public boolean visit(ASTNode node){
 //		System.out.println("In Visit");
 		if (node instanceof IfStatement){
+			
 			return false;
 		}
-		
 		return true;
 	}
 	
@@ -85,8 +100,8 @@ public class ReachabilityVisitor extends SemanticsVisitor{
 		if (node instanceof IfStatement ||
 				node instanceof WhileStatement||
 				node instanceof ForStatement) {
-			reachable = true;
-			
+//			if (always == 1 && reachable == true) throw new Exception ("Non Terminating constant true condition block"); 
+			if (always == 0) reachable = true;
 		}
 		
 		if (node instanceof MethodDeclaration){
