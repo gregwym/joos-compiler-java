@@ -444,6 +444,9 @@ public class TypeChecker extends SemanticsVisitor {
 			if (invokingPrimary != null) {
 				Type primaryType = this.popType();
 				typeScope = this.table.getType(primaryType.getFullyQualifiedName());
+				if (typeScope == null) {
+					throw new Exception("Cannot invoke method from primary type " + primaryType.getFullyQualifiedName());
+				}
 				localSignature = typeScope.localSignatureOfMethod(invokingName.getSimpleName(), false, argTypes);
 			} else if (invokingName instanceof QualifiedName) {
 				List<String> components = ((QualifiedName) invokingName).getComponents();
@@ -460,6 +463,9 @@ public class TypeChecker extends SemanticsVisitor {
 					// Check whether has permission to access the field
 					this.isAccessible(staticAccess, entry, currentScope.getParentTypeScope(), currentTypeScope);
 
+					if (!(entry.getType() instanceof ReferenceType)) {
+						throw new Exception("Cannot invoke method from non-reference type");
+					}
 					currentScope = entry.getTypeScope();
 				}
 
