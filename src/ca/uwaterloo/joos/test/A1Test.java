@@ -1,7 +1,6 @@
 package ca.uwaterloo.joos.test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertSame;
+import static org.junit.Assert.fail;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -21,6 +20,7 @@ import org.junit.runners.Parameterized.Parameters;
 import ca.uwaterloo.joos.Main;
 import ca.uwaterloo.joos.parser.LR1Parser;
 import ca.uwaterloo.joos.scanner.Scanner;
+import ca.uwaterloo.joos.weeder.Weeder;
 
 @SuppressWarnings("serial")
 @RunWith(value = Parameterized.class)
@@ -78,6 +78,7 @@ public class A1Test {
 				System.out.println("Expecting: " + fileException.getClass().getSimpleName() + "\t"
 						+ "but got: NoException" + "\t\t"
 						+ "[" + testFile.getName() + "]");
+				fail("Fail to reject");
 			}
 		} catch (Exception e) {
 			realException = e;
@@ -85,6 +86,7 @@ public class A1Test {
 				System.out.println("Expecting: NoException" + "\t"
 						+ "but got: " + realException.getClass().getSimpleName() + "\t\t"
 						+ "[" + testFile.getName() + "]");
+				fail("Fail to let it through");
 			}
 			else if (!realException.getClass().getSimpleName().equals(fileException.getClass().getSimpleName())) {
 //				System.out.println("Expecting: " + fileException.getClass().getSimpleName() + "\t"
@@ -93,16 +95,17 @@ public class A1Test {
 			}
 		}
 
-		if(fileException != null && realException != null) {
-			assertEquals(fileException.getClass().getSimpleName(), realException.getClass().getSimpleName());
-		}
-		else {
-			assertSame(fileException, realException);
-		}
+//		if(fileException != null && realException != null) {
+//			assertEquals(fileException.getClass().getSimpleName(), realException.getClass().getSimpleName());
+//		}
+//		else {
+//			assertSame(fileException, realException);
+//		}
 	}
 
 	private Exception extractFileError(File testFile) {
 		Exception fileExcpetion = null;
+		if(testFile.getName().contains("Je"))
 		try {
 			BufferedReader br = new BufferedReader(new FileReader(testFile));
 			String errorMessage = new String();
@@ -112,7 +115,7 @@ public class A1Test {
 			}
 
 			if(errorMessage != null) fileExcpetion = extractError(errorMessage);
-			if (fileExcpetion == null && testFile.getName().contains("Je")) {
+			if (fileExcpetion == null) {
 				fileExcpetion = new A1Exception();
 			}
 			br.close();
@@ -128,6 +131,8 @@ public class A1Test {
 			return new Scanner.ScanException("");
 		} else if (errorMessage.contains("PARSER_EXCEPTION") || errorMessage.contains("SYNTAX_ERROR")) {
 			return new LR1Parser.ParseException("");
+		} else if (errorMessage.contains("INVALID_INTEGER")) {
+			return new Weeder.WeedException("");
 		}
 
 		return null;

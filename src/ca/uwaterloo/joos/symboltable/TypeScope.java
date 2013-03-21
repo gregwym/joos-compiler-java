@@ -154,7 +154,7 @@ public class TypeScope extends Scope {
 
 	public void addInterfaceScope(TypeScope interfaceScope) throws Exception {
 		if (interfaceScopes.containsKey(interfaceScope.getName())) {
-			throw new Exception("can not implement the same interface twice");
+			throw new SymbolTableException("can not implement the same interface twice");
 		} else {
 			this.interfaceScopes.put(interfaceScope.getName(), interfaceScope);
 		}
