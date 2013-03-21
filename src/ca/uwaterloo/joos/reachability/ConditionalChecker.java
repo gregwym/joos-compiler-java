@@ -1,4 +1,4 @@
-//TODO TEMPORARY: Reads the conditionals of condition loops
+//TODO
 
 //	Takes a conditional and determines if it is a constant 
 //	Idea is to call this from within reachability visitor
@@ -6,12 +6,17 @@
 
 //RETURNS: 
 
+//			0 - Conditional uses a variable
 //			1 - Condition means the block is always run
+
 package ca.uwaterloo.joos.reachability;
+
+import java.util.List;
 
 import ca.uwaterloo.joos.ast.ASTNode;
 import ca.uwaterloo.joos.ast.ASTNode.ChildTypeUnmatchException;
 import ca.uwaterloo.joos.ast.expr.Expression;
+import ca.uwaterloo.joos.ast.expr.InfixExpression;
 import ca.uwaterloo.joos.ast.expr.primary.LiteralPrimary;
 import ca.uwaterloo.joos.ast.statement.ForStatement;
 import ca.uwaterloo.joos.ast.statement.IfStatement;
@@ -61,7 +66,23 @@ public class ConditionalChecker {
 			}
 //			System.out.println(((LiteralPrimary) CNode).getValue());
 		}
+		
+		if (CNode instanceof InfixExpression){
+			//We have multiple conditionals
 			
+			List<Expression> operands = (((InfixExpression)CNode).getOperands());
+			//Run condCheck on both sides of the infix expression
+			int LH = condCheck(operands.get(0)); 
+			int RH = condCheck(operands.get(1));
+			
+			//Get the operator of the infix expression
+			InfixExpression.InfixOperator operator = ((InfixExpression)CNode).getOperator();
+			
+			//TODO apply Infix Operator logic to both sides
+			//		IE 	if (true || variable assignment) return 1
+			//		   	if (true && variable assignment) return 0
+		}
+		
 		if (CNode instanceof Expression){
 				//We can ignore the expression as long as the variable is definitely 
 				//assigned at this point (check elsewhere)
@@ -70,6 +91,7 @@ public class ConditionalChecker {
 				//		In such a case, we already know a boolean is assigned, so 
 				//		we treat it as a constant.
 				//		(j = false || i = true) => a constant of TRUE...?
+				//IF InfxExpression, get result of CondChecker on both sides...
 		}
 			
 		
