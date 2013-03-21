@@ -67,5 +67,10 @@ public class ForStatement extends Statement {
 	public Statement getForStatement() throws ChildTypeUnmatchException {
 		return (Statement) this.getChildByDescriptor(STATEMENT);
 	}
+	
+	//MATT: Used in ConditionalChecker
+	public ASTNode getForTest() throws ChildTypeUnmatchException {
+		return this.getChildByDescriptor(TEST);
+	}
 
 }
