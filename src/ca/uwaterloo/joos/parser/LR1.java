@@ -10,6 +10,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import ca.uwaterloo.joos.Main;
@@ -48,6 +49,8 @@ public class LR1 {
 	private Map <Integer, Map<String, Action>> transitionRules;
 
 	public LR1(File lr1File) throws Exception {
+		logger.setLevel(Level.WARNING);
+		
 		this.terminalSymbols = new HashSet<String>();
 		this.nonTerminalSymbols = new HashSet<String>();
 		this.startSymbol = null;
