@@ -6,20 +6,16 @@ import java.util.ArrayList;
 import java.util.List;
 
 import ca.uwaterloo.joos.ast.ASTNode;
-import ca.uwaterloo.joos.ast.ASTNode.ChildTypeUnmatchException;
-import ca.uwaterloo.joos.ast.decl.LocalVariableDeclaration;
 import ca.uwaterloo.joos.ast.expr.name.SimpleName;
 import ca.uwaterloo.joos.ast.type.ReferenceType;
-import ca.uwaterloo.joos.symboltable.SemanticsVisitor;
-import ca.uwaterloo.joos.symboltable.SymbolTable;
+import ca.uwaterloo.joos.ast.visitor.ASTVisitor;
 
-public class InitalizedChecker extends SemanticsVisitor {
-	String DeclName;
+public class InitalizedChecker extends ASTVisitor {
+	String declName;
 	List<String> decls;
-	public InitalizedChecker(SymbolTable table, String currentDecl, List<String> idecls) {
-		super(table);
-		DeclName = currentDecl;
-		decls = idecls;
+	public InitalizedChecker(String currentDecl, List<String> decls) {
+		declName = currentDecl;
+		this.decls = new ArrayList<String>(decls);
 	}
 	
 	@Override
@@ -27,11 +23,16 @@ public class InitalizedChecker extends SemanticsVisitor {
 		
 		if (node instanceof SimpleName && 
 				!(node.getParent() instanceof ReferenceType)){
-			if (((SimpleName) node).getName().equals(DeclName)) throw new Exception ("Use in Initalization");
+			if (((SimpleName) node).getName().equals(declName)) throw new Exception ("Use in Initalization");
 			else if (!decls.contains(((SimpleName) node).getName())){
 				throw new Exception ("Use before declaration " + ((SimpleName) node).getName());
 			}
 		}		
+	}
+
+	@Override
+	public void willVisit(ASTNode node) throws Exception {
+		
 	}
 
 }

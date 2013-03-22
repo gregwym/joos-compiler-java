@@ -1,8 +1,12 @@
 package ca.uwaterloo.joos.reachability;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
+import ca.uwaterloo.joos.Main;
 import ca.uwaterloo.joos.ast.ASTNode;
 import ca.uwaterloo.joos.ast.ASTNode.ChildTypeUnmatchException;
 import ca.uwaterloo.joos.ast.FileUnit;
@@ -28,6 +32,8 @@ import ca.uwaterloo.joos.symboltable.SemanticsVisitor;
 import ca.uwaterloo.joos.symboltable.SymbolTable;
 
 public class ReachabilityVisitor extends SemanticsVisitor{
+	public static final Logger logger = Main.getLogger(ReachabilityVisitor.class);
+	
 	//Current reachable status. Switches to false once a return
 	//statement is found. Set to true at the end of a return statement.
 	private List<String> inits = new ArrayList<String>();
@@ -42,7 +48,26 @@ public class ReachabilityVisitor extends SemanticsVisitor{
 		super(table);
 //		DEBUG_Numbers ++;
 		// TODO Might not need table...
-		
+//		logger.setLevel(Level.FINER);
+	}
+	
+	private void setInits(Collection<String> inits) {
+		this.inits = new ArrayList<String>(inits);
+	}
+	
+	private void addInit(String var) {
+		logger.fine("Adding init " + var);
+		this.inits.add(var);
+	}
+	
+	private void removeInit(String var) {
+		logger.fine("Removing init " + var);
+		this.inits.remove(var);
+	}
+	
+	private void clearInits() {
+		logger.fine("Clearing inits");
+		this.inits.clear();
 	}
 	
 	@Override
@@ -70,27 +95,27 @@ public class ReachabilityVisitor extends SemanticsVisitor{
 		
 		if (node instanceof FieldDeclaration){
 			currentDecl = ((FieldDeclaration)node).getName().getName();
-			InitalizedChecker ic = new InitalizedChecker(table, currentDecl, inits);
+			InitalizedChecker ic = new InitalizedChecker(currentDecl, inits);
 			Expression initial = ((FieldDeclaration) node).getInitial();
 			if (initial != null){
 				initial.accept(ic);
-				inits.add(currentDecl);
+				this.addInit(currentDecl);
 			}
 			currentDecl = null;
 		}
 		if (node instanceof ParameterDeclaration){
 			currentDecl = ((ParameterDeclaration)node).getName().getName();
-			inits.add(currentDecl);
+			this.addInit(currentDecl);
 			currentDecl = null;
 		}
 		if (node instanceof LocalVariableDeclaration){
 			currentDecl = ((LocalVariableDeclaration)node).getName().getName();
-			if (inits.contains(currentDecl)) inits.remove(currentDecl);
-			InitalizedChecker ic = new InitalizedChecker(table, currentDecl, inits);
+			if (inits.contains(currentDecl)) this.removeInit(currentDecl);
+			InitalizedChecker ic = new InitalizedChecker(currentDecl, inits);
 			Expression initial = ((LocalVariableDeclaration) node).getInitial();
 			if (initial != null){
 				initial.accept(ic);
-				inits.add(currentDecl);
+				this.addInit(currentDecl);
 			}
 			currentDecl = null;
 		}
@@ -102,9 +127,9 @@ public class ReachabilityVisitor extends SemanticsVisitor{
 			ASTNode LH = (ASTNode) ANode.getLeftHand();
 			if (LH instanceof SimpleName){
 				if (!inits.contains(((SimpleName) LH).getName())){
-					InitalizedChecker ic = new InitalizedChecker(table, ((SimpleName) LH).getName(), inits);
+					InitalizedChecker ic = new InitalizedChecker(((SimpleName) LH).getName(), inits);
 					ANode.getExpression().accept(ic);
-					inits.add(((SimpleName) LH).getName());
+					this.addInit(((SimpleName) LH).getName());
 				}
 			}
 			
@@ -113,11 +138,13 @@ public class ReachabilityVisitor extends SemanticsVisitor{
 		if (node instanceof SimpleName){
 			
 			ASTNode parent = ((SimpleName)node).getParent();
-			if (parent instanceof InfixExpression||
-					parent instanceof ArrayAccess){
+			if (parent instanceof InfixExpression ||
+					parent instanceof ArrayAccess ||
+					parent instanceof ReturnStatement){
 				
 				if (!inits.contains(((SimpleName)node).getName())){
-					throw new Exception ("Variable used before initalization");
+					logger.fine("Current init: " + this.inits);
+					throw new Exception ("Variable " + ((SimpleName)node).getName() + " used before initalization");
 				}
 			}
 			
@@ -141,12 +168,15 @@ public class ReachabilityVisitor extends SemanticsVisitor{
 			ReachabilityVisitor innerrv = new ReachabilityVisitor(this.table);
 			IfStatement Inode = (IfStatement) node;
 			
+			innerrv.setInits(this.inits);
 			//Run separate checks on the if else subtrees
 			Inode.getIfStatement().accept(innerrv);
 			//An If statement must end with a return statement
 			//Thus, the new visitor has reachable set to false. Reset it
 			reachable = innerrv.reachable;
-			innerrv.reset(); 
+			
+			innerrv = new ReachabilityVisitor(this.table);
+			innerrv.setInits(this.inits);
 			if (Inode.getElseStatement() != null){
 				if (!(Inode.getElseStatement() instanceof IfStatement)){
 					//In this case, we have an else statement
@@ -320,7 +350,7 @@ public class ReachabilityVisitor extends SemanticsVisitor{
 			//Don't need per block recording as we cannot have overlapping scope
 			//and use before declaration is covered
 			//Refresh the init list at the end of each method and constructor
-			inits = new ArrayList<String>();
+			this.clearInits();
 		}
 		
 	}
