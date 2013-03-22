@@ -24,9 +24,9 @@ public class AssignmentExpression extends Expression {
 	public Expression getExpression() throws ChildTypeUnmatchException {
 		return (Expression) this.getChildByDescriptor(EXPRSSION);
 	}
-	//TODO MATT ADD: getter for LEFTHAND ChildDescriptor
-	public ASTNode getLeftHand() throws ChildTypeUnmatchException {
-		return (ASTNode) this.getChildByDescriptor(LEFTHAND);
+
+	public Lefthand getLeftHand() throws ChildTypeUnmatchException {
+		return (Lefthand) this.getChildByDescriptor(LEFTHAND);
 	}
 	
 	@Override
