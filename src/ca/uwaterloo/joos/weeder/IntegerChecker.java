@@ -6,6 +6,7 @@ package ca.uwaterloo.joos.weeder;
 import ca.uwaterloo.joos.ast.ASTNode;
 import ca.uwaterloo.joos.ast.expr.primary.LiteralPrimary;
 import ca.uwaterloo.joos.ast.visitor.IntegerVisitor;
+import ca.uwaterloo.joos.weeder.Weeder.WeedException;
 
 /**
  * @author wenzhuman
@@ -45,7 +46,7 @@ public class IntegerChecker extends IntegerVisitor {
 			for (int i = 0; i < intergerThreshold.length(); i++) {
 				if ((int) intString.charAt(i) > (int) intergerThreshold.charAt(i)) {
 
-					throw new Exception(intString + "AT" + i + "1:Interger out of Range");
+					throw new WeedException("Interger out of Range");
 				}
 				if ((int) intString.charAt(i) < (int) intergerThreshold.charAt(i)) {
 					break;
