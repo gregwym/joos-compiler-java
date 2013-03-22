@@ -101,7 +101,7 @@ public class ReachabilityVisitor extends SemanticsVisitor{
 		if (node instanceof AssignmentExpression){
 			//Check here if the assignment is valid and so
 			AssignmentExpression ANode = (AssignmentExpression) node;
-			ASTNode LH = ANode.getLeftHand();
+			ASTNode LH = (ASTNode) ANode.getLeftHand();
 			if (LH instanceof SimpleName){
 				if (!inits.contains(((SimpleName) LH).getName())){
 					InitalizedChecker ic = new InitalizedChecker(table, ((SimpleName) LH).getName(), inits);

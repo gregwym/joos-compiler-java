@@ -11,10 +11,10 @@ import java.util.List;
 import java.util.logging.Logger;
 
 import ca.uwaterloo.joos.ast.AST;
-import ca.uwaterloo.joos.checker.HierarchyChecker;
 import ca.uwaterloo.joos.parser.LR1;
 import ca.uwaterloo.joos.parser.LR1Parser;
 import ca.uwaterloo.joos.parser.ParseTree;
+import ca.uwaterloo.joos.reachability.ReachabilityVisitor;
 import ca.uwaterloo.joos.scanner.DFA;
 import ca.uwaterloo.joos.scanner.Scanner;
 import ca.uwaterloo.joos.scanner.Token;
@@ -158,6 +158,15 @@ public class Main {
 		logger.info("Type Checking finished");
 	}
 	
+	public void staticChecking(List<AST> asts, SymbolTable table) throws Exception {
+		ReachabilityVisitor checker = new ReachabilityVisitor(table);
+		
+		for(AST ast: asts) {
+			ast.getRoot().accept(checker);
+		}
+		logger.info("Static Checking finished");
+	}
+	
 	public void execute(String[] args) throws Exception {
 		logger.info("Processing: " + Arrays.asList(args));
 		
@@ -171,6 +180,7 @@ public class Main {
 		
 		nameLinking(asts, table);
 		typeChecking(asts, table);
+		staticChecking(asts, table);
 	}
 
 	/**
