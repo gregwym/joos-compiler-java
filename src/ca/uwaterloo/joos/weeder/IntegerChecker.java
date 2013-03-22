@@ -51,7 +51,7 @@ public class IntegerChecker extends IntegerVisitor {
 			}
 		}
 		if (intString.length() > intergerThreshold.length()) {
-			throw new Exception("Interger out of Range");
+			throw new Exception("2:Interger out of Range");
 		}
 	}
 }
