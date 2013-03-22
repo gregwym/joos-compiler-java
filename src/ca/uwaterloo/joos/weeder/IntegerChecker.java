@@ -45,12 +45,15 @@ public class IntegerChecker extends IntegerVisitor {
 			for (int i = 0; i < intergerThreshold.length(); i++) {
 				if ((int) intString.charAt(i) > (int) intergerThreshold.charAt(i)) {
 
-					throw new Exception("Interger out of Range");
+					throw new Exception(intString + "AT" + i + "1:Interger out of Range");
+				}
+				if ((int) intString.charAt(i) < (int) intergerThreshold.charAt(i)) {
+					break;
 				}
 			}
 		}
 		if (intString.length() > intergerThreshold.length()) {
-			throw new Exception("Interger out of Range");
+			throw new Exception("2:Interger out of Range");
 		}
 	}
 }
