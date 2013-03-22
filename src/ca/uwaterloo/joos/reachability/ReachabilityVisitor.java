@@ -173,10 +173,10 @@ public class ReachabilityVisitor extends SemanticsVisitor{
 				
 				List<Expression> operands = ((InfixExpression)((ForStatement)node).getForCondition()).getOperands();
 				
-				Object RH = eval(operands.get(1));
-				Object LH = eval(operands.get(0));
+				Integer RH = eval(operands.get(1));
+				Integer LH = eval(operands.get(0));
 				if (RH != null && LH != null){
-					if(!isTrue((int)RH,(int)LH, ((InfixExpression)((ForStatement)node).getForCondition()).getOperator())){
+					if(!isTrue(RH,LH, ((InfixExpression)((ForStatement)node).getForCondition()).getOperator())){
 						throw new Exception("Constant FALSE for Conditional");
 					}
 				}
@@ -192,7 +192,7 @@ public class ReachabilityVisitor extends SemanticsVisitor{
 		}
 	}	
 
-	private boolean isTrue(int rh, int lh, InfixOperator operator) {
+	private boolean isTrue(Integer rh, Integer lh, InfixOperator operator) {
 		//Returns true if the condition evaluates to true
 		if (operator == InfixOperator.EQ){
 			return (rh == lh);
@@ -215,7 +215,7 @@ public class ReachabilityVisitor extends SemanticsVisitor{
 		return false;
 	}
 
-	private Object eval(ASTNode expr) throws ChildTypeUnmatchException {
+	private Integer eval(ASTNode expr) throws ChildTypeUnmatchException {
 //		Returns the boolean evaluation of the for test if it is constant
 		//Returns the value of an operation..........
 		//The node represents an equation to be evaled. Either the operand is a literal
@@ -237,24 +237,24 @@ public class ReachabilityVisitor extends SemanticsVisitor{
 			InfixExpression ENode = (InfixExpression)expr;
 			InfixOperator operator = ENode.getOperator();
 			List<Expression> operands = ENode.getOperands();
-			Object LH = eval(operands.get(0));
-			Object RH = eval(operands.get(1));
+			Integer LH = eval(operands.get(0));
+			Integer RH = eval(operands.get(1));
 			if (LH == null || RH == null){
 				return null;
 			}
 			
 			
 			if (operator == InfixExpression.InfixOperator.PLUS){
-				return (int)LH + (int)RH;
+				return LH + RH;
 			}
 			if (operator == InfixExpression.InfixOperator.MINUS){
-				return (int)LH - (int)RH;
+				return LH - RH;
 			}
 			if (operator == InfixExpression.InfixOperator.STAR){
-				return (int)LH * (int)RH;
+				return LH * RH;
 			}
 			if (operator == InfixExpression.InfixOperator.SLASH){
-				return (int)LH / (int)RH;
+				return LH / RH;
 			}
 		}
 		return 0;
