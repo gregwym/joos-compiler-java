@@ -6,8 +6,11 @@ import java.util.List;
 import ca.uwaterloo.joos.ast.ASTNode;
 import ca.uwaterloo.joos.ast.ASTNode.ChildTypeUnmatchException;
 import ca.uwaterloo.joos.ast.FileUnit;
-import ca.uwaterloo.joos.ast.Modifiers;
-import ca.uwaterloo.joos.ast.decl.*;
+import ca.uwaterloo.joos.ast.decl.ConstructorDeclaration;
+import ca.uwaterloo.joos.ast.decl.FieldDeclaration;
+import ca.uwaterloo.joos.ast.decl.LocalVariableDeclaration;
+import ca.uwaterloo.joos.ast.decl.MethodDeclaration;
+import ca.uwaterloo.joos.ast.decl.PackageDeclaration;
 import ca.uwaterloo.joos.ast.expr.AssignmentExpression;
 import ca.uwaterloo.joos.ast.expr.Expression;
 import ca.uwaterloo.joos.ast.expr.InfixExpression;
@@ -18,16 +21,14 @@ import ca.uwaterloo.joos.ast.expr.primary.ExpressionPrimary;
 import ca.uwaterloo.joos.ast.expr.primary.LiteralPrimary;
 import ca.uwaterloo.joos.ast.statement.Block;
 import ca.uwaterloo.joos.ast.statement.ForStatement;
-//TODO: Integer Range Check is currently disabled.
-//			It was throwing an exception for 1135104544
-
 import ca.uwaterloo.joos.ast.statement.IfStatement;
 import ca.uwaterloo.joos.ast.statement.ReturnStatement;
-import ca.uwaterloo.joos.ast.statement.Statement;
 import ca.uwaterloo.joos.ast.statement.WhileStatement;
 import ca.uwaterloo.joos.symboltable.SemanticsVisitor;
-//AST visitor to determine reachability
 import ca.uwaterloo.joos.symboltable.SymbolTable;
+//TODO: Integer Range Check is currently disabled.
+//			It was throwing an exception for 1135104544
+//AST visitor to determine reachability
 
 //TODO: Determine if all code is reachable.
 //		Ensure that all local variables have an initializer (separate visitor..?)
@@ -53,6 +54,7 @@ public class ReachabilityVisitor extends SemanticsVisitor{
 	
 	@Override
 	public void willVisit(ASTNode node) throws Exception{
+		
 		if (!reachable){
 			throw new Exception ("UNREACHABLE CODE");
 		}	
@@ -188,7 +190,6 @@ public class ReachabilityVisitor extends SemanticsVisitor{
 			if (always == 0) throw new Exception ("Unreachable While Block");
 			
 		}
-			
 	}	
 
 	private boolean isTrue(int rh, int lh, InfixOperator operator) {
@@ -259,7 +260,20 @@ public class ReachabilityVisitor extends SemanticsVisitor{
 		return 0;
 	}
 	
-	public boolean visit(ASTNode node){
+	public boolean visit(ASTNode node) throws Exception{
+		if (node instanceof FileUnit){
+			FileUnit FNode = (FileUnit) node;
+//			System.out.println(FNode.getIdentifier());
+			if (FNode.getIdentifier().equals("Byte.java")) return false;
+			if (FNode.getIdentifier().equals("Character.java")) return false;
+			if (FNode.getIdentifier().equals("Integer.java")) return false;
+			if (FNode.getIdentifier().equals("Number.java")) return false;
+			if (FNode.getIdentifier().equals("Object.java")) return false;
+			if (FNode.getIdentifier().equals("Short.java")) return false;
+			if (FNode.getIdentifier().equals("String.java")) return false;
+			if (FNode.getIdentifier().equals("OutputStream.java")) return false;
+		}
+		
 		if (node instanceof IfStatement){
 			
 			return false;
@@ -314,7 +328,6 @@ public class ReachabilityVisitor extends SemanticsVisitor{
 			//Refresh the init list at the end of each method and constructor
 			inits = new ArrayList<String>();
 		}
-		
 		
 	}
 	

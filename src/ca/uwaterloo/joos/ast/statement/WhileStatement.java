@@ -37,10 +37,6 @@ public class WhileStatement extends Statement {
 		return (Statement) this.getChildByDescriptor(WHILESTATEMENTS);
 	}
 	
-	//TODO MATT
-	public ASTNode getWhileCondition() throws ChildTypeUnmatchException {
-		return this.getChildByDescriptor(WHILECONDITION);
-	}
 	@Override
 	public List<Node> processTreeNode(TreeNode treeNode) throws Exception {
 		String kind = treeNode.getKind();
