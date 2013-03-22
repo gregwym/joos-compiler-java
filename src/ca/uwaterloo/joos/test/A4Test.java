@@ -88,7 +88,8 @@ public class A4Test {
 		try {
 			String[] files = new String[this.testFiles.size()];
 			this.testFiles.toArray(files);
-			
+//			instance.execute(files)
+
 			List<AST> asts = new ArrayList<AST>();
 			for(String arg: files) {
 				asts.add(instance.constructAst(new File(arg)));

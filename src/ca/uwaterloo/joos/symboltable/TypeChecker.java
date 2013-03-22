@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Stack;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import ca.uwaterloo.joos.Main;
@@ -36,6 +37,7 @@ import ca.uwaterloo.joos.ast.expr.primary.LiteralPrimary;
 import ca.uwaterloo.joos.ast.expr.primary.Primary;
 import ca.uwaterloo.joos.ast.expr.primary.ThisPrimary;
 import ca.uwaterloo.joos.ast.statement.Block;
+import ca.uwaterloo.joos.ast.statement.ExpressionStatement;
 import ca.uwaterloo.joos.ast.statement.ForStatement;
 import ca.uwaterloo.joos.ast.statement.IfStatement;
 import ca.uwaterloo.joos.ast.statement.ReturnStatement;
@@ -591,11 +593,19 @@ public class TypeChecker extends SemanticsVisitor {
 		} else if (node instanceof IfStatement) {
 			Statement statement = ((IfStatement) node).getIfStatement();
 			if(statement != null && !(statement instanceof Block)) {
-				this.popType();
+				if(statement.getClass().equals(ExpressionStatement.class) && ((ExpressionStatement) statement).getExpression() == null) {
+					
+				} else {
+					this.popType();
+				}
 			}
 			statement = ((IfStatement) node).getElseStatement();
 			if(statement != null && !(statement instanceof Block)) {
-				this.popType();
+				if(statement.getClass().equals(ExpressionStatement.class) && ((ExpressionStatement) statement).getExpression() == null) {
+					
+				} else {
+					this.popType();
+				}
 			}
 			
 			Type condType = this.popType();
@@ -606,7 +616,11 @@ public class TypeChecker extends SemanticsVisitor {
 		} else if (node instanceof WhileStatement) {
 			Statement statement = ((WhileStatement) node).getWhileStatement();
 			if(statement != null && !(statement instanceof Block)) {
-				this.popType();
+				if(statement.getClass().equals(ExpressionStatement.class) && ((ExpressionStatement) statement).getExpression() == null) {
+					
+				} else {
+					this.popType();
+				}
 			}
 			
 			Type condType = this.popType();
@@ -616,8 +630,12 @@ public class TypeChecker extends SemanticsVisitor {
 			this.pushType(new ReferenceType("__VOID__", node));
 		} else if (node instanceof ForStatement) {
 			Statement statement = ((ForStatement) node).getForStatement();
-			if (statement != null && !(statement instanceof Block)) {
-				this.popType();
+			if(statement != null && !(statement instanceof Block)) {
+				if(statement.getClass().equals(ExpressionStatement.class) && ((ExpressionStatement) statement).getExpression() == null) {
+					
+				} else {
+					this.popType();
+				}
 			}
 			
 			Expression update = ((ForStatement) node).getForUpdate();
