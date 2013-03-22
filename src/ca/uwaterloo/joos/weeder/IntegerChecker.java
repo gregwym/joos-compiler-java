@@ -48,9 +48,6 @@ public class IntegerChecker extends IntegerVisitor {
 
 					throw new WeedException("Interger out of Range");
 				}
-				if ((int) intString.charAt(i) < (int) intergerThreshold.charAt(i)) {
-					break;
-				}
 			}
 		}
 		if (intString.length() > intergerThreshold.length()) {
