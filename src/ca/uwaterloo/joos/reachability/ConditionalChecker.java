@@ -4,6 +4,10 @@
 //	Idea is to call this from within reachability visitor
 //	This class then returns an int which the visitor responds accordingly to
 
+//ConditionalChecker.condCheck() can be called either from the Reachability visitor upon finding a
+//control loop OR recursively from within condCheck() when the control statement contains multiple
+//statements. The meaning of the return value is different for each case.
+
 //RETURNS: 
 
 //			0 - Conditional uses a variable
@@ -26,7 +30,6 @@ public class ConditionalChecker {
 	
 	
 	public static int condCheck(ASTNode node) throws Exception{
-		//Parameters?
 		//TODO: Check the condition for each control loop
 //				If the condition comes from a variable, ensure it is initalized...
 //				If the condition is a literal, it needs to be BOOLEAN from A3.
@@ -36,6 +39,27 @@ public class ConditionalChecker {
 //					IF: Dead code exists AFTER the if block if it contains a return
 		
 		
+		/*If the node parameter is not a control statement, then it 
+		 * is an operand of an infix expression and this method was called
+		 * recursively.
+		 */
+		if (node instanceof LiteralPrimary){
+			if (((LiteralPrimary)node).getValue().equals("true")){
+				return 1;
+			}
+			
+			else if (((LiteralPrimary)node).getValue().equals("false")){
+				return 0;
+			}
+		}
+		
+		if (node instanceof Expression){
+			//Need to add another check for infix expression...
+			return 2;
+		}
+		/*
+		 * Otherwise, the method was called from the visitor and was passed a control statement
+		 */
 		/* Extract Conditional */
 		ASTNode CNode = null;
 		
@@ -48,8 +72,9 @@ public class ConditionalChecker {
 			CNode = ((IfStatement)node).getIfCondition();
 		}
 		
-		if (node instanceof ForStatement){		
-			CNode = ((ForStatement)node).getForTest();
+		if (node instanceof ForStatement){
+			CNode = ((ForStatement)node).getForCondition();
+			
 		}
 		
 		/* Now check extracted conditional */
@@ -62,9 +87,9 @@ public class ConditionalChecker {
 			}
 			else {
 				//An if block with a constant false conditional is an automatic exception
-				throw new Exception("Constant FALSE used for if conditional");
+//				throw new Exception("Constant FALSE used for if conditional");
+				return 0;
 			}
-//			System.out.println(((LiteralPrimary) CNode).getValue());
 		}
 		
 		if (CNode instanceof InfixExpression){
@@ -74,13 +99,18 @@ public class ConditionalChecker {
 			//Run condCheck on both sides of the infix expression
 			int LH = condCheck(operands.get(0)); 
 			int RH = condCheck(operands.get(1));
-			
 			//Get the operator of the infix expression
 			InfixExpression.InfixOperator operator = ((InfixExpression)CNode).getOperator();
 			
-			//TODO apply Infix Operator logic to both sides
-			//		IE 	if (true || variable assignment) return 1
-			//		   	if (true && variable assignment) return 0
+			if (LH == 2 || RH == 2) return 2;
+			
+			if (operator == InfixExpression.InfixOperator.AND){
+				return LH & RH;
+			}
+			
+			else if (operator == InfixExpression.InfixOperator.OR){
+				return LH | RH;
+			}
 		}
 		
 		if (CNode instanceof Expression){
@@ -93,10 +123,6 @@ public class ConditionalChecker {
 				//		(j = false || i = true) => a constant of TRUE...?
 				//IF InfxExpression, get result of CondChecker on both sides...
 		}
-			
-		
-		
-		
 		return 0;
 	}
 }
