@@ -4,7 +4,9 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Stack;
+import java.util.logging.Logger;
 
+import ca.uwaterloo.joos.Main;
 import ca.uwaterloo.joos.ast.ASTNode;
 import ca.uwaterloo.joos.ast.Modifiers;
 import ca.uwaterloo.joos.ast.Modifiers.Modifier;
@@ -18,6 +20,7 @@ import ca.uwaterloo.joos.ast.expr.AssignmentExpression;
 import ca.uwaterloo.joos.ast.expr.CastExpression;
 import ca.uwaterloo.joos.ast.expr.ClassCreateExpression;
 import ca.uwaterloo.joos.ast.expr.Expression;
+import ca.uwaterloo.joos.ast.expr.ForInit;
 import ca.uwaterloo.joos.ast.expr.InfixExpression;
 import ca.uwaterloo.joos.ast.expr.InfixExpression.InfixOperator;
 import ca.uwaterloo.joos.ast.expr.MethodInvokeExpression;
@@ -36,6 +39,7 @@ import ca.uwaterloo.joos.ast.statement.Block;
 import ca.uwaterloo.joos.ast.statement.ForStatement;
 import ca.uwaterloo.joos.ast.statement.IfStatement;
 import ca.uwaterloo.joos.ast.statement.ReturnStatement;
+import ca.uwaterloo.joos.ast.statement.Statement;
 import ca.uwaterloo.joos.ast.statement.WhileStatement;
 import ca.uwaterloo.joos.ast.type.ArrayType;
 import ca.uwaterloo.joos.ast.type.PrimitiveType;
@@ -46,23 +50,25 @@ import ch.lambdaj.Lambda;
 
 public class TypeChecker extends SemanticsVisitor {
 
-	private Stack<Type> typeStack;
+	private static final Logger logger = Main.getLogger(TypeChecker.class);
+	private Stack<Stack<Type>> typeStacks;
 	private int checkType = 0;
 	private boolean inStatic = false;
 	private Type methodReturnType = null;
 
 	public TypeChecker(SymbolTable table) {
 		super(table);
-		this.typeStack = new Stack<Type>();
+		this.typeStacks = new Stack<Stack<Type>>();
 		this.checkType = 0;
 		this.inStatic = false;
+//		logger.setLevel(Level.FINER);
 	}
 
 	@Override
 	public boolean visit(ASTNode node) throws Exception {
 		if (node instanceof TypeDeclaration) {
-			if (this.getCurrentScope().getName().startsWith("java."))
-				return false;
+//			if (this.getCurrentScope().getName().startsWith("java"))
+//				return false;
 
 			// Check the existence of super zero-arg constructor
 			TypeScope superScope = this.getCurrentScope().getParentTypeScope().getSuperScope();
@@ -100,6 +106,10 @@ public class TypeChecker extends SemanticsVisitor {
 
 	@Override
 	public void willVisit(ASTNode node) throws Exception {
+		if (node instanceof TypeDeclaration || node instanceof Block) {
+			this.pushTypeStack();
+		}
+		
 		if (node instanceof FieldDeclaration || node instanceof Block) {
 			this.checkType++;
 		}
@@ -108,7 +118,6 @@ public class TypeChecker extends SemanticsVisitor {
 			// declaration scopes method
 			Modifiers modifiers = ((BodyDeclaration) node).getModifiers();
 			inStatic = modifiers.containModifier(Modifiers.Modifier.STATIC);
-
 		}
 
 		if (node instanceof MethodDeclaration) {
@@ -116,21 +125,38 @@ public class TypeChecker extends SemanticsVisitor {
 		}
 		super.willVisit(node);
 	}
+	
+	protected Stack<Type> getCurrentTypeStack() {
+		if (!this.typeStacks.isEmpty())
+			return this.typeStacks.peek();
+		return null;
+	}
+	
+	protected void pushTypeStack() {
+		logger.finer("Pushing new Type Stack");
+		this.typeStacks.push(new Stack<Type>());
+	}
+	
+	protected void popTypeStack() {
+		Stack<Type> popping = this.typeStacks.pop();
+		logger.finer("Popping Type Stack " + popping);
+	}
 
 	protected void pushType(Type type) throws Exception {
-		logger.info("Pushing " + type.getFullyQualifiedName());
-		this.typeStack.push(type);
+		logger.finer("Pushing " + type.getFullyQualifiedName());
+		this.getCurrentTypeStack().push(type);
 	}
 
 	protected Type popType() throws Exception {
-		Type type = this.typeStack.pop();
-		logger.info("Poping " + type.getFullyQualifiedName());
+		Type type = this.getCurrentTypeStack().pop();
+		logger.finer("Popping " + type.getFullyQualifiedName());
 		return type;
 	}
 
 	protected Type getCurrentType() {
-		if (!this.typeStack.isEmpty())
-			return this.typeStack.peek();
+		Stack<Type> current = this.getCurrentTypeStack();
+		if (current != null && !current.isEmpty())
+			return current.peek();
 		return null;
 	}
 
@@ -222,7 +248,7 @@ public class TypeChecker extends SemanticsVisitor {
 
 	private boolean isAccessible(boolean staticAccess, TableEntry entry, TypeScope accessingTypeScope, TypeScope currentTypeScope) throws Exception {
 		TypeScope declaredTypeScope = entry.getWithinScope().getParentTypeScope();
-		logger.info("Checking accessibility static: " + staticAccess + " entry " + entry.getName() + " within type " + declaredTypeScope.getName() + " access type " + accessingTypeScope.getName() + " from type " + currentTypeScope.getName());
+		logger.fine("Checking accessibility static: " + staticAccess + " entry " + entry.getName() + " within type " + declaredTypeScope.getName() + " access type " + accessingTypeScope.getName() + " from type " + currentTypeScope.getName());
 		BodyDeclaration fieldNode = (BodyDeclaration) entry.getNode();
 		Modifiers modifiers = fieldNode.getModifiers();
 		boolean isStatic = modifiers != null && fieldNode.getModifiers().containModifier(Modifier.STATIC);
@@ -250,12 +276,16 @@ public class TypeChecker extends SemanticsVisitor {
 	public void didVisit(ASTNode node) throws Exception {
 		int i = 0;
 
+		if (node instanceof TypeDeclaration || node instanceof Block) {
+			this.popTypeStack();
+		}
+		
 		if (this.checkType == 0) {
 			super.didVisit(node);
 			return;
 		}
 
-		logger.info("Did visit " + node);
+		logger.fine("Did visit " + node);
 
 		/* Type Providers */
 		if (node instanceof LiteralPrimary) {
@@ -354,13 +384,12 @@ public class TypeChecker extends SemanticsVisitor {
 		} else if (node instanceof UnaryExpression) {
 			Type exprType = this.popType();
 			UnaryOperator operator = ((UnaryExpression) node).getOperator();
-			if (operator.equals(UnaryOperator.NOT) && !exprType.getFullyQualifiedName().equals("BOOLEAN")) {
-				throw new Exception("Unary Expression NOT expecting BOOLEAN but got " + exprType.getFullyQualifiedName());
-			} else {
+			if (operator.equals(UnaryOperator.NOT)) {
+				if (!exprType.getFullyQualifiedName().equals("BOOLEAN")) {
+					throw new Exception("Unary Expression NOT expecting BOOLEAN but got " + exprType.getFullyQualifiedName());
+				}
 				this.pushType(exprType);
-			}
-
-			if (operator.equals(UnaryOperator.MINUS)) {
+			} else if (operator.equals(UnaryOperator.MINUS)) {
 				if (!(exprType instanceof PrimitiveType) || exprType.getFullyQualifiedName().equals("BOOLEAN")) {
 					throw new Exception("Unary Expression MINUS expecting BYTE, CHAR, INT or SHORT but got " + exprType.getFullyQualifiedName());
 				}
@@ -369,7 +398,7 @@ public class TypeChecker extends SemanticsVisitor {
 		} else if (node instanceof CastExpression) {
 			Type exprType = this.popType();
 			Type castType = ((CastExpression) node).getType();
-			// TODO: Check whether is valid casting;
+
 			if (this.isAssignable(castType, exprType, true) == false && this.isAssignable(exprType, castType, true) == false) {
 				throw new Exception("Cannot cast " + exprType.getFullyQualifiedName() + " to " + castType.getFullyQualifiedName());
 			}
@@ -380,7 +409,6 @@ public class TypeChecker extends SemanticsVisitor {
 			if (infix.getOperator().equals(InfixExpression.InfixOperator.INSTANCEOF)) {
 				Type operandType = this.popType();
 				Type rhsType = infix.getRHS();
-				// TODO: Match operand type with Type
 				if (rhsType instanceof PrimitiveType) {
 					throw new Exception("Cannot instanceof a PrimitiveType");
 				} else if (this.isAssignable(operandType, rhsType, false) == false && this.isAssignable(rhsType, operandType, false) == false) {
@@ -391,15 +419,8 @@ public class TypeChecker extends SemanticsVisitor {
 				Type op2Type = this.popType();
 				Type op1Type = this.popType();
 				Type resultType = expressionType(op1Type, op2Type, infix.getOperator());
-				// TODO: Check operands type
 				this.pushType(resultType);
 			}
-			// else {
-			// throw new Exception("Infix trying to " +
-			// infix.getOperator().name() + " " +
-			// op1Type.getFullyQualifiedName() + " with " +
-			// op2Type.getFullyQualifiedName());
-			// }
 		}
 
 		else if (node instanceof MethodInvokeExpression) {
@@ -423,6 +444,9 @@ public class TypeChecker extends SemanticsVisitor {
 			if (invokingPrimary != null) {
 				Type primaryType = this.popType();
 				typeScope = this.table.getType(primaryType.getFullyQualifiedName());
+				if (typeScope == null) {
+					throw new Exception("Cannot invoke method from primary type " + primaryType.getFullyQualifiedName());
+				}
 				localSignature = typeScope.localSignatureOfMethod(invokingName.getSimpleName(), false, argTypes);
 			} else if (invokingName instanceof QualifiedName) {
 				List<String> components = ((QualifiedName) invokingName).getComponents();
@@ -439,6 +463,9 @@ public class TypeChecker extends SemanticsVisitor {
 					// Check whether has permission to access the field
 					this.isAccessible(staticAccess, entry, currentScope.getParentTypeScope(), currentTypeScope);
 
+					if (!(entry.getType() instanceof ReferenceType)) {
+						throw new Exception("Cannot invoke method from non-reference type");
+					}
 					currentScope = entry.getTypeScope();
 				}
 
@@ -532,8 +559,6 @@ public class TypeChecker extends SemanticsVisitor {
 			if (this.isAssignable(varType, exprType, false) == false) {
 				throw new Exception("Cannot assign " + varType.getFullyQualifiedName() + " with " + exprType.getFullyQualifiedName());
 			}
-			// TODO: should not push if nothing out there is going to use this type
-			// or should use stack of type stacks, so can pop all remained type after left a block
 			this.pushType(varType);
 		}
 
@@ -549,6 +574,7 @@ public class TypeChecker extends SemanticsVisitor {
 					throw new Exception("Cannot initialize " + varType.getFullyQualifiedName() + " with " + initType.getFullyQualifiedName());
 				}
 			}
+			this.pushType(new ReferenceType("__VOID__", node));
 		} else if (node instanceof ReturnStatement) {
 			if (this.methodReturnType == null) {
 				if (((ReturnStatement) node).getExpression() != null) {
@@ -559,28 +585,60 @@ public class TypeChecker extends SemanticsVisitor {
 			}
 			if (this.methodReturnType != null) {
 				this.pushType(this.methodReturnType);
+			} else {
+				this.pushType(new ReferenceType("__VOID__", node));
 			}
 		} else if (node instanceof IfStatement) {
-			this.popType();
-			if(((IfStatement) node).getElseStatement() != null) {
+			Statement statement = ((IfStatement) node).getIfStatement();
+			if(statement != null && !(statement instanceof Block)) {
 				this.popType();
 			}
+			statement = ((IfStatement) node).getElseStatement();
+			if(statement != null && !(statement instanceof Block)) {
+				this.popType();
+			}
+			
 			Type condType = this.popType();
 			if (!condType.getFullyQualifiedName().equals("BOOLEAN")) {
 				throw new Exception("If statement's condition expecting BOOLEAN but got " + condType.getFullyQualifiedName());
 			}
+			this.pushType(new ReferenceType("__VOID__", node));
 		} else if (node instanceof WhileStatement) {
-			this.popType();
+			Statement statement = ((WhileStatement) node).getWhileStatement();
+			if(statement != null && !(statement instanceof Block)) {
+				this.popType();
+			}
+			
 			Type condType = this.popType();
 			if (!condType.getFullyQualifiedName().equals("BOOLEAN")) {
 				throw new Exception("While statement's condition expecting BOOLEAN but got " + condType.getFullyQualifiedName());
 			}
+			this.pushType(new ReferenceType("__VOID__", node));
 		} else if (node instanceof ForStatement) {
-			this.popScope();
-			Type condType = this.popType();
-			if (!condType.getFullyQualifiedName().equals("BOOLEAN")) {
-				throw new Exception("For statement's condition expecting BOOLEAN but got " + condType.getFullyQualifiedName());
+			Statement statement = ((ForStatement) node).getForStatement();
+			if (statement != null && !(statement instanceof Block)) {
+				this.popType();
 			}
+			
+			Expression update = ((ForStatement) node).getForUpdate();
+			if (update != null) {
+				this.popType();
+			}
+			
+			Expression condition = ((ForStatement) node).getForCondition();
+			if (condition != null) {
+				Type condType = this.popType();
+				if (!condType.getFullyQualifiedName().equals("BOOLEAN")) {
+					throw new Exception("For statement's condition expecting BOOLEAN but got " + condType.getFullyQualifiedName());
+				}
+			}
+			
+			ForInit init = ((ForStatement) node).getForInit();
+			if (init != null) {
+				this.popType();
+			}
+			
+			this.pushType(new ReferenceType("__VOID__", node));
 		}
 
 		if (node instanceof FieldDeclaration || node instanceof Block) {
@@ -608,49 +666,56 @@ public class TypeChecker extends SemanticsVisitor {
 
 		}
 
-		if (operator.equals(InfixOperator.BAND) || operator.equals(InfixOperator.BOR)) {
-			if (op1Type instanceof ReferenceType && op2Type instanceof ReferenceType)
-				throw new Exception("Invalid bitwise operation");
-			else if (op1Type instanceof PrimitiveType && ((PrimitiveType) op1Type).getPrimitive().equals(Primitive.BOOLEAN))
-				return op1Type;
-			else if (op2Type instanceof PrimitiveType && ((PrimitiveType) op2Type).getPrimitive().equals(Primitive.BOOLEAN))
-				return op2Type;
-
-			else
-				throw new Exception("Invalid bitwise operation");
-		}
-		if (operator.equals(InfixOperator.AND) || operator.equals(InfixOperator.OR)) {
-			if (op1Type instanceof ReferenceType | op2Type instanceof ReferenceType) {
-				throw new Exception("Invalid referrence comparasion2");
-			} else {
-				PrimitiveType type1 = (PrimitiveType) op1Type;
-				PrimitiveType type2 = (PrimitiveType) op2Type;
-				if (!(type1.getPrimitive().equals(Primitive.BOOLEAN) && type2.getPrimitive().equals(Primitive.BOOLEAN))) {
-					throw new Exception("Invalid referrence & |");
-				} else {
-					return new PrimitiveType(Primitive.BOOLEAN);
-				}
-
+		if (operator.equals(InfixOperator.AND) || operator.equals(InfixOperator.OR) || 
+				operator.equals(InfixOperator.BAND) || operator.equals(InfixOperator.BOR)) {
+			if (op1Type instanceof ReferenceType || op2Type instanceof ReferenceType) {
+				throw new Exception("Invalid referrence comparasion");
 			}
+			
+			PrimitiveType type1 = (PrimitiveType) op1Type;
+			PrimitiveType type2 = (PrimitiveType) op2Type;
+			if (!(type1.getPrimitive().equals(Primitive.BOOLEAN) && type2.getPrimitive().equals(Primitive.BOOLEAN))) {
+				throw new Exception("Invalid operands for & | && ||");
+			}
+			return new PrimitiveType(Primitive.BOOLEAN);
 		}
 		if (operator.equals(InfixOperator.EQ) || operator.equals(InfixOperator.NEQ)) {
-			if (op1Type.getFullyQualifiedName().equals("__VOID__") || op2Type.getFullyQualifiedName().equals("__VOID__")) {
-				throw new Exception("equation is not allowed for void");
-			} else {
-				if (!op1Type.getFullyQualifiedName().equals(op2Type.getFullyQualifiedName())) {
-					throw new Exception("equation incompatible");
-				} else {
-					return new PrimitiveType(Primitive.BOOLEAN);
+			if (op1Type instanceof ReferenceType && op2Type instanceof ReferenceType) {
+				if (op1Type.getFullyQualifiedName().equals("__VOID__") || op2Type.getFullyQualifiedName().equals("__VOID__")) {
+					throw new Exception("Equation is not allowed with VOID");
+				} else if (op1Type.getFullyQualifiedName().equals("__NULL__") || op2Type.getFullyQualifiedName().equals("__NULL__")) {
+					// Let it through
+				} else if (!(this.isAssignable(op1Type, op2Type, false) || this.isAssignable(op2Type, op1Type, false))) {
+					throw new Exception("Equation is not allowed between " + op1Type.getFullyQualifiedName() + " and " + op2Type.getFullyQualifiedName());
 				}
+			} else if (op1Type instanceof PrimitiveType && op2Type instanceof PrimitiveType) {
+				PrimitiveType type1 = (PrimitiveType) op1Type;
+				PrimitiveType type2 = (PrimitiveType) op2Type;
+				if ((type1.getPrimitive().equals(Primitive.BOOLEAN) || 
+						type1.getPrimitive().equals(Primitive.BOOLEAN)) && 
+						!type1.getPrimitive().equals(type2.getPrimitive())) {
+					throw new Exception("Equation is not allowed between " + op1Type.getFullyQualifiedName() + " and " + op2Type.getFullyQualifiedName());
+				}
+			} else {
+				throw new Exception("Equation is not allowed between " + op1Type.getFullyQualifiedName() + " and " + op2Type.getFullyQualifiedName());
 			}
+			
+			return new PrimitiveType(Primitive.BOOLEAN);
 		}
 		if (operator.equals(InfixOperator.GT) || operator.equals(InfixOperator.GEQ) || operator.equals(InfixOperator.LEQ) || operator.equals(InfixOperator.LT)) {
 			if (op1Type instanceof ReferenceType || op2Type instanceof ReferenceType) {
 				throw new Exception("Invalid referrence comparasion1");
-			} else {
-
-				return new PrimitiveType(Primitive.BOOLEAN);
+			} else if (op1Type instanceof PrimitiveType && op2Type instanceof PrimitiveType) {
+				PrimitiveType type1 = (PrimitiveType) op1Type;
+				PrimitiveType type2 = (PrimitiveType) op2Type;
+				if ((type1.getPrimitive().equals(Primitive.BOOLEAN) || 
+						type1.getPrimitive().equals(Primitive.BOOLEAN)) && 
+						!type1.getPrimitive().equals(type2.getPrimitive())) {
+					throw new Exception("Comparison is not allowed between " + op1Type.getFullyQualifiedName() + " and " + op2Type.getFullyQualifiedName());
+				}
 			}
+			
+			return new PrimitiveType(Primitive.BOOLEAN);
 		}
 		if (op1Type.equals(op2Type))
 			return op1Type;

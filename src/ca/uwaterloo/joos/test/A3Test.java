@@ -78,7 +78,7 @@ public class A3Test {
 	public void Test() {
 		Exception fileException = null;
 		if (testFileList.getName().contains("Je")) {
-			fileException = new A3Exception();
+			fileException = new Exception();
 		}
 
 		Exception realException = null;
@@ -98,7 +98,9 @@ public class A3Test {
 				System.out.println("Expecting: NoException" + "\t" + "but got: " + realException.getClass().getSimpleName() + " " + realException.getMessage() + "\t\t" + "[" + testFileList.getName() + "]");
 				fail("Fail to let it through");
 			} else if (!realException.getClass().getSimpleName().equals(fileException.getClass().getSimpleName())) {
-
+//				System.out.println("Expecting: " + fileException.getClass().getSimpleName() + "\t"
+//				+ "but got: " + realException.getClass().getSimpleName() + "\t\t"
+//				+ "[" + testFileList.getName() + "]");
 			}
 		}
 		

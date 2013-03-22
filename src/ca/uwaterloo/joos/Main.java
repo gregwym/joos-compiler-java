@@ -6,6 +6,7 @@ package ca.uwaterloo.joos;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Logger;
 
@@ -73,7 +74,6 @@ public class Main {
 	}
 
 	public AST constructAst(File source) throws Exception {
-		logger.info("Processing: " + source.getName());
 
 		/* Scanning */
 		// Construct a Scanner which use the DFA
@@ -113,12 +113,12 @@ public class Main {
 		for (AST ast : asts) {
 			ast.getRoot().accept(new TopDeclVisitor(table));
 		}
-		logger.info("Top Declarations Constructed");
+		logger.info("Top Declarations constructed");
 
 		for (AST ast: asts){
 			ast.getRoot().accept(new ImportVisitor(table));
 		}
-		logger.info("Import Declarations Added");
+		logger.info("Import Declarations added");
 
 		for(AST ast: asts) {
 			TypeLinker linker = new TypeLinker(table);
@@ -129,7 +129,7 @@ public class Main {
 		for (AST ast: asts){
 			ast.getRoot().accept(new DeepDeclVisitor(table));
 		}
-		logger.info("Deep Declaration Constructed");
+		logger.info("Deep Declaration constructed");
 		
 //		for(AST ast: asts) {
 //			HierarchyChecker hierarchyChecker = new HierarchyChecker(table);
@@ -146,6 +146,7 @@ public class Main {
 		for(AST ast: asts) {
 			ast.getRoot().accept(linker);
 		}
+		logger.info("Name Linking finished");
 	}
 	
 	public void typeChecking(List<AST> asts, SymbolTable table) throws Exception {
@@ -154,9 +155,12 @@ public class Main {
 		for(AST ast: asts) {
 			ast.getRoot().accept(checker);
 		}
+		logger.info("Type Checking finished");
 	}
 	
 	public void execute(String[] args) throws Exception {
+		logger.info("Processing: " + Arrays.asList(args));
+		
 		List<AST> asts = new ArrayList<AST>();
 		for(String arg: args) {
 			asts.add(this.constructAst(new File(arg)));
