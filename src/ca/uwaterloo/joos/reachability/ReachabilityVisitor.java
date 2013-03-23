@@ -140,7 +140,8 @@ public class ReachabilityVisitor extends SemanticsVisitor{
 			ASTNode parent = ((SimpleName)node).getParent();
 			if (parent instanceof InfixExpression ||
 					parent instanceof ArrayAccess ||
-					parent instanceof ReturnStatement){
+					parent instanceof ReturnStatement || 
+					parent instanceof AssignmentExpression){
 				
 				if (!inits.contains(((SimpleName)node).getName())){
 					logger.fine("Current init: " + this.inits);
