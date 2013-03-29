@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.logging.Logger;
 
 import ca.uwaterloo.joos.ast.AST;
+import ca.uwaterloo.joos.checker.HierarchyChecker;
 import ca.uwaterloo.joos.parser.LR1;
 import ca.uwaterloo.joos.parser.LR1Parser;
 import ca.uwaterloo.joos.parser.ParseTree;
@@ -131,11 +132,11 @@ public class Main {
 		}
 		logger.info("Deep Declaration constructed");
 		
-//		for(AST ast: asts) {
-//			HierarchyChecker hierarchyChecker = new HierarchyChecker(table);
-//			ast.getRoot().accept(hierarchyChecker);
-//		}
-//		logger.info("Hierarchy Checking finished");
+		for(AST ast: asts) {
+			HierarchyChecker hierarchyChecker = new HierarchyChecker(table);
+			ast.getRoot().accept(hierarchyChecker);
+		}
+		logger.info("Hierarchy Checking finished");
 		
 		return table;
 	}
@@ -167,6 +168,10 @@ public class Main {
 		logger.info("Static Checking finished");
 	}
 	
+	public void generateCode(List<AST> asts, SymbolTable table) throws Exception {
+		
+	}
+	
 	public void execute(String[] args) throws Exception {
 		logger.info("Processing: " + Arrays.asList(args));
 		
@@ -180,7 +185,9 @@ public class Main {
 		
 		nameLinking(asts, table);
 		typeChecking(asts, table);
-		staticChecking(asts, table);
+//		staticChecking(asts, table);
+		
+		generateCode(asts, table);
 	}
 
 	/**
