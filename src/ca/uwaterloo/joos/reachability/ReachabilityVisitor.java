@@ -1,25 +1,24 @@
 package ca.uwaterloo.joos.reachability;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
-import java.util.Stack;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
+import ca.uwaterloo.joos.Main;
 import ca.uwaterloo.joos.ast.ASTNode;
 import ca.uwaterloo.joos.ast.ASTNode.ChildTypeUnmatchException;
 import ca.uwaterloo.joos.ast.FileUnit;
-import ca.uwaterloo.joos.ast.Modifiers.Modifier;
-import ca.uwaterloo.joos.ast.decl.ClassDeclaration;
 import ca.uwaterloo.joos.ast.decl.ConstructorDeclaration;
 import ca.uwaterloo.joos.ast.decl.FieldDeclaration;
 import ca.uwaterloo.joos.ast.decl.LocalVariableDeclaration;
 import ca.uwaterloo.joos.ast.decl.MethodDeclaration;
-import ca.uwaterloo.joos.ast.decl.PackageDeclaration;
 import ca.uwaterloo.joos.ast.decl.ParameterDeclaration;
 import ca.uwaterloo.joos.ast.expr.AssignmentExpression;
 import ca.uwaterloo.joos.ast.expr.Expression;
 import ca.uwaterloo.joos.ast.expr.InfixExpression;
 import ca.uwaterloo.joos.ast.expr.InfixExpression.InfixOperator;
-import ca.uwaterloo.joos.ast.expr.Lefthand;
 import ca.uwaterloo.joos.ast.expr.name.SimpleName;
 import ca.uwaterloo.joos.ast.expr.primary.ArrayAccess;
 import ca.uwaterloo.joos.ast.expr.primary.ExpressionPrimary;
@@ -31,38 +30,51 @@ import ca.uwaterloo.joos.ast.statement.ReturnStatement;
 import ca.uwaterloo.joos.ast.statement.WhileStatement;
 import ca.uwaterloo.joos.symboltable.SemanticsVisitor;
 import ca.uwaterloo.joos.symboltable.SymbolTable;
-//TODO: Integer Range Check is currently disabled.
-//			It was throwing an exception for 1135104544
-//AST visitor to determine reachability
-
-//TODO: Determine if all code is reachable.
-//		Ensure that all local variables have an initializer (separate visitor..?)
 
 public class ReachabilityVisitor extends SemanticsVisitor{
+	public static final Logger logger = Main.getLogger(ReachabilityVisitor.class);
+	
 	//Current reachable status. Switches to false once a return
 	//statement is found. Set to true at the end of a return statement.
-	private static List<String> inits = new ArrayList<String>();
-	private static List<String> finits = new ArrayList<String>();
+	private List<String> inits = new ArrayList<String>();
 	
 	private String currentDecl = null;
 	public boolean reachable = true;
 	public boolean isVoid	=false; //Tracks if the current method should return void
 	public int always = 0;
-	public Stack<Integer> alwaysStack = new Stack<Integer>();
 
-	private ASTNode lastNode;
 //	static int DEBUG_Numbers = 0; //Trach the number of existing Reachability Visitors
 	public ReachabilityVisitor(SymbolTable table) {
 		super(table);
 //		DEBUG_Numbers ++;
 		// TODO Might not need table...
-		
+//		logger.setLevel(Level.FINER);
+	}
+	
+	private void setInits(Collection<String> inits) {
+		this.inits = new ArrayList<String>(inits);
+	}
+	
+	private void addInit(String var) {
+		logger.fine("Adding init " + var);
+		this.inits.add(var);
+	}
+	
+	private void removeInit(String var) {
+		logger.fine("Removing init " + var);
+		this.inits.remove(var);
+	}
+	
+	private void clearInits() {
+		logger.fine("Clearing inits");
+		this.inits.clear();
 	}
 	
 	@Override
 	public void willVisit(ASTNode node) throws Exception{
+		
 		if (!reachable){
-			throw new Exception ("UNREACHABLE CODE" + node);
+			throw new Exception ("UNREACHABLE CODE");
 		}	
 	
 		//What to do on first encountering a node
@@ -72,57 +84,38 @@ public class ReachabilityVisitor extends SemanticsVisitor{
 
 		if (node instanceof ConstructorDeclaration){
 			isVoid = true;
-			
-			List<ParameterDeclaration> params = ((MethodDeclaration)node).getParameters();
-			for (ParameterDeclaration param : params){
-				inits.add(param.getName().getName());
-			}
 		}
 		
 		else if (node instanceof MethodDeclaration){
-			for (String init : finits){
-				inits.add(init);//Carry field declarations into next method
-			}
-			System.out.println(node);
 			if (((MethodDeclaration)node).getType()==null){
 				isVoid = true;
 			}
-			else if (((MethodDeclaration)node).getModifiers().containModifier(Modifier.ABSTRACT)) {
-				isVoid = true;
-			}
-			
 			else isVoid = false;
-			
-			List<ParameterDeclaration> params = ((MethodDeclaration)node).getParameters();
-			for (ParameterDeclaration param : params){
-				System.out.println(param.getName().getName());
-				inits.add(param.getName().getName());
-			}
 		}
 		
 		if (node instanceof FieldDeclaration){
 			currentDecl = ((FieldDeclaration)node).getName().getName();
-			InitalizedChecker ic = new InitalizedChecker(table, currentDecl, inits);
+			InitalizedChecker ic = new InitalizedChecker(currentDecl, inits);
 			Expression initial = ((FieldDeclaration) node).getInitial();
 			if (initial != null){
 				initial.accept(ic);
+				this.addInit(currentDecl);
 			}
-			finits.add(currentDecl);
 			currentDecl = null;
 		}
-		
+		if (node instanceof ParameterDeclaration){
+			currentDecl = ((ParameterDeclaration)node).getName().getName();
+			this.addInit(currentDecl);
+			currentDecl = null;
+		}
 		if (node instanceof LocalVariableDeclaration){
-//			System.out.println(((LocalVariableDeclaration) node).getInitial());
 			currentDecl = ((LocalVariableDeclaration)node).getName().getName();
-//			System.out.println(currentDecl);
-			if (inits.contains(currentDecl)) inits.remove(currentDecl);
-			InitalizedChecker ic = new InitalizedChecker(table, currentDecl, inits);
+			if (inits.contains(currentDecl)) this.removeInit(currentDecl);
+			InitalizedChecker ic = new InitalizedChecker(currentDecl, inits);
 			Expression initial = ((LocalVariableDeclaration) node).getInitial();
 			if (initial != null){
 				initial.accept(ic);
-				inits.add(currentDecl);
-				System.out.println(currentDecl);
-				System.out.println(inits.contains(currentDecl));
+				this.addInit(currentDecl);
 			}
 			currentDecl = null;
 		}
@@ -130,14 +123,13 @@ public class ReachabilityVisitor extends SemanticsVisitor{
 		
 		if (node instanceof AssignmentExpression){
 			//Check here if the assignment is valid and so
-			
 			AssignmentExpression ANode = (AssignmentExpression) node;
-			Lefthand LH = ANode.getLeftHand();
+			ASTNode LH = (ASTNode) ANode.getLeftHand();
 			if (LH instanceof SimpleName){
 				if (!inits.contains(((SimpleName) LH).getName())){
-					InitalizedChecker ic = new InitalizedChecker(table, ((SimpleName) LH).getName(), inits);
+					InitalizedChecker ic = new InitalizedChecker(((SimpleName) LH).getName(), inits);
 					ANode.getExpression().accept(ic);
-					inits.add(((SimpleName) LH).getName());
+					this.addInit(((SimpleName) LH).getName());
 				}
 			}
 			
@@ -146,11 +138,14 @@ public class ReachabilityVisitor extends SemanticsVisitor{
 		if (node instanceof SimpleName){
 			
 			ASTNode parent = ((SimpleName)node).getParent();
-			if (parent instanceof InfixExpression||
-					parent instanceof ArrayAccess){
+			if (parent instanceof InfixExpression ||
+					parent instanceof ArrayAccess ||
+					parent instanceof ReturnStatement || 
+					parent instanceof AssignmentExpression){
 				
 				if (!inits.contains(((SimpleName)node).getName())){
-					throw new Exception ("Variable used before initalization" + ((SimpleName)node).getName());
+					logger.fine("Current init: " + this.inits);
+					throw new Exception ("Variable " + ((SimpleName)node).getName() + " used before initalization");
 				}
 			}
 			
@@ -170,17 +165,19 @@ public class ReachabilityVisitor extends SemanticsVisitor{
 		if (node instanceof IfStatement){
 			
 			reachable = true;
-			always = ConditionalChecker.condCheck(node);
-			this.alwaysStack.push(always);
+			always = condCheck(node);
 			ReachabilityVisitor innerrv = new ReachabilityVisitor(this.table);
 			IfStatement Inode = (IfStatement) node;
 			
+			innerrv.setInits(this.inits);
 			//Run separate checks on the if else subtrees
 			Inode.getIfStatement().accept(innerrv);
 			//An If statement must end with a return statement
 			//Thus, the new visitor has reachable set to false. Reset it
 			reachable = innerrv.reachable;
-			innerrv.reset(); 
+			
+			innerrv = new ReachabilityVisitor(this.table);
+			innerrv.setInits(this.inits);
 			if (Inode.getElseStatement() != null){
 				if (!(Inode.getElseStatement() instanceof IfStatement)){
 					//In this case, we have an else statement
@@ -190,8 +187,6 @@ public class ReachabilityVisitor extends SemanticsVisitor{
 				Inode.getElseStatement().accept(innerrv);
 				reachable = innerrv.reachable;
 				always = innerrv.always;
-				this.alwaysStack.pop();
-				this.alwaysStack.push(always);
 			}
 			
 			if (always == 0) reachable = true;
@@ -200,7 +195,7 @@ public class ReachabilityVisitor extends SemanticsVisitor{
 		}
 		
 		if (node instanceof ForStatement){
-			always = ConditionalChecker.condCheck(node);
+			always = condCheck(node);
 			if (always == 0) throw new Exception ("Constant false for conditional");
 			if (always == 2) {//Evaluate the condition to see if it ALWAYS returns false
 				
@@ -216,13 +211,11 @@ public class ReachabilityVisitor extends SemanticsVisitor{
 				}
 				
 			}
-			this.alwaysStack.push(always);
+			
 		}
 		
 		if (node instanceof WhileStatement){
-			always = ConditionalChecker.condCheck(node);
-			this.alwaysStack.push(always);
-			System.out.println("RV.willVisit.WhileStatement: " + always);
+			always = condCheck(node);
 			if (always == 0) throw new Exception ("Unreachable While Block");
 			
 		}
@@ -258,17 +251,14 @@ public class ReachabilityVisitor extends SemanticsVisitor{
 		//or it is not...
 		if (expr instanceof SimpleName){
 			return null;
-		}
-		if (expr instanceof LiteralPrimary){
+		} else if (expr instanceof LiteralPrimary){
 			return Integer.parseInt(((LiteralPrimary)expr).getValue());
-		}
-		else if (expr instanceof ExpressionPrimary){
+		} else if (expr instanceof ExpressionPrimary){
 			ExpressionPrimary ENode = (ExpressionPrimary)expr;
 			return eval(ENode.getExpression());
-		}
-		
-		
-		else if (expr instanceof InfixExpression){
+		} else if (expr instanceof AssignmentExpression) {
+			return eval(((AssignmentExpression) expr).getExpression());
+		} else if (expr instanceof InfixExpression){
 			
 			InfixExpression ENode = (InfixExpression)expr;
 			InfixOperator operator = ENode.getOperator();
@@ -278,7 +268,6 @@ public class ReachabilityVisitor extends SemanticsVisitor{
 			if (LH == null || RH == null){
 				return null;
 			}
-			
 			
 			if (operator == InfixExpression.InfixOperator.PLUS){
 				return LH + RH;
@@ -299,7 +288,7 @@ public class ReachabilityVisitor extends SemanticsVisitor{
 	public boolean visit(ASTNode node) throws Exception{
 		if (node instanceof FileUnit){
 			FileUnit FNode = (FileUnit) node;
-			System.out.println(FNode.getIdentifier());
+//			System.out.println(FNode.getIdentifier());
 			if (FNode.getIdentifier().equals("Byte.java")) return false;
 			if (FNode.getIdentifier().equals("Character.java")) return false;
 			if (FNode.getIdentifier().equals("Integer.java")) return false;
@@ -325,14 +314,9 @@ public class ReachabilityVisitor extends SemanticsVisitor{
 	public void didVisit(ASTNode node) throws Exception{
 		if (node instanceof IfStatement ||
 				node instanceof ForStatement) {
-			always = this.alwaysStack.pop();
 //			if (always == 1 && reachable == true) throw new Exception ("Non Terminating constant true condition block"); 
 			if (always == 0) reachable = true;
 			if (always == 2) reachable = true;
-			if (always == 1 && reachable == false) {
-				isVoid=true;
-				reachable = true;
-			}
 //			reachable = true;
 			
 		}
@@ -343,23 +327,17 @@ public class ReachabilityVisitor extends SemanticsVisitor{
 //		
 		
 		if (node instanceof WhileStatement){
-			always = this.alwaysStack.pop();
 			if (always == 1) {//While is always true, no code below is reachable
 				reachable = false;
 			}
-			else if (always == 2 || always == 0) {
-				reachable = true;
-			}
+			else if (always == 2 || always == 0) reachable = true;
 		}
 		if (node instanceof MethodDeclaration){
-			System.out.println(node);
 			if ((!isVoid )&& reachable) throw new Exception ("Non-Void method with no return value");
 			reachable = true;
 		}
 		
 		if (node instanceof ReturnStatement){
-			System.out.println(node);
-			System.out.println(((ReturnStatement) node).getExpression());
 			reachable = false;
 		}
 		
@@ -373,12 +351,7 @@ public class ReachabilityVisitor extends SemanticsVisitor{
 			//Don't need per block recording as we cannot have overlapping scope
 			//and use before declaration is covered
 			//Refresh the init list at the end of each method and constructor
-			inits = new ArrayList<String>();
-			
-		}
-		
-		if (node instanceof ClassDeclaration){
-			finits = new ArrayList<String>();
+			this.clearInits();
 		}
 		
 	}
@@ -387,4 +360,102 @@ public class ReachabilityVisitor extends SemanticsVisitor{
 		this.reachable = true;
 	}
 	
+	public int condCheck(ASTNode node) throws Exception{
+		//TODO: Check the condition for each control loop
+//				If the condition comes from a variable, ensure it is initalized...
+//				If the condition is a literal, it needs to be BOOLEAN from A3.
+//				If the constant is FALSE, throw exception
+//				If the constant is TRUE
+//					FOR/WHILE: no other code must exist within the same block
+//					IF: Dead code exists AFTER the if block if it contains a return
+		
+		
+		/*If the node parameter is not a control statement, then it 
+		 * is an operand of an infix expression and this method was called
+		 * recursively.
+		 */
+		if (node instanceof LiteralPrimary){
+			if (((LiteralPrimary)node).getValue().equals("true")){
+				return 1;
+			}
+			
+			else if (((LiteralPrimary)node).getValue().equals("false")){
+				return 0;
+			}
+		}
+		
+		if (node instanceof Expression){
+			//Need to add another check for infix expression...
+			return 2;
+		}
+		/*
+		 * Otherwise, the method was called from the visitor and was passed a control statement
+		 */
+		/* Extract Conditional */
+		ASTNode CNode = null;
+		
+		if (node instanceof WhileStatement){
+			
+			CNode = ((WhileStatement)node).getWhileCondition();
+		}
+		
+		if (node instanceof IfStatement){
+			CNode = ((IfStatement)node).getIfCondition();
+		}
+		
+		if (node instanceof ForStatement){
+			CNode = ((ForStatement)node).getForCondition();
+			
+		}
+		
+		/* Now check extracted conditional */
+		if(CNode instanceof LiteralPrimary){
+				//Conditional is a constant.
+				//Get the value of the constant as a string and compare
+			String value = ((LiteralPrimary) CNode).getValue();
+			if (value.equals("true")){
+				return 1; 
+			}
+			else {
+				//An if block with a constant false conditional is an automatic exception
+//				throw new Exception("Constant FALSE used for if conditional");
+				return 0;
+			}
+		}
+		
+		if (CNode instanceof InfixExpression){
+			//We have multiple conditionals
+			
+			List<Expression> operands = (((InfixExpression)CNode).getOperands());
+			//Run condCheck on both sides of the infix expression
+			int LH = condCheck(operands.get(0)); 
+			int RH = condCheck(operands.get(1));
+			//Get the operator of the infix expression
+			InfixExpression.InfixOperator operator = ((InfixExpression)CNode).getOperator();
+			
+			if (LH == 2 || RH == 2) return 2;
+			
+			if (operator == InfixExpression.InfixOperator.AND){
+				return LH & RH;
+			}
+			
+			else if (operator == InfixExpression.InfixOperator.OR){
+				return LH | RH;
+			}
+		}
+		
+		if (CNode instanceof Expression){
+				//We can ignore the expression as long as the variable is definitely 
+				//assigned at this point (check elsewhere)
+			
+				//TODO This MAY not be true if the condition contains an assignment
+				//		In such a case, we already know a boolean is assigned, so 
+				//		we treat it as a constant.
+				//		(j = false || i = true) => a constant of TRUE...?
+				//IF InfxExpression, get result of CondChecker on both sides...
+		}
+		return 0;
+	}
+	
 }
+
