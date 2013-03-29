@@ -22,7 +22,7 @@ import ca.uwaterloo.joos.symboltable.SymbolTable;
 
 @SuppressWarnings("serial")
 @RunWith(value = Parameterized.class)
-public class A3Test {
+public class A4Test {
 	public class A3Exception extends Exception {
 
 	}
@@ -34,7 +34,7 @@ public class A3Test {
 		instance = new Main();
 
 		try {
-			File outFile = new File("tmp/a3test.out");
+			File outFile = new File("tmp/a4test.out");
 			if (outFile.exists()) {
 				outFile.delete();
 			}
@@ -49,7 +49,7 @@ public class A3Test {
 		List<Object[]> data = new ArrayList<Object[]>();
 
 		try {
-			File directory = new File("testcases/a3");
+			File directory = new File("testcases/a4");
 
 			File[] testFileList = directory.listFiles();
 			for (File testFile : testFileList) {
@@ -66,14 +66,14 @@ public class A3Test {
 	private List<String> testFiles = new ArrayList<String>();
 	private File testFileList;
 
-	public A3Test(File testFileInput) {
+	public A4Test(File testFileInput) {
 		this.testFileList = testFileInput;
 		if (!testFileInput.isFile()) {
 			extractFiles(testFileInput);
 		} else {
 			this.testFiles.add(testFileInput.getPath());
 		}
-		extractFiles(new File("stdlib/3.0"));
+		extractFiles(new File("stdlib/4.0"));
 	}
 
 	@Test
@@ -88,15 +88,17 @@ public class A3Test {
 		try {
 			String[] files = new String[this.testFiles.size()];
 			this.testFiles.toArray(files);
-			
-			List<AST> asts = new ArrayList<AST>();
-			for(String arg: files) {
-				asts.add(instance.constructAst(new File(arg)));
-			}
-			
-			SymbolTable table = instance.typeLinking(asts);
-			instance.nameLinking(asts, table);
-			instance.typeChecking(asts, table);
+			instance.execute(files);
+//
+//			List<AST> asts = new ArrayList<AST>();
+//			for(String arg: files) {
+//				asts.add(instance.constructAst(new File(arg)));
+//			}
+//			
+//			SymbolTable table = instance.typeLinking(asts);
+//			instance.nameLinking(asts, table);
+//			instance.typeChecking(asts, table);
+//			instance.staticChecking(asts, table);
 			
 			if (fileException != null) {
 				System.out.println("Expecting: " + fileException.getClass().getSimpleName() + "\t"
