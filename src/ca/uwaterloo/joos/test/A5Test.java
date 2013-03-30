@@ -22,7 +22,7 @@ import ca.uwaterloo.joos.symboltable.SymbolTable;
 
 @SuppressWarnings("serial")
 @RunWith(value = Parameterized.class)
-public class A4Test {
+public class A5Test {
 	public class A3Exception extends Exception {
 
 	}
@@ -34,7 +34,7 @@ public class A4Test {
 		instance = new Main();
 
 		try {
-			File outFile = new File("tmp/a4test.out");
+			File outFile = new File("tmp/a5test.out");
 			if (outFile.exists()) {
 				outFile.delete();
 			}
@@ -49,7 +49,7 @@ public class A4Test {
 		List<Object[]> data = new ArrayList<Object[]>();
 
 		try {
-			File directory = new File("testcases/a4");
+			File directory = new File("testcases/a5");
 
 			File[] testFileList = directory.listFiles();
 			for (File testFile : testFileList) {
@@ -66,14 +66,14 @@ public class A4Test {
 	private List<String> testFiles = new ArrayList<String>();
 	private File testFileList;
 
-	public A4Test(File testFileInput) {
+	public A5Test(File testFileInput) {
 		this.testFileList = testFileInput;
 		if (!testFileInput.isFile()) {
 			extractFiles(testFileInput);
 		} else {
 			this.testFiles.add(testFileInput.getPath());
 		}
-		extractFiles(new File("stdlib/4.0"));
+		extractFiles(new File("stdlib/5.0"));
 	}
 
 	@Test
@@ -98,7 +98,8 @@ public class A4Test {
 			SymbolTable table = instance.typeLinking(asts);
 			instance.nameLinking(asts, table);
 			instance.typeChecking(asts, table);
-			instance.staticChecking(asts, table);
+//			instance.staticChecking(asts, table);
+			instance.generateCode(asts, table);
 			
 			if (fileException != null) {
 				System.out.println("Expecting: " + fileException.getClass().getSimpleName() + "\t"
