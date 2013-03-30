@@ -4,6 +4,7 @@ import java.util.List;
 
 import ca.uwaterloo.joos.ast.ASTNode;
 import ca.uwaterloo.joos.ast.ASTNode.ChildTypeUnmatchException;
+import ca.uwaterloo.joos.ast.FileUnit;
 import ca.uwaterloo.joos.ast.Modifiers;
 import ca.uwaterloo.joos.ast.Modifiers.Modifier;
 import ca.uwaterloo.joos.ast.body.TypeBody;
@@ -32,15 +33,21 @@ public class StaticLocalInit extends SemanticsVisitor {
 		//Check the INITIAL child node
 		//...?
 		
+		if (node instanceof FileUnit){
+			System.out.println(((FileUnit)node).getIdentifier());
+		}
+		
 		if (node instanceof TypeBody){
 			//Emit code for all of the static fields
 			List<FieldDeclaration> fields = ((TypeBody)node).getFields();
 			List<MethodDeclaration> methods = ((TypeBody)node).getMethods();
+//			System.out.println(methods);
 			for (FieldDeclaration fd : fields){
 				emitField(fd);
 			}
 			
 			for (MethodDeclaration md: methods){
+				
 				//for each method in the class, count the number of local
 				//declarations it holds.
 				//TODO associate each var with an index
@@ -53,7 +60,10 @@ public class StaticLocalInit extends SemanticsVisitor {
 	
 	private int countVars(MethodDeclaration md) throws Exception {
 		//TODO run a count of all local variable declarations in a method
-		return md.getBody().getLocalVariable().size();
+		if (md.getBody() != null && md.getBody().getLocalVariable() != null){
+			return md.getBody().getLocalVariable().size();
+		}
+		else return 0;
 	}
 
 
@@ -71,12 +81,14 @@ public class StaticLocalInit extends SemanticsVisitor {
 	@Override
 	public boolean visit(ASTNode node){
 		
-		return false;
+		return true;
 	}
 	
 	@Override
 	public void didVisit(ASTNode node){
-		System.out.println(this.locals);
+		if (node instanceof FileUnit){
+			System.out.println(this.locals);
+		}
 	}
 
 }
