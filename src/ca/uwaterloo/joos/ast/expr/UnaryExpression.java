@@ -12,7 +12,7 @@ import ca.uwaterloo.joos.parser.ParseTree.TreeNode;
 public class UnaryExpression extends Expression {
 	
 	public static final SimpleDescriptor OPERATOR = new SimpleDescriptor(UnaryOperator.class);
-	public static final ChildDescriptor OPERAND = new ChildDescriptor(UnaryExpression.class);
+	public static final ChildDescriptor OPERAND = new ChildDescriptor(Expression.class);
 	
 	public static enum UnaryOperator {
 		MINUS, NOT, 
@@ -33,8 +33,8 @@ public class UnaryExpression extends Expression {
 		return (UnaryOperator) this.getChildByDescriptor(OPERATOR);
 	}
 	
-	public UnaryExpression getOperand() throws ChildTypeUnmatchException {
-		return (UnaryExpression) this.getChildByDescriptor(OPERAND);
+	public Expression getOperand() throws ChildTypeUnmatchException {
+		return (Expression) this.getChildByDescriptor(OPERAND);
 	}
 	
 	@Override
