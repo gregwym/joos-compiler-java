@@ -13,6 +13,8 @@ public class ClassCreateExpression extends Expression {
 	
 	public static final ChildDescriptor TYPE = new ChildDescriptor(ReferenceType.class);
 	public static final ChildListDescriptor ARGUMENTS = new ChildListDescriptor(Expression.class);
+	
+	public String fullyQualifiedName = null;
 
 	public ClassCreateExpression(Node node, ASTNode parent) throws Exception {
 		super(node, parent);
