@@ -8,11 +8,13 @@ import ca.uwaterloo.joos.ast.Modifiers;
 import ca.uwaterloo.joos.ast.Modifiers.Modifier;
 import ca.uwaterloo.joos.ast.body.TypeBody;
 import ca.uwaterloo.joos.ast.decl.FieldDeclaration;
+import ca.uwaterloo.joos.ast.decl.MethodDeclaration;
 import ca.uwaterloo.joos.symboltable.SemanticsVisitor;
 import ca.uwaterloo.joos.symboltable.SymbolTable;
 
 public class StaticLocalInit extends SemanticsVisitor {
 
+	protected int locals = 0;
 	public StaticLocalInit(SymbolTable table) {
 		super(table);
 		// TODO Auto-generated constructor stub
@@ -33,15 +35,30 @@ public class StaticLocalInit extends SemanticsVisitor {
 		if (node instanceof TypeBody){
 			//Emit code for all of the static fields
 			List<FieldDeclaration> fields = ((TypeBody)node).getFields();
+			List<MethodDeclaration> methods = ((TypeBody)node).getMethods();
 			for (FieldDeclaration fd : fields){
 				emitField(fd);
 			}
+			
+			for (MethodDeclaration md: methods){
+				//for each method in the class, count the number of local
+				//declarations it holds.
+				//TODO associate each var with an index
+				locals += countVars(md);
+			}
+			
 		}
 		
 	}
 	
+	private int countVars(MethodDeclaration md) throws Exception {
+		//TODO run a count of all local variable declarations in a method
+		return md.getBody().getLocalVariable().size();
+	}
+
+
 	private void emitField(FieldDeclaration fd) throws Exception {
-		//TODO HERE is where we emit code for a field declaration
+		//TODO here is where we emit code for a field declaration
 		Modifiers md = fd.getModifiers();
 		if (md.containModifier(Modifier.STATIC)){
 			//Code gen for Static field here
@@ -54,16 +71,12 @@ public class StaticLocalInit extends SemanticsVisitor {
 	@Override
 	public boolean visit(ASTNode node){
 		
-		
-		
-		
-		
 		return false;
 	}
 	
 	@Override
 	public void didVisit(ASTNode node){
-		
+		System.out.println(this.locals);
 	}
 
 }
