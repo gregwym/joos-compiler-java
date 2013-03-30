@@ -60,6 +60,8 @@ public class StaticLocalInit extends SemanticsVisitor {
 	
 	private int countVars(MethodDeclaration md) throws Exception {
 		//TODO run a count of all local variable declarations in a method
+		//TODO change so that an index is associated to every
+		//		local variable in getLocalVariable()
 		if (md.getBody() != null && md.getBody().getLocalVariable() != null){
 			return md.getBody().getLocalVariable().size();
 		}
