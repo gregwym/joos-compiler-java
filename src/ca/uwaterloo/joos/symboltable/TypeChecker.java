@@ -364,6 +364,9 @@ public class TypeChecker extends SemanticsVisitor {
 			if (constructorNode.getModifiers().containModifier(Modifier.PROTECTED) && typeScope.getWithinPackage() != this.getCurrentScope().getParentTypeScope().getWithinPackage()) {
 				throw new Exception("Cannot access constructor " + entry.getName() + " from scope " + this.getCurrentScope().getName());
 			}
+			
+			// Save constructor fully qualified name to the ASTNode
+			((ClassCreateExpression) node).fullyQualifiedName = entry.getName();
 
 			this.pushType(type);
 		} else if (node instanceof ArrayAccess) {

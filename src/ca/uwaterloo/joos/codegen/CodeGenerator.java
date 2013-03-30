@@ -17,6 +17,7 @@ import ca.uwaterloo.joos.ast.Modifiers;
 import ca.uwaterloo.joos.ast.Modifiers.Modifier;
 import ca.uwaterloo.joos.ast.decl.MethodDeclaration;
 import ca.uwaterloo.joos.ast.decl.TypeDeclaration;
+import ca.uwaterloo.joos.ast.expr.ClassCreateExpression;
 import ca.uwaterloo.joos.ast.expr.Expression;
 import ca.uwaterloo.joos.ast.expr.InfixExpression;
 import ca.uwaterloo.joos.ast.expr.InfixExpression.InfixOperator;
@@ -114,6 +115,9 @@ public class CodeGenerator extends SemanticsVisitor {
 		if (node instanceof MethodInvokeExpression) {
 			this.generateMethodInvoke((MethodInvokeExpression) node);
 			return false;
+		} else if (node instanceof ClassCreateExpression){
+			this.generateClassCreate((ClassCreateExpression) node);
+			return false;
 		} else if (node instanceof InfixExpression) {
 			this.generateInfixExpression((InfixExpression) node);
 			return false;
@@ -156,6 +160,7 @@ public class CodeGenerator extends SemanticsVisitor {
 			Modifiers modifiers = ((MethodDeclaration) node).getModifiers();
 			if (!modifiers.containModifier(Modifier.NATIVE) && !modifiers.containModifier(Modifier.ABSTRACT)) {
 				// Postamble
+				this.texts.add(this.methodLabel + "_END:");
 				// Pop registers
 				this.texts.add("pop edx\t\t\t; Postamble");
 				this.texts.add("pop ecx");
@@ -168,7 +173,6 @@ public class CodeGenerator extends SemanticsVisitor {
 				// Restore frame pointer
 				this.texts.add("pop ebp");
 				
-				this.texts.add(this.methodLabel + "_END:");
 				if(this.methodLabel.equals("_start")) {
 					this.texts.add("call __debexit");
 				} else {
@@ -198,6 +202,8 @@ public class CodeGenerator extends SemanticsVisitor {
 			arg.accept(this);
 			this.texts.add("push eax\t\t\t; Push parameter #" + i + " to stack");
 		}
+		// Push THIS to stack, THIS should be the address of the object 
+		// TODO Push THIS
 		
 		// Invoke the method
 		String methodName = methodInvoke.fullyQualifiedName;
@@ -207,6 +213,8 @@ public class CodeGenerator extends SemanticsVisitor {
 		}
 		this.texts.add("call " + methodLabel);
 		
+		// Pop THIS from stack
+		// TODO Pop THIS
 		// Pop parameters from stack
 		for(i = 0; i < args.size(); i++) {
 			this.texts.add("pop edx\t\t\t; Pop parameters #" + i + " from stack");
@@ -215,6 +223,40 @@ public class CodeGenerator extends SemanticsVisitor {
 		// Add to extern if is not local method
 		if (!this.getCurrentScope().getParentTypeScope().getSymbols().containsKey(methodName)) {
 			this.externs.add(methodLabel);
+		}
+		this.texts.add("");
+	}
+	
+	private void generateClassCreate(ClassCreateExpression classCreate) throws Exception {
+		// Push parameters to stack
+		List<Expression> args = classCreate.getArguments();
+		int i = args.size();
+		for(i--; i >= 0; i--) {
+			Expression arg = args.get(i);
+			// Generate code for arg
+			arg.accept(this);
+			this.texts.add("push eax\t\t\t; Push parameter #" + i + " to stack");
+		}
+		// Allocate space for the new object
+		this.texts.add("mov eax, 0\t\t\t; Size of the object");	// TODO: Use actual size
+		this.texts.add("call __malloc");
+		this.texts.add("push eax\t\t\t; Push new object pointer as THIS");
+		
+		// Invoke the constructor
+		String constructorName = classCreate.fullyQualifiedName;
+		String constructorLabel = this.methodLable(constructorName);
+		this.texts.add("call " + constructorLabel);
+		
+		// Pop THIS from stack
+		this.texts.add("pop edx\t\t\t; Pop THIS");
+		// Pop parameters from stack
+		for(i = 0; i < args.size(); i++) {
+			this.texts.add("pop edx\t\t\t; Pop parameters #" + i + " from stack");
+		}
+		
+		// Add to extern if is not local method
+		if (!this.getCurrentScope().getParentTypeScope().getSymbols().containsKey(constructorName)) {
+			this.externs.add(constructorLabel);
 		}
 		this.texts.add("");
 	}
@@ -313,7 +355,7 @@ public class CodeGenerator extends SemanticsVisitor {
 			this.texts.add("je __exception\t\t\t; Throw exception");
 			this.texts.add("mov ebx, 0");
 			this.texts.add("xchg edx, ebx\t\t\t; Set edx to 0, and ebx to be the divider");
-			this.texts.add("idiv ebx\t\t\t; Divid edx:eax with ebx");
+			this.texts.add("idiv ebx\t\t\t; Divide edx:eax with ebx");
 			this.texts.add("mov eax, edx\t\t\t; Move the remainder to eax");
 			break;
 		case PLUS:
@@ -327,7 +369,7 @@ public class CodeGenerator extends SemanticsVisitor {
 			this.texts.add("je __exception\t\t\t; Throw exception");
 			this.texts.add("mov ebx, 0");
 			this.texts.add("xchg edx, ebx\t\t\t; Set edx to 0, and ebx to be the divider");
-			this.texts.add("idiv ebx\t\t\t; Divid edx:eax with ebx");
+			this.texts.add("idiv ebx\t\t\t; Divide edx:eax with ebx, quotient will be in eax");
 			break;
 		case STAR:
 			// eax = first operand * second operand
