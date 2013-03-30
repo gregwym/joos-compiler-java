@@ -523,6 +523,9 @@ public class TypeChecker extends SemanticsVisitor {
 
 			// Check method permission
 			this.isAccessible(staticAccess, entry, typeScope, currentTypeScope);
+			
+			// Save method fully qualified name to the ASTNode
+			((MethodInvokeExpression) node).fullyQualifiedName = entry.getName();
 
 			Type type = entry.getType();
 			if (type == null) {

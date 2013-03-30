@@ -51,10 +51,10 @@ public class CodeGenerator extends SemanticsVisitor {
 		data = new ArrayList<String>();
 		
 		// Place the runtime.s externs
-		this.externs.add("extern __malloc");
-		this.externs.add("extern __debexit");
-		this.externs.add("extern __exception");
-		this.externs.add("extern NATIVEjava.io.OutputStream.nativeWrite");
+		this.externs.add("__malloc");
+		this.externs.add("__debexit");
+		this.externs.add("__exception");
+		this.externs.add("NATIVEjava.io.OutputStream.nativeWrite");
 		
 		this.texts.add("");
 		this.texts.add("section .text");
@@ -112,7 +112,8 @@ public class CodeGenerator extends SemanticsVisitor {
 	@Override
 	public boolean visit(ASTNode node) throws Exception {
 		if (node instanceof MethodInvokeExpression) {
-			
+			this.generateMethodInvoke((MethodInvokeExpression) node);
+			return false;
 		} else if (node instanceof InfixExpression) {
 			this.generateInfixExpression((InfixExpression) node);
 			return false;
@@ -137,7 +138,7 @@ public class CodeGenerator extends SemanticsVisitor {
 			this.asmFile.createNewFile();
 			BufferedWriter asmWriter = new BufferedWriter(new FileWriter(this.asmFile));
 			for(String line: this.externs) {
-				asmWriter.write(line);
+				asmWriter.write("extern " + line);
 				asmWriter.newLine();
 			}
 			
@@ -185,6 +186,37 @@ public class CodeGenerator extends SemanticsVisitor {
 		String label = methodSignature.replaceAll("[(),]", "_");
 		label = label.replaceAll("\\[\\]", "_ARRAY");
 		return label;
+	}
+	
+	private void generateMethodInvoke(MethodInvokeExpression methodInvoke) throws Exception {
+		// Push parameters to stack
+		List<Expression> args = methodInvoke.getArguments();
+		int i = args.size();
+		for(i--; i >= 0; i--) {
+			Expression arg = args.get(i);
+			// Generate code for arg
+			arg.accept(this);
+			this.texts.add("push eax\t\t\t; Push parameter #" + i + " to stack");
+		}
+		
+		// Invoke the method
+		String methodName = methodInvoke.fullyQualifiedName;
+		String methodLabel = this.methodLable(methodName);
+		if(methodLabel.equals("java.io.OutputStream.nativeWrite_INT__")) {
+			methodLabel = "NATIVEjava.io.OutputStream.nativeWrite";
+		}
+		this.texts.add("call " + methodLabel);
+		
+		// Pop parameters from stack
+		for(i = 0; i < args.size(); i++) {
+			this.texts.add("pop edx\t\t\t; Pop parameters #" + i + " from stack");
+		}
+		
+		// Add to extern if is not local method
+		if (!this.getCurrentScope().getParentTypeScope().getSymbols().containsKey(methodName)) {
+			this.externs.add(methodLabel);
+		}
+		this.texts.add("");
 	}
 	
 	private void generateInfixExpression(InfixExpression infixExpr) throws Exception {
