@@ -16,8 +16,6 @@ import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
 import ca.uwaterloo.joos.Main;
-import ca.uwaterloo.joos.ast.AST;
-import ca.uwaterloo.joos.symboltable.SymbolTable;
 
 
 @SuppressWarnings("serial")

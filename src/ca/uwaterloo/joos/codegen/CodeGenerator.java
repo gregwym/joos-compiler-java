@@ -41,6 +41,7 @@ public class CodeGenerator extends SemanticsVisitor {
 	
 	private String methodLabel = null;
 	private Integer literalCount = 0;
+	private Integer comparisonCount = 0;
 
 	public CodeGenerator(SymbolTable table) {
 		super(table);
@@ -77,7 +78,7 @@ public class CodeGenerator extends SemanticsVisitor {
 			this.asmFile = new File(filename);
 			
 			// Add externs
-			// TODO
+			// TODO add externs
 		} else if (node instanceof MethodDeclaration) {
 			Modifiers modifiers = ((MethodDeclaration) node).getModifiers();
 			if (!modifiers.containModifier(Modifier.NATIVE) && !modifiers.containModifier(Modifier.ABSTRACT)) {
@@ -96,7 +97,7 @@ public class CodeGenerator extends SemanticsVisitor {
 				this.texts.add("mov ebp, esp");
 				
 				// Allocate space for local variables
-				// TODO
+				// TODO local variable
 				
 				// Push registers
 				// this.texts.add("push eax");		// Leave eax as return value
@@ -161,7 +162,7 @@ public class CodeGenerator extends SemanticsVisitor {
 				// this.texts.add("pop eax");		// Leave eax as return value 
 				
 				// Deallocate space for local variables
-				// TODO
+				// TODO local variables
 				
 				// Restore frame pointer
 				this.texts.add("pop ebp");
@@ -190,7 +191,7 @@ public class CodeGenerator extends SemanticsVisitor {
 		InfixOperator operator = infixExpr.getOperator();
 		// Instance of
 		if (operator.equals(InfixOperator.INSTANCEOF)) {
-			// TODO
+			// TODO instanceof
 			return;
 		}
 		
@@ -203,7 +204,6 @@ public class CodeGenerator extends SemanticsVisitor {
 		operands.get(0).accept(this);
 		this.texts.add("pop edx\t\t\t; Pop second operand value to edx");
 		
-		// TODO: Comparisons
 		switch(operator) {
 		case AND:
 			// TODO: lazy and
@@ -216,14 +216,54 @@ public class CodeGenerator extends SemanticsVisitor {
 			this.texts.add("or eax, edx");
 			break;
 		case EQ:
+			this.texts.add("cmp eax, edx");
+			this.texts.add("je " + "__COMPARISON_TRUE_" + comparisonCount);
+			this.texts.add("mov eax, " + BOOLEAN_FALSE);
+			this.texts.add("jmp " + "__COMPARISON_FALSE_" + comparisonCount);
+			this.texts.add("__COMPARISON_TRUE_" + comparisonCount + ":");
+			this.texts.add("mov eax, " + BOOLEAN_TRUE);
+			this.texts.add("__COMPARISON_FALSE_" + comparisonCount + ":");
+			this.comparisonCount++;
 			break;
 		case GEQ:
+			this.texts.add("cmp eax, edx");
+			this.texts.add("jge " + "__COMPARISON_TRUE_" + comparisonCount);
+			this.texts.add("mov eax, " + BOOLEAN_FALSE);
+			this.texts.add("jmp " + "__COMPARISON_FALSE_" + comparisonCount);
+			this.texts.add("__COMPARISON_TRUE_" + comparisonCount + ":");
+			this.texts.add("mov eax, " + BOOLEAN_TRUE);
+			this.texts.add("__COMPARISON_FALSE_" + comparisonCount + ":");
+			this.comparisonCount++;
 			break;
 		case GT:
+			this.texts.add("cmp eax, edx");
+			this.texts.add("jg " + "__COMPARISON_TRUE_" + comparisonCount);
+			this.texts.add("mov eax, " + BOOLEAN_FALSE);
+			this.texts.add("jmp " + "__COMPARISON_FALSE_" + comparisonCount);
+			this.texts.add("__COMPARISON_TRUE_" + comparisonCount + ":");
+			this.texts.add("mov eax, " + BOOLEAN_TRUE);
+			this.texts.add("__COMPARISON_FALSE_" + comparisonCount + ":");
+			this.comparisonCount++;
 			break;
 		case LEQ:
+			this.texts.add("cmp eax, edx");
+			this.texts.add("jle " + "__COMPARISON_TRUE_" + comparisonCount);
+			this.texts.add("mov eax, " + BOOLEAN_FALSE);
+			this.texts.add("jmp " + "__COMPARISON_FALSE_" + comparisonCount);
+			this.texts.add("__COMPARISON_TRUE_" + comparisonCount + ":");
+			this.texts.add("mov eax, " + BOOLEAN_TRUE);
+			this.texts.add("__COMPARISON_FALSE_" + comparisonCount + ":");
+			this.comparisonCount++;
 			break;
 		case LT:
+			this.texts.add("cmp eax, edx");
+			this.texts.add("jl " + "__COMPARISON_TRUE_" + comparisonCount);
+			this.texts.add("mov eax, " + BOOLEAN_FALSE);
+			this.texts.add("jmp " + "__COMPARISON_FALSE_" + comparisonCount);
+			this.texts.add("__COMPARISON_TRUE_" + comparisonCount + ":");
+			this.texts.add("mov eax, " + BOOLEAN_TRUE);
+			this.texts.add("__COMPARISON_FALSE_" + comparisonCount + ":");
+			this.comparisonCount++;
 			break;
 		case MINUS:
 			// eax = first operand - second operand
@@ -237,6 +277,8 @@ public class CodeGenerator extends SemanticsVisitor {
 			break;
 		case PERCENT:
 			// eax = first operand % second operand
+			this.texts.add("cmp edx, 0\t\t\t; Check zero divider");
+			this.texts.add("je __exception\t\t\t; Throw exception");
 			this.texts.add("mov ebx, 0");
 			this.texts.add("xchg edx, ebx\t\t\t; Set edx to 0, and ebx to be the divider");
 			this.texts.add("idiv ebx\t\t\t; Divid edx:eax with ebx");
@@ -249,6 +291,8 @@ public class CodeGenerator extends SemanticsVisitor {
 			break;
 		case SLASH:
 			// eax = first operand / second operand
+			this.texts.add("cmp edx, 0\t\t\t; Check zero divider");
+			this.texts.add("je __exception\t\t\t; Throw exception");
 			this.texts.add("mov ebx, 0");
 			this.texts.add("xchg edx, ebx\t\t\t; Set edx to 0, and ebx to be the divider");
 			this.texts.add("idiv ebx\t\t\t; Divid edx:eax with ebx");
@@ -306,7 +350,8 @@ public class CodeGenerator extends SemanticsVisitor {
 			}
 			break;
 		case NOT:
-			// TODO
+			operand.accept(this);
+			this.texts.add("not eax");
 			break;
 		default:
 			break;
