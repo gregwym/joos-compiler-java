@@ -15,18 +15,28 @@ import ca.uwaterloo.joos.ast.ASTNode;
 import ca.uwaterloo.joos.ast.FileUnit;
 import ca.uwaterloo.joos.ast.Modifiers;
 import ca.uwaterloo.joos.ast.Modifiers.Modifier;
+import ca.uwaterloo.joos.ast.decl.FieldDeclaration;
+import ca.uwaterloo.joos.ast.decl.LocalVariableDeclaration;
 import ca.uwaterloo.joos.ast.decl.MethodDeclaration;
+import ca.uwaterloo.joos.ast.decl.ParameterDeclaration;
 import ca.uwaterloo.joos.ast.decl.TypeDeclaration;
+import ca.uwaterloo.joos.ast.decl.VariableDeclaration;
 import ca.uwaterloo.joos.ast.expr.ClassCreateExpression;
 import ca.uwaterloo.joos.ast.expr.Expression;
 import ca.uwaterloo.joos.ast.expr.InfixExpression;
 import ca.uwaterloo.joos.ast.expr.InfixExpression.InfixOperator;
 import ca.uwaterloo.joos.ast.expr.MethodInvokeExpression;
 import ca.uwaterloo.joos.ast.expr.UnaryExpression;
+import ca.uwaterloo.joos.ast.expr.name.Name;
+import ca.uwaterloo.joos.ast.expr.name.QualifiedName;
+import ca.uwaterloo.joos.ast.expr.name.SimpleName;
 import ca.uwaterloo.joos.ast.expr.primary.LiteralPrimary;
+import ca.uwaterloo.joos.ast.expr.primary.Primary;
 import ca.uwaterloo.joos.ast.statement.ReturnStatement;
 import ca.uwaterloo.joos.symboltable.SemanticsVisitor;
 import ca.uwaterloo.joos.symboltable.SymbolTable;
+import ca.uwaterloo.joos.symboltable.TableEntry;
+import ca.uwaterloo.joos.symboltable.TypeScope;
 
 public class CodeGenerator extends SemanticsVisitor {
 	public static final Logger logger = Main.getLogger(CodeGenerator.class);
@@ -77,14 +87,11 @@ public class CodeGenerator extends SemanticsVisitor {
 			filename = "./output/" + filename + ".s";
 			logger.finer(filename);
 			this.asmFile = new File(filename);
-			
-			// Add externs
-			// TODO add externs
 		} else if (node instanceof MethodDeclaration) {
 			Modifiers modifiers = ((MethodDeclaration) node).getModifiers();
 			if (!modifiers.containModifier(Modifier.NATIVE) && !modifiers.containModifier(Modifier.ABSTRACT)) {
 				// Define method labels
-				this.methodLabel = this.methodLable(this.getCurrentScope().getName());
+				this.methodLabel = this.methodLabel(this.getCurrentScope().getName());
 				if(((MethodDeclaration) node).getName().getSimpleName().equals("test") && 
 						modifiers.containModifier(Modifier.STATIC)) {
 					this.methodLabel = "_start";
@@ -98,7 +105,7 @@ public class CodeGenerator extends SemanticsVisitor {
 				this.texts.add("mov ebp, esp");
 				
 				// Allocate space for local variables
-				// TODO local variable
+				this.texts.add("sub esp, " + (((MethodDeclaration) node).totalLocalVariables * 4));
 				
 				// Push registers
 				// this.texts.add("push eax");		// Leave eax as return value
@@ -147,6 +154,12 @@ public class CodeGenerator extends SemanticsVisitor {
 			}
 			
 			for(String line: this.texts) {
+				if(!line.startsWith("global")) {
+					line = "\t" + line;
+					if(!line.endsWith(":")) {
+						line = "\t" + line;
+					}
+				}
 				asmWriter.write(line);
 				asmWriter.newLine();
 			}
@@ -156,6 +169,11 @@ public class CodeGenerator extends SemanticsVisitor {
 				asmWriter.newLine();
 			}
 			asmWriter.close();
+		} else if (node instanceof TypeDeclaration) {
+			this.texts.add("global " + this.getCurrentScope().getName() + "_VTABLE");
+			this.texts.add(this.getCurrentScope().getName() + "_VTABLE:");
+			// TODO: append vtable contents
+			this.texts.add("");
 		} else if (node instanceof MethodDeclaration) {
 			Modifiers modifiers = ((MethodDeclaration) node).getModifiers();
 			if (!modifiers.containModifier(Modifier.NATIVE) && !modifiers.containModifier(Modifier.ABSTRACT)) {
@@ -168,7 +186,7 @@ public class CodeGenerator extends SemanticsVisitor {
 				// this.texts.add("pop eax");		// Leave eax as return value 
 				
 				// Deallocate space for local variables
-				// TODO local variables
+				this.texts.add("add esp, " + (((MethodDeclaration) node).totalLocalVariables * 4));
 				
 				// Restore frame pointer
 				this.texts.add("pop ebp");
@@ -186,7 +204,7 @@ public class CodeGenerator extends SemanticsVisitor {
 		super.didVisit(node);
 	}
 	
-	private String methodLable(String methodSignature) {
+	private String methodLabel(String methodSignature) {
 		String label = methodSignature.replaceAll("[(),]", "_");
 		label = label.replaceAll("\\[\\]", "_ARRAY");
 		return label;
@@ -202,19 +220,45 @@ public class CodeGenerator extends SemanticsVisitor {
 			arg.accept(this);
 			this.texts.add("push eax\t\t\t; Push parameter #" + i + " to stack");
 		}
-		// Push THIS to stack, THIS should be the address of the object 
-		// TODO Push THIS
+		
+		// Push THIS to stack, THIS should be the address of the object
+		Primary primary = methodInvoke.getPrimary();
+		Name name = methodInvoke.getName();
+		if(primary != null) {
+			// If primary is not null, means is invoking method on a primary
+			primary.accept(this);
+		} else if (name instanceof QualifiedName) {
+			logger.finest("Generating method invoke for name " + name + " with #" + ((QualifiedName)name).originalDeclarations.size() + " entries");
+			this.texts.add("mov eax, [ebp + 8]");
+			List<TableEntry> originalDeclarations = ((QualifiedName) name).originalDeclarations;
+			for(TableEntry entry: originalDeclarations) {
+				VariableDeclaration varDecl = (VariableDeclaration) entry.getNode();
+				if (varDecl instanceof ParameterDeclaration) {
+					this.texts.add("mov eax, [ebp + " + (8 + varDecl.getIndex() * 4) + "]\t\t\t; Calling " + name.getName());
+				} else if (varDecl instanceof FieldDeclaration) {
+					this.texts.add("mov eax, [eax + " + (4 + varDecl.getIndex() * 4) + "]\t\t\t; Calling " + name.getName());
+				} else if (varDecl instanceof LocalVariableDeclaration) {
+					this.texts.add("mov eax, [ebp - " + (varDecl.getIndex() * 4) + "]\t\t\t; Calling " + name.getName());
+				}
+			}
+		}  else if (name instanceof SimpleName) {
+			// Invoking method within same Type, THIS is parameter #0
+			logger.finest("Generating method invoke for simple name " + name);
+			this.texts.add("mov eax, [ebp + 8]\t\t\t; Calling " + name.getName());
+		}
+		this.texts.add("push eax");
 		
 		// Invoke the method
+		// TODO: call from vtable
 		String methodName = methodInvoke.fullyQualifiedName;
-		String methodLabel = this.methodLable(methodName);
+		String methodLabel = this.methodLabel(methodName);
 		if(methodLabel.equals("java.io.OutputStream.nativeWrite_INT__")) {
 			methodLabel = "NATIVEjava.io.OutputStream.nativeWrite";
 		}
 		this.texts.add("call " + methodLabel);
 		
 		// Pop THIS from stack
-		// TODO Pop THIS
+		this.texts.add("pop edx\t\t\t; Pop THIS");
 		// Pop parameters from stack
 		for(i = 0; i < args.size(); i++) {
 			this.texts.add("pop edx\t\t\t; Pop parameters #" + i + " from stack");
@@ -237,14 +281,17 @@ public class CodeGenerator extends SemanticsVisitor {
 			arg.accept(this);
 			this.texts.add("push eax\t\t\t; Push parameter #" + i + " to stack");
 		}
+		
 		// Allocate space for the new object
-		this.texts.add("mov eax, 0\t\t\t; Size of the object");	// TODO: Use actual size
+		TypeScope typeScope = this.table.getType(classCreate.getType().getFullyQualifiedName());
+		TypeDeclaration typeDecl = (TypeDeclaration) typeScope.getReferenceNode();
+		this.texts.add("mov eax, " + (4 + typeDecl.totalFieldDeclarations * 4) + "\t\t\t; Size of the object");
 		this.texts.add("call __malloc");
 		this.texts.add("push eax\t\t\t; Push new object pointer as THIS");
 		
 		// Invoke the constructor
 		String constructorName = classCreate.fullyQualifiedName;
-		String constructorLabel = this.methodLable(constructorName);
+		String constructorLabel = this.methodLabel(constructorName);
 		this.texts.add("call " + constructorLabel);
 		
 		// Pop THIS from stack

@@ -25,6 +25,8 @@ import ca.uwaterloo.joos.parser.ParseTree.TreeNode;
  *
  */
 public abstract class BodyDeclaration extends ASTNode {
+	
+	private int index; //Holds the index of the declaration
 
 	protected static final ChildDescriptor NAME = new ChildDescriptor(Name.class);
 	protected static final ChildDescriptor MODIFIERS = new ChildDescriptor(Modifiers.class);
@@ -49,6 +51,14 @@ public abstract class BodyDeclaration extends ASTNode {
 
 	public Type getType() throws ChildTypeUnmatchException {
 		return (Type) this.getChildByDescriptor(BodyDeclaration.TYPE);
+	}
+	
+	public void setIndex(int index){
+		this.index = index;
+	}
+	
+	public int getIndex(){
+		return this.index;
 	}
 
 	/*

@@ -20,6 +20,7 @@ public abstract class TypeDeclaration extends ASTNode {
 	protected static final ChildListDescriptor IMPLEMNTS = new ChildListDescriptor(ReferenceType.class);
 	protected static final ChildDescriptor BODY = new ChildDescriptor(TypeBody.class);
 	public String fullyQualifiedName;
+	public int totalFieldDeclarations = 0;
 	
 	public TypeDeclaration(Node node, ASTNode parent) throws Exception {
 		super(node, parent);
