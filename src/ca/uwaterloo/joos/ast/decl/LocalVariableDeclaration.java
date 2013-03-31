@@ -12,7 +12,6 @@ import ca.uwaterloo.joos.parser.ParseTree.Node;
  *
  */
 public class LocalVariableDeclaration extends VariableDeclaration implements ForInit{
-	private int index;
 	/**
 	 * @param node
 	 * @param parent
@@ -22,12 +21,6 @@ public class LocalVariableDeclaration extends VariableDeclaration implements For
 		super(node, parent);
 	}
 	
-	public void setIndex(int idx){
-		index = idx;
-	}
 	
-	public int getIndex(){
-		return index;
-	}
 
 }

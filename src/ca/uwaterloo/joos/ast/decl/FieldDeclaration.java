@@ -20,5 +20,6 @@ public class FieldDeclaration extends VariableDeclaration {
 	public FieldDeclaration(Node node, ASTNode parent) throws Exception {
 		super(node, parent);
 	}
+	
 
 }

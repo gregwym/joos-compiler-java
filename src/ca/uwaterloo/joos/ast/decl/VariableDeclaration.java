@@ -9,7 +9,8 @@ import ca.uwaterloo.joos.parser.ParseTree.Node;
 import ca.uwaterloo.joos.parser.ParseTree.TreeNode;
 
 public abstract class VariableDeclaration extends BodyDeclaration {
-
+	private int index; //Holds the index of the declaration
+	
 	protected static final ChildDescriptor INITIAL = new ChildDescriptor(Expression.class);
 
 	public VariableDeclaration(Node node, ASTNode parent) throws Exception {
@@ -24,6 +25,14 @@ public abstract class VariableDeclaration extends BodyDeclaration {
 	 * ca.uwaterloo.joos.parser.ParseTree.TreeNode)
 	 */
 	
+	
+	public void setIndex(int idx){
+		index = idx;
+	}
+	
+	public int getIndex(){
+		return index;
+	}
 	
 	public Expression getInitial() throws ChildTypeUnmatchException{
 		return (Expression) this.getChildByDescriptor(INITIAL);
