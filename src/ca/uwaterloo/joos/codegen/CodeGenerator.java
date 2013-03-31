@@ -91,7 +91,7 @@ public class CodeGenerator extends SemanticsVisitor {
 			Modifiers modifiers = ((MethodDeclaration) node).getModifiers();
 			if (!modifiers.containModifier(Modifier.NATIVE) && !modifiers.containModifier(Modifier.ABSTRACT)) {
 				// Define method labels
-				this.methodLabel = this.methodLable(this.getCurrentScope().getName());
+				this.methodLabel = this.methodLabel(this.getCurrentScope().getName());
 				if(((MethodDeclaration) node).getName().getSimpleName().equals("test") && 
 						modifiers.containModifier(Modifier.STATIC)) {
 					this.methodLabel = "_start";
@@ -169,6 +169,11 @@ public class CodeGenerator extends SemanticsVisitor {
 				asmWriter.newLine();
 			}
 			asmWriter.close();
+		} else if (node instanceof TypeDeclaration) {
+			this.texts.add("global " + this.getCurrentScope().getName() + "_VTABLE");
+			this.texts.add(this.getCurrentScope().getName() + "_VTABLE:");
+			// TODO: append vtable contents
+			this.texts.add("");
 		} else if (node instanceof MethodDeclaration) {
 			Modifiers modifiers = ((MethodDeclaration) node).getModifiers();
 			if (!modifiers.containModifier(Modifier.NATIVE) && !modifiers.containModifier(Modifier.ABSTRACT)) {
@@ -199,7 +204,7 @@ public class CodeGenerator extends SemanticsVisitor {
 		super.didVisit(node);
 	}
 	
-	private String methodLable(String methodSignature) {
+	private String methodLabel(String methodSignature) {
 		String label = methodSignature.replaceAll("[(),]", "_");
 		label = label.replaceAll("\\[\\]", "_ARRAY");
 		return label;
@@ -246,7 +251,7 @@ public class CodeGenerator extends SemanticsVisitor {
 		// Invoke the method
 		// TODO: call from vtable
 		String methodName = methodInvoke.fullyQualifiedName;
-		String methodLabel = this.methodLable(methodName);
+		String methodLabel = this.methodLabel(methodName);
 		if(methodLabel.equals("java.io.OutputStream.nativeWrite_INT__")) {
 			methodLabel = "NATIVEjava.io.OutputStream.nativeWrite";
 		}
@@ -286,7 +291,7 @@ public class CodeGenerator extends SemanticsVisitor {
 		
 		// Invoke the constructor
 		String constructorName = classCreate.fullyQualifiedName;
-		String constructorLabel = this.methodLable(constructorName);
+		String constructorLabel = this.methodLabel(constructorName);
 		this.texts.add("call " + constructorLabel);
 		
 		// Pop THIS from stack
