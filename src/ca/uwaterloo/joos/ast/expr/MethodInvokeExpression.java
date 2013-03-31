@@ -18,6 +18,8 @@ public class MethodInvokeExpression extends Expression {
 	public static final ChildDescriptor NAME = new ChildDescriptor(Name.class);
 	public static final ChildDescriptor PRIMARY = new ChildDescriptor(Primary.class);
 	public static final ChildListDescriptor ARGUMENTS = new ChildListDescriptor(Expression.class);
+	
+	public String fullyQualifiedName = null;
 
 	public MethodInvokeExpression(Node node, ASTNode parent) throws Exception {
 		super(node, parent);
