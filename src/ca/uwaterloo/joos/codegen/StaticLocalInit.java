@@ -51,8 +51,7 @@ public class StaticLocalInit extends SemanticsVisitor {
 	@Override
 	public void didVisit(ASTNode node) throws Exception{
 		if (node instanceof TypeDeclaration) {
-			this.fields = 0;
-			this.methods = 0;
+			((TypeDeclaration) node).totalFieldDeclarations = this.fields;
 		} else if (node instanceof MethodDeclaration) {
 			((MethodDeclaration) node).totalLocalVariables = this.locals;
 		}

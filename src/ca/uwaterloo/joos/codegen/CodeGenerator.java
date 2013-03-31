@@ -36,6 +36,7 @@ import ca.uwaterloo.joos.ast.statement.ReturnStatement;
 import ca.uwaterloo.joos.symboltable.SemanticsVisitor;
 import ca.uwaterloo.joos.symboltable.SymbolTable;
 import ca.uwaterloo.joos.symboltable.TableEntry;
+import ca.uwaterloo.joos.symboltable.TypeScope;
 
 public class CodeGenerator extends SemanticsVisitor {
 	public static final Logger logger = Main.getLogger(CodeGenerator.class);
@@ -275,8 +276,11 @@ public class CodeGenerator extends SemanticsVisitor {
 			arg.accept(this);
 			this.texts.add("push eax\t\t\t; Push parameter #" + i + " to stack");
 		}
+		
 		// Allocate space for the new object
-		this.texts.add("mov eax, 0\t\t\t; Size of the object");	// TODO: Use actual size
+		TypeScope typeScope = this.table.getType(classCreate.getType().getFullyQualifiedName());
+		TypeDeclaration typeDecl = (TypeDeclaration) typeScope.getReferenceNode();
+		this.texts.add("mov eax, " + (4 + typeDecl.totalFieldDeclarations * 4) + "\t\t\t; Size of the object");
 		this.texts.add("call __malloc");
 		this.texts.add("push eax\t\t\t; Push new object pointer as THIS");
 		
