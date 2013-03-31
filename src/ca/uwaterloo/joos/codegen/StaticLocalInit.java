@@ -1,5 +1,4 @@
 package ca.uwaterloo.joos.codegen;
-//TODO move to codegen package when finished
 //TODO get the method index
 import java.util.List;
 
