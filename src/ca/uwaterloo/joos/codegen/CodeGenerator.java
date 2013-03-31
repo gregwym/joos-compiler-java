@@ -77,9 +77,6 @@ public class CodeGenerator extends SemanticsVisitor {
 			filename = "./output/" + filename + ".s";
 			logger.finer(filename);
 			this.asmFile = new File(filename);
-			
-			// Add externs
-			// TODO add externs
 		} else if (node instanceof MethodDeclaration) {
 			Modifiers modifiers = ((MethodDeclaration) node).getModifiers();
 			if (!modifiers.containModifier(Modifier.NATIVE) && !modifiers.containModifier(Modifier.ABSTRACT)) {
@@ -98,7 +95,7 @@ public class CodeGenerator extends SemanticsVisitor {
 				this.texts.add("mov ebp, esp");
 				
 				// Allocate space for local variables
-				// TODO local variable
+				this.texts.add("sub esp, " + (((MethodDeclaration) node).totalLocalVariables * 4));
 				
 				// Push registers
 				// this.texts.add("push eax");		// Leave eax as return value
@@ -147,6 +144,12 @@ public class CodeGenerator extends SemanticsVisitor {
 			}
 			
 			for(String line: this.texts) {
+				if(!line.startsWith("global")) {
+					line = "\t" + line;
+					if(!line.endsWith(":")) {
+						line = "\t" + line;
+					}
+				}
 				asmWriter.write(line);
 				asmWriter.newLine();
 			}
@@ -168,7 +171,7 @@ public class CodeGenerator extends SemanticsVisitor {
 				// this.texts.add("pop eax");		// Leave eax as return value 
 				
 				// Deallocate space for local variables
-				// TODO local variables
+				this.texts.add("add esp, " + (((MethodDeclaration) node).totalLocalVariables * 4));
 				
 				// Restore frame pointer
 				this.texts.add("pop ebp");

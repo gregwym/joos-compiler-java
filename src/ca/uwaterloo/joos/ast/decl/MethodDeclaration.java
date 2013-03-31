@@ -10,6 +10,8 @@ import ca.uwaterloo.joos.parser.ParseTree.Node;
 import ca.uwaterloo.joos.parser.ParseTree.TreeNode;
 
 public class MethodDeclaration extends BodyDeclaration {
+	
+	public int totalLocalVariables = 0;
 
 	protected static final ChildListDescriptor PARAMETERS = new ChildListDescriptor(ParameterDeclaration.class);
 	protected static final ChildDescriptor BODY = new ChildDescriptor(Block.class);

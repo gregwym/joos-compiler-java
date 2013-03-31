@@ -13,6 +13,7 @@ import java.util.logging.Logger;
 import ca.uwaterloo.joos.ast.AST;
 import ca.uwaterloo.joos.checker.HierarchyChecker;
 import ca.uwaterloo.joos.codegen.CodeGenerator;
+import ca.uwaterloo.joos.codegen.StaticLocalInit;
 import ca.uwaterloo.joos.parser.LR1;
 import ca.uwaterloo.joos.parser.LR1Parser;
 import ca.uwaterloo.joos.parser.ParseTree;
@@ -170,6 +171,11 @@ public class Main {
 	}
 	
 	public void generateCode(List<AST> asts, SymbolTable table) throws Exception {
+		// Sort out a list of static fields and assign index for each decl
+		StaticLocalInit visitor = new StaticLocalInit(table);
+		for(AST ast: asts) {
+			ast.getRoot().accept(visitor);
+		}
 		
 		for(AST ast: asts) {
 			CodeGenerator generator = new CodeGenerator(table);
