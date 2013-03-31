@@ -91,6 +91,7 @@ public class StaticLocalInit extends SemanticsVisitor {
 			List<ParameterDeclaration> params = md.getParameters();
 			for (ParameterDeclaration pd : params){
 				pd.setIndex(locals);
+//				System.out.println("PARAMDECL: " + pd.getName().getName() + " " + pd.getIndex());
 				locals++;
 			}
 			locals = 0;
@@ -98,7 +99,7 @@ public class StaticLocalInit extends SemanticsVisitor {
 			List<LocalVariableDeclaration> localvars= md.getBody().getLocalVariable();
 			for (LocalVariableDeclaration lvd : localvars){
 				lvd.setIndex(locals);
-				System.out.println("LOCALDECL: " + lvd.getName().getName() + " " + lvd.getIndex());
+//				System.out.println("LOCALDECL: " + lvd.getName().getName() + " " + lvd.getIndex());
 				locals++;
 			}
 		}
