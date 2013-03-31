@@ -12,7 +12,6 @@ import ca.uwaterloo.joos.parser.ParseTree.Node;
  *
  */
 public class LocalVariableDeclaration extends VariableDeclaration implements ForInit{
-
 	/**
 	 * @param node
 	 * @param parent
@@ -21,5 +20,7 @@ public class LocalVariableDeclaration extends VariableDeclaration implements For
 	public LocalVariableDeclaration(Node node, ASTNode parent) throws Exception {
 		super(node, parent);
 	}
+	
+	
 
 }
