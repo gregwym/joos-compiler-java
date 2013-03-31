@@ -15,18 +15,27 @@ import ca.uwaterloo.joos.ast.ASTNode;
 import ca.uwaterloo.joos.ast.FileUnit;
 import ca.uwaterloo.joos.ast.Modifiers;
 import ca.uwaterloo.joos.ast.Modifiers.Modifier;
+import ca.uwaterloo.joos.ast.decl.FieldDeclaration;
+import ca.uwaterloo.joos.ast.decl.LocalVariableDeclaration;
 import ca.uwaterloo.joos.ast.decl.MethodDeclaration;
+import ca.uwaterloo.joos.ast.decl.ParameterDeclaration;
 import ca.uwaterloo.joos.ast.decl.TypeDeclaration;
+import ca.uwaterloo.joos.ast.decl.VariableDeclaration;
 import ca.uwaterloo.joos.ast.expr.ClassCreateExpression;
 import ca.uwaterloo.joos.ast.expr.Expression;
 import ca.uwaterloo.joos.ast.expr.InfixExpression;
 import ca.uwaterloo.joos.ast.expr.InfixExpression.InfixOperator;
 import ca.uwaterloo.joos.ast.expr.MethodInvokeExpression;
 import ca.uwaterloo.joos.ast.expr.UnaryExpression;
+import ca.uwaterloo.joos.ast.expr.name.Name;
+import ca.uwaterloo.joos.ast.expr.name.QualifiedName;
+import ca.uwaterloo.joos.ast.expr.name.SimpleName;
 import ca.uwaterloo.joos.ast.expr.primary.LiteralPrimary;
+import ca.uwaterloo.joos.ast.expr.primary.Primary;
 import ca.uwaterloo.joos.ast.statement.ReturnStatement;
 import ca.uwaterloo.joos.symboltable.SemanticsVisitor;
 import ca.uwaterloo.joos.symboltable.SymbolTable;
+import ca.uwaterloo.joos.symboltable.TableEntry;
 
 public class CodeGenerator extends SemanticsVisitor {
 	public static final Logger logger = Main.getLogger(CodeGenerator.class);
@@ -205,10 +214,36 @@ public class CodeGenerator extends SemanticsVisitor {
 			arg.accept(this);
 			this.texts.add("push eax\t\t\t; Push parameter #" + i + " to stack");
 		}
-		// Push THIS to stack, THIS should be the address of the object 
-		// TODO Push THIS
+		
+		// Push THIS to stack, THIS should be the address of the object
+		Primary primary = methodInvoke.getPrimary();
+		Name name = methodInvoke.getName();
+		if(primary != null) {
+			// If primary is not null, means is invoking method on a primary
+			primary.accept(this);
+		} else if (name instanceof QualifiedName) {
+			logger.finest("Generating method invoke for name " + name + " with #" + ((QualifiedName)name).originalDeclarations.size() + " entries");
+			this.texts.add("mov eax, [ebp + 8]");
+			List<TableEntry> originalDeclarations = ((QualifiedName) name).originalDeclarations;
+			for(TableEntry entry: originalDeclarations) {
+				VariableDeclaration varDecl = (VariableDeclaration) entry.getNode();
+				if (varDecl instanceof ParameterDeclaration) {
+					this.texts.add("mov eax, [ebp + " + (8 + varDecl.getIndex() * 4) + "]\t\t\t; Calling " + name.getName());
+				} else if (varDecl instanceof FieldDeclaration) {
+					this.texts.add("mov eax, [eax + " + (4 + varDecl.getIndex() * 4) + "]\t\t\t; Calling " + name.getName());
+				} else if (varDecl instanceof LocalVariableDeclaration) {
+					this.texts.add("mov eax, [ebp - " + (varDecl.getIndex() * 4) + "]\t\t\t; Calling " + name.getName());
+				}
+			}
+		}  else if (name instanceof SimpleName) {
+			// Invoking method within same Type, THIS is parameter #0
+			logger.finest("Generating method invoke for simple name " + name);
+			this.texts.add("mov eax, [ebp + 8]\t\t\t; Calling " + name.getName());
+		}
+		this.texts.add("push eax");
 		
 		// Invoke the method
+		// TODO: call from vtable
 		String methodName = methodInvoke.fullyQualifiedName;
 		String methodLabel = this.methodLable(methodName);
 		if(methodLabel.equals("java.io.OutputStream.nativeWrite_INT__")) {
@@ -217,7 +252,7 @@ public class CodeGenerator extends SemanticsVisitor {
 		this.texts.add("call " + methodLabel);
 		
 		// Pop THIS from stack
-		// TODO Pop THIS
+		this.texts.add("pop edx\t\t\t; Pop THIS");
 		// Pop parameters from stack
 		for(i = 0; i < args.size(); i++) {
 			this.texts.add("pop edx\t\t\t; Pop parameters #" + i + " from stack");

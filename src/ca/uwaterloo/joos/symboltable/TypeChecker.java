@@ -470,6 +470,8 @@ public class TypeChecker extends SemanticsVisitor {
 					if (!(entry.getType() instanceof ReferenceType)) {
 						throw new Exception("Cannot invoke method from non-reference type");
 					}
+					
+					((QualifiedName) invokingName).originalDeclarations.add(entry);
 					currentScope = entry.getTypeScope();
 				}
 
@@ -497,7 +499,8 @@ public class TypeChecker extends SemanticsVisitor {
 								break;
 							}
 							this.isAccessible(staticAccess, entry, currentScope.getParentTypeScope(), currentTypeScope);
-
+							
+							((QualifiedName) invokingName).originalDeclarations.add(entry);
 							staticAccess = false;
 							currentScope = entry.getTypeScope();
 						}
@@ -529,6 +532,7 @@ public class TypeChecker extends SemanticsVisitor {
 			
 			// Save method fully qualified name to the ASTNode
 			((MethodInvokeExpression) node).fullyQualifiedName = entry.getName();
+			invokingName.setOriginalDeclaration(entry);
 
 			Type type = entry.getType();
 			if (type == null) {

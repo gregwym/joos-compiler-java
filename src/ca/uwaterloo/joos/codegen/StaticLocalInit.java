@@ -10,7 +10,7 @@ import ca.uwaterloo.joos.symboltable.SymbolTable;
 
 public class StaticLocalInit extends SemanticsVisitor {
 
-	protected int parameters = 0;
+	protected int parameters = 1;
 	protected int locals = 0;		// Counts the local variable declarations
 	
 	protected int fields = 0;
@@ -28,7 +28,7 @@ public class StaticLocalInit extends SemanticsVisitor {
 			this.fields = 0;
 			this.methods = 0;
 		} else if (node instanceof MethodDeclaration) {
-			this.parameters = 0;
+			this.parameters = 1;
 			this.locals = 0;
 		}
 	}
