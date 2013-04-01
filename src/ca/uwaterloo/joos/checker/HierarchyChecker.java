@@ -98,8 +98,8 @@ public class HierarchyChecker extends SemanticsVisitor {
 
 	private void checkOverRide(TypeDeclaration node) throws Exception {
 		appendStack(currentScope);
-		Stack<TypeScope> hierachyStack2 = hierachyStack;
-
+		Stack<TypeScope> hierachyStack2 = new Stack<TypeScope>();
+		hierachyStack2.addAll(hierachyStack);
 		if (!classHierachyChain.containsKey(node)) {
 			classHierachyChain.put(node, hierachyStack);
 		}
