@@ -30,6 +30,10 @@ public class HierarchyChecker extends SemanticsVisitor {
 	private Stack<TypeScope> hierachyStack = new Stack<TypeScope>();
 	private static Map<TypeDeclaration, Stack<TypeScope>> classHierachyChain = new HashMap<TypeDeclaration, Stack<TypeScope>>();
 
+	public static Map<TypeDeclaration, Stack<TypeScope>> getClassHierachyChain() {
+		return HierarchyChecker.classHierachyChain;
+	}
+
 	public HierarchyChecker(SymbolTable table) {
 		super(table);
 	}
@@ -95,12 +99,12 @@ public class HierarchyChecker extends SemanticsVisitor {
 	private void checkOverRide(TypeDeclaration node) throws Exception {
 		appendStack(currentScope);
 		Stack<TypeScope> hierachyStack2 = hierachyStack;
-		
+
 		if (!classHierachyChain.containsKey(node)) {
 			classHierachyChain.put(node, hierachyStack);
 		}
-		
-		while (!hierachyStack2.empty()&&!checkedClass.contains(node)) {
+
+		while (!hierachyStack2.empty() && !checkedClass.contains(node)) {
 			TypeScope currentTopScope = hierachyStack2.pop();
 			TypeScope currentSuperScope = currentTopScope.getSuperScope();
 
@@ -110,8 +114,8 @@ public class HierarchyChecker extends SemanticsVisitor {
 				currentParentScopes.add(currentSuperScope);
 			}
 			addMethods(currentTopScope, currentParentScopes);
-			}
-		
+		}
+
 		checkedClass.add(node);
 
 	}
@@ -217,13 +221,13 @@ public class HierarchyChecker extends SemanticsVisitor {
 				while (parentMethodIterator.hasNext()) {
 
 					Map.Entry<String, TableEntry> currentParentMethod = parentMethodIterator.next();
-					
+
 					if (currentParentMethod.getValue().getNode() instanceof MethodDeclaration) {
 						MethodDeclaration parentMethodNode = (MethodDeclaration) currentParentMethod.getValue().getNode();
 						String currentParentMethodSig = currentParentMethod.getKey();
 						String currentSimpleParentMethodSig = getSimpleSignature(currentParentMethodSig);
-						
-						//override between different parent classes
+
+						// override between different parent classes
 						if (parentMethods.keySet().contains(currentSimpleParentMethodSig)) {
 
 							MethodDeclaration existMethodNode = (MethodDeclaration) parentMethods.get(currentSimpleParentMethodSig);
@@ -250,19 +254,17 @@ public class HierarchyChecker extends SemanticsVisitor {
 
 							parentMethods.put(currentSimpleParentMethodSig, currentParentMethod.getValue().getNode());
 						}
-						
-						
-						
-						//do not check already inherited method
+
+						// do not check already inherited method
 						if (!currentMethods.contains(currentParentMethodSig)) {
-							
-							//the method in the current class overwrite the method in parent class
+
+							// the method in the current class overwrite the
+							// method in parent class
 							if (simpleCurrentMethods.contains(currentSimpleParentMethodSig)) {
-								
+
 								MethodDeclaration currentMethodNode = null;
 								String CurrentMethodkey = null;
-								
-								
+
 								for (String key : currentScope.getVisibleSymbols().keySet()) {
 									if (key.contains(currentSimpleParentMethodSig)) {
 										CurrentMethodkey = key;
@@ -270,7 +272,7 @@ public class HierarchyChecker extends SemanticsVisitor {
 									}
 								}
 								currentMethodNode.setOverideMethod(parentMethodNode);
-								
+
 								if (currentMethodNode.getModifiers().getModifiers().contains(Modifiers.Modifier.PROTECTED)) {
 									if (parentMethodNode.getModifiers().getModifiers().contains(Modifiers.Modifier.PUBLIC)) {
 										throw new Exception("protected mothed can not override public");
