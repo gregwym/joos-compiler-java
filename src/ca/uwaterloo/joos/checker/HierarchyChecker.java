@@ -26,8 +26,13 @@ public class HierarchyChecker extends SemanticsVisitor {
 	private TypeScope currentScope;
 	private TypeScope currentSuperScope;
 	private Map<String, TypeScope> interfaceScopes;
-	static Set<String> checkedClass = new HashSet<String>();
+	static Set<TypeDeclaration> checkedClass = new HashSet<TypeDeclaration>();
 	private Stack<TypeScope> hierachyStack = new Stack<TypeScope>();
+	private static Map<TypeDeclaration, Stack<TypeScope>> classHierachyChain = new HashMap<TypeDeclaration, Stack<TypeScope>>();
+
+	public static Map<TypeDeclaration, Stack<TypeScope>> getClassHierachyChain() {
+		return HierarchyChecker.classHierachyChain;
+	}
 
 	public HierarchyChecker(SymbolTable table) {
 		super(table);
@@ -84,17 +89,22 @@ public class HierarchyChecker extends SemanticsVisitor {
 			}
 
 			checkSuperCycle();
-			checkOverRide();
+			checkOverRide(node);
 			checkAbstractClass();
 
 		}
 
 	}
 
-	private void checkOverRide() throws Exception {
+	private void checkOverRide(TypeDeclaration node) throws Exception {
 		appendStack(currentScope);
 		Stack<TypeScope> hierachyStack2 = hierachyStack;
-		while (!hierachyStack2.empty()) {
+
+		if (!classHierachyChain.containsKey(node)) {
+			classHierachyChain.put(node, hierachyStack);
+		}
+
+		while (!hierachyStack2.empty() && !checkedClass.contains(node)) {
 			TypeScope currentTopScope = hierachyStack2.pop();
 			TypeScope currentSuperScope = currentTopScope.getSuperScope();
 
@@ -105,6 +115,8 @@ public class HierarchyChecker extends SemanticsVisitor {
 			}
 			addMethods(currentTopScope, currentParentScopes);
 		}
+
+		checkedClass.add(node);
 
 	}
 
@@ -191,20 +203,31 @@ public class HierarchyChecker extends SemanticsVisitor {
 
 		Map<String, ASTNode> parentMethods = new HashMap<String, ASTNode>();
 		for (TypeScope parentScope : parentScopes) {
+
+			// get all the full methods name and parameter in currentScope,the
+			// methods keep updating in the for loop
 			Set<String> currentMethods = currentScope.getVisibleSymbols().keySet();
+			// get all the methods signatures in currentScope
 			Set<String> simpleCurrentMethods = new HashSet<String>();
 			for (String currentMethod : currentMethods) {
 				simpleCurrentMethods.add(getSimpleSignature(currentMethod));
 			}
+
 			if (parentScope != null) {
+
+				// Iterate the methods in parentClass
 				Iterator<Entry<String, TableEntry>> parentMethodIterator = parentScope.getVisibleSymbols().entrySet().iterator();
+
 				while (parentMethodIterator.hasNext()) {
+
 					Map.Entry<String, TableEntry> currentParentMethod = parentMethodIterator.next();
-					// ASTNode currentParentMethodNode =
-					// currentParentMethod.getValue().getNode();
+
 					if (currentParentMethod.getValue().getNode() instanceof MethodDeclaration) {
+						MethodDeclaration parentMethodNode = (MethodDeclaration) currentParentMethod.getValue().getNode();
 						String currentParentMethodSig = currentParentMethod.getKey();
 						String currentSimpleParentMethodSig = getSimpleSignature(currentParentMethodSig);
+
+						// override between different parent classes
 						if (parentMethods.keySet().contains(currentSimpleParentMethodSig)) {
 
 							MethodDeclaration existMethodNode = (MethodDeclaration) parentMethods.get(currentSimpleParentMethodSig);
@@ -231,54 +254,59 @@ public class HierarchyChecker extends SemanticsVisitor {
 
 							parentMethods.put(currentSimpleParentMethodSig, currentParentMethod.getValue().getNode());
 						}
+
+						// do not check already inherited method
 						if (!currentMethods.contains(currentParentMethodSig)) {
 
+							// the method in the current class overwrite the
+							// method in parent class
 							if (simpleCurrentMethods.contains(currentSimpleParentMethodSig)) {
 
 								MethodDeclaration currentMethodNode = null;
 								String CurrentMethodkey = null;
+
 								for (String key : currentScope.getVisibleSymbols().keySet()) {
 									if (key.contains(currentSimpleParentMethodSig)) {
 										CurrentMethodkey = key;
 										currentMethodNode = (MethodDeclaration) currentScope.getVisibleSymbols().get(key).getNode();
 									}
 								}
+								currentMethodNode.setOverideMethod(parentMethodNode);
 
-								MethodDeclaration currentParentMethodNode = (MethodDeclaration) currentParentMethod.getValue().getNode();
 								if (currentMethodNode.getModifiers().getModifiers().contains(Modifiers.Modifier.PROTECTED)) {
-									if (currentParentMethodNode.getModifiers().getModifiers().contains(Modifiers.Modifier.PUBLIC)) {
+									if (parentMethodNode.getModifiers().getModifiers().contains(Modifiers.Modifier.PUBLIC)) {
 										throw new Exception("protected mothed can not override public");
 									}
 								}
 
 								if (currentScope.getMethod(currentMethodNode) == null) {
-									if (currentParentMethodNode.getModifiers().getModifiers().contains(Modifiers.Modifier.PROTECTED)) {
+									if (parentMethodNode.getModifiers().getModifiers().contains(Modifiers.Modifier.PROTECTED)) {
 										if (currentMethodNode.getModifiers().getModifiers().contains(Modifiers.Modifier.PUBLIC)) {
 											throw new Exception("protected mothed can not override public");
 										}
 									}
 								}
 
-								if (currentParentMethodNode.getModifiers().getModifiers().contains(Modifiers.Modifier.FINAL)) {
+								if (parentMethodNode.getModifiers().getModifiers().contains(Modifiers.Modifier.FINAL)) {
 									throw new Exception("can not override final method");
 								}
-								if (currentParentMethodNode.getModifiers().getModifiers().contains(Modifiers.Modifier.STATIC)) {
+								if (parentMethodNode.getModifiers().getModifiers().contains(Modifiers.Modifier.STATIC)) {
 									throw new Exception("can not override static method");
 								}
 								if (currentMethodNode.getModifiers().getModifiers().contains(Modifiers.Modifier.STATIC)) {
 									throw new Exception("static can not override instance method");
 								}
-								if ((currentMethodNode.getType() != null) && (currentParentMethodNode.getType() != null)) {
-									if (!currentMethodNode.getType().getIdentifier().equals(currentParentMethodNode.getType().getIdentifier())) {
+								if ((currentMethodNode.getType() != null) && (parentMethodNode.getType() != null)) {
+									if (!currentMethodNode.getType().getIdentifier().equals(parentMethodNode.getType().getIdentifier())) {
 										throw new Exception("same method different return type");
 									}
 
-								} else if ((currentMethodNode.getType() == null) != (currentParentMethodNode.getType() == null)) {
+								} else if ((currentMethodNode.getType() == null) != (parentMethodNode.getType() == null)) {
 									throw new Exception("same method different return type");
 
 								}
 
-								if ((currentMethodNode.getParent().getParent() instanceof InterfaceDeclaration && (!currentParentMethodNode.getParent().getParent().getIdentifier().equals("Object"))) | currentMethodNode.getParent().getParent().getIdentifier().equals("Object")) {
+								if ((currentMethodNode.getParent().getParent() instanceof InterfaceDeclaration && (!parentMethodNode.getParent().getParent().getIdentifier().equals("Object"))) | currentMethodNode.getParent().getParent().getIdentifier().equals("Object")) {
 
 									currentMethods.remove(CurrentMethodkey);
 									currentScope.addVisibleSymbols(currentParentMethod.getKey(), currentParentMethod.getValue());
