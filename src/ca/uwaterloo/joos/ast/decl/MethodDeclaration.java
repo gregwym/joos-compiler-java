@@ -10,11 +10,19 @@ import ca.uwaterloo.joos.parser.ParseTree.Node;
 import ca.uwaterloo.joos.parser.ParseTree.TreeNode;
 
 public class MethodDeclaration extends BodyDeclaration {
-	
+
 	public int totalLocalVariables = 0;
 
 	protected static final ChildListDescriptor PARAMETERS = new ChildListDescriptor(ParameterDeclaration.class);
 	protected static final ChildDescriptor BODY = new ChildDescriptor(Block.class);
+	private MethodDeclaration overideMehtod = null;
+
+	public MethodDeclaration getOverideMethod() {
+		return this.overideMehtod;
+	}
+	public void setOverideMethod(MethodDeclaration overideMehtod) {
+		this.overideMehtod = overideMehtod;
+	}
 
 	public MethodDeclaration(Node node, ASTNode parent) throws Exception {
 		super(node, parent);
@@ -31,7 +39,7 @@ public class MethodDeclaration extends BodyDeclaration {
 
 	/*
 	 * (non-Javadoc)
-	 *
+	 * 
 	 * @see
 	 * ca.uwaterloo.joos.parser.ParseTreeTraverse.Traverser#processTreeNode(
 	 * ca.uwaterloo.joos.parser.ParseTree.TreeNode)
