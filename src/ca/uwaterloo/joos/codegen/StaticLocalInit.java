@@ -1,10 +1,15 @@
 package ca.uwaterloo.joos.codegen;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
+import java.util.Stack;
 
 import ca.uwaterloo.joos.ast.ASTNode;
+import ca.uwaterloo.joos.ast.ASTNode.ChildTypeUnmatchException;
 import ca.uwaterloo.joos.ast.Modifiers.Modifier;
 import ca.uwaterloo.joos.ast.body.TypeBody;
 import ca.uwaterloo.joos.ast.decl.ClassDeclaration;
@@ -14,34 +19,10 @@ import ca.uwaterloo.joos.ast.decl.MethodDeclaration;
 import ca.uwaterloo.joos.ast.decl.ParameterDeclaration;
 import ca.uwaterloo.joos.ast.decl.TypeDeclaration;
 import ca.uwaterloo.joos.ast.type.ReferenceType;
+import ca.uwaterloo.joos.checker.HierarchyChecker;
 import ca.uwaterloo.joos.symboltable.SemanticsVisitor;
 import ca.uwaterloo.joos.symboltable.SymbolTable;
-
-//MATT ADD
-class HierarchyNode{
-	//Temporary
-	//A node in the Hierarchy Tree
-	
-	String 			className = null;						//The fully qualified name of the class
-	List<String> 	extenders = new ArrayList<String>();	//A list of fully qualified names which extend this class
-	String 			extend = null;							//The class this class extends
-	
-	//Print functions
-	void showExtend(){ 
-		System.out.println("\textends:");
-		System.out.println("\t\t" + extend);
-		System.out.println();
-	}
-	
-	void showExtenders(){
-		System.out.println("\textended by:");
-		for (int i = 0; i < extenders.size(); i++){
-			System.out.println("\t\t" + extenders.get(i));
-		}
-		System.out.println();
-	}
-}
-//	ADD END
+import ca.uwaterloo.joos.symboltable.TypeScope;
 
 public class StaticLocalInit extends SemanticsVisitor {
 	//Visits each TypeDeclaring node to build a hashmap of hierarchy nodes
@@ -49,7 +30,6 @@ public class StaticLocalInit extends SemanticsVisitor {
 	
 	//The Hierarchy tree. Each key is the fully qualified name of the 
 	//class the HierarchyNode represents
-	HashMap<String, HierarchyNode> hierarchy;
 		
 	//A Map of method indices. Each Key is the signature of a method and it
 	//maps to the index of that method. When looking at a method, the signature
@@ -57,8 +37,9 @@ public class StaticLocalInit extends SemanticsVisitor {
 	//in the map. If not, the method is indexed and it is placed here. If it
 	//does exist, the mapped index is placed in the method node's index field.
 	HashMap<String, Integer> countList = new HashMap<String, Integer>();
+	Map<TypeDeclaration, Stack<TypeScope>> HierarchyChain = HierarchyChecker.getClassHierachyChain();
 	ArrayList<FieldDeclaration> staticFields = new ArrayList<FieldDeclaration>();
-	
+	ArrayList<String> checkedType = new ArrayList<String>();
 	
 	protected int parameters = 1;
 	protected int locals = 0;		// Counts the local variable declarations
@@ -68,62 +49,33 @@ public class StaticLocalInit extends SemanticsVisitor {
 
 	public StaticLocalInit(SymbolTable table) {
 		super(table);
+//		System.out.println(HierarchyChain);
+//		Iterator<Entry<TypeDeclaration, Stack<TypeScope>>> itHierachy = HierarchyChain.entrySet().iterator();
+//		while(itHierachy.hasNext()){
+//			Entry<TypeDeclaration, Stack<TypeScope>> en = itHierachy.next();
+//			System.out.println(en.getValue());
+//		}
 	}
 	
 	@Override
 	public void willVisit(ASTNode node) throws Exception{		
 		super.willVisit(node);
 		
-		//MATT ADD
 		if (node instanceof ClassDeclaration){
-			
-			ReferenceType rt = ((ClassDeclaration)node).getSuperClass();
-			String newClass = ((ClassDeclaration)node).fullyQualifiedName;
-			if (newClass.equals("java.lang.Object")){
-				if (!hierarchy.containsKey("java.lang.Object")){
-					HierarchyNode nh = new HierarchyNode();
-					nh.className = newClass;
-					hierarchy.put(newClass, nh);
+			int methods = 0;
+			Stack<TypeScope> chain = HierarchyChain.get(node);
+			while (!chain.isEmpty()){
+				TypeScope ts = chain.pop();
+				if (!checkedType.contains(ts.getName())){
+//					System.out.println("OUTER: " + ts.getReferenceNode().getIdentifier());
+					checkedType.add(ts.getName());
+					//TODO Count all methods here...
+					methods += methodCount((TypeDeclaration)ts.getReferenceNode(), methods);
 				}
-			}
-			else if (rt == null){		
-				if (!hierarchy.containsKey("java.lang.Object")){
-					HierarchyNode nh = new HierarchyNode();
-					nh.className = "java.lang.Object";
-					hierarchy.put(nh.className, nh);
-				}
-				HierarchyNode nh = new HierarchyNode();
-				nh.className = newClass;
-				nh.extend = "java.lang.Object";
-				hierarchy.put(nh.className, nh);
-				hierarchy.get("java.lang.Object").extenders.add(newClass);
-				
-			}
-			else if (rt != null){
-				String extendedClass = ((ClassDeclaration)node).getSuperClass().getFullyQualifiedName();
-//				System.out.println("MTD: " + extendedClass);
-//				System.out.println(((ClassDeclaration)node).fullyQualifiedName);
+				methods += ((TypeDeclaration)ts.getReferenceNode()).totalMethodDeclarations;
 			
-				if (!hierarchy.containsKey(newClass)){
-					HierarchyNode nh = new HierarchyNode();
-					nh.className = newClass;
-					hierarchy.put(nh.className, nh);
-				}
-			
-				HierarchyNode gh = hierarchy.get(newClass);
-				gh.extend = extendedClass;
-			
-				if (!hierarchy.containsKey(extendedClass)){
-					HierarchyNode nh = new HierarchyNode();
-					nh.className = extendedClass;
-					hierarchy.put(nh.className, nh);
-				}
-			
-				hierarchy.get(extendedClass).extenders.add(newClass);
 			}
 		}
-//		ADD END
-		
 		if (node instanceof TypeDeclaration) {
 			this.fields = 0;
 			this.methods = 0;
@@ -137,9 +89,30 @@ public class StaticLocalInit extends SemanticsVisitor {
 		}
 	}
 
+	private int methodCount(TypeDeclaration referenceNode, int icount) throws Exception {
+		//TODO Give indicies for each method here
+		//		Set total method count...
+		int count = icount;
+		for (MethodDeclaration md : referenceNode.getBody().getMethods()){
+			if (md.getOverideMethod() != null){
+				//AT this point, the overriden method SHOULD have already been indexed
+				//Check this...
+				md.setIndex(md.getOverideMethod().getIndex());
+			}
+			else{
+				md.setIndex(count);
+				count++;
+//				System.out.println(referenceNode.fullyQualifiedName+"." + md.getIdentifier() + ": " + md.getIndex());
+			}	
+		}
+		referenceNode.totalMethodDeclarations = count-icount;
+		return count;
+	}
+
 	@Override
 	public boolean visit(ASTNode node){
 		if (node instanceof LocalVariableDeclaration) {
+			
 			((LocalVariableDeclaration) node).setIndex(this.locals++);
 		} else if (node instanceof ParameterDeclaration) {
 			((ParameterDeclaration) node).setIndex(this.parameters++);
@@ -156,74 +129,11 @@ public class StaticLocalInit extends SemanticsVisitor {
 	public void didVisit(ASTNode node) throws Exception{
 		if (node instanceof TypeDeclaration) {
 			((TypeDeclaration) node).totalFieldDeclarations = this.fields;
+//			((TypeDeclaration) node).totalMethodDeclarations = this.methods;
 		} else if (node instanceof MethodDeclaration) {
 			((MethodDeclaration) node).totalLocalVariables = this.locals;
+			this.methods++;
 		}
 		super.didVisit(node);
 	}
-	
-	
-	//MATT ADD
-	//After every AST has been traversed, a hashmap containing the
-	//class hierarchy is constructed
-	//This hashmap is then traversed here, outside of the visitor pattern.
-	
-	
-	//TODO: Replace HierarchyNode hashmap with HierarchyChecker hashmap
-			
-	public void traverseMethods() throws Exception{
-		//Look for the Object class
-		//Actual traversal begins in the numberMethods() method
-		for (String key : hierarchy.keySet()){
-			if (hierarchy.get(key).extend == null){
-				//This is a topmost class
-				numberMethods(key, 0);
-				countList = new HashMap<String,Integer>();
-			}
-		}
-	}
-	
-	private void numberMethods(String key, int count) throws Exception{
-		System.out.println(key);
-		String sig;
-		int indexCount = count;
-		//Number the methods in a class and all classes it extends
-		TypeBody Cnode = ((TypeDeclaration) this.table.getType(hierarchy.get(key).className).getReferenceNode()).getBody();
-		List<MethodDeclaration> md = Cnode.getMethods();
-		for (MethodDeclaration mnode: md){
-			sig = mnode.getName().getName() + "_[";
-			for (ParameterDeclaration pd : mnode.getParameters()){
-				sig = sig + pd.getType().getIdentifier()+ ",";
-				
-			}
-			sig = sig + "]";
-			//Signature built. Check override
-			if (countList.containsKey(sig)){
-				mnode.setIndex(countList.get(sig));
-			}
-			else{
-				countList.put(sig, indexCount);
-				mnode.setIndex(indexCount);
-				indexCount++;
-			}
-			
-			System.out.println("\t" + sig + " " + mnode.getIndex());
-			
-		}
-		
-		for (String exs : hierarchy.get(key).extenders){
-			numberMethods(exs, indexCount);
-		}
-	}
-	public void listHierarchy(){
-		Set<String> keys = hierarchy.keySet();
-		for (String key: keys){
-			System.out.println(hierarchy.get(key).className);
-			hierarchy.get(key).showExtend();
-			hierarchy.get(key).showExtenders();
-			
-			System.out.println("");
-		}
-	}
-	//ADD END
 }
