@@ -18,7 +18,10 @@ import ca.uwaterloo.joos.ast.Modifiers.Modifier;
 import ca.uwaterloo.joos.ast.decl.FieldDeclaration;
 import ca.uwaterloo.joos.ast.decl.LocalVariableDeclaration;
 import ca.uwaterloo.joos.ast.decl.MethodDeclaration;
+import ca.uwaterloo.joos.ast.decl.OnDemandImport;
+import ca.uwaterloo.joos.ast.decl.PackageDeclaration;
 import ca.uwaterloo.joos.ast.decl.ParameterDeclaration;
+import ca.uwaterloo.joos.ast.decl.SingleImport;
 import ca.uwaterloo.joos.ast.decl.TypeDeclaration;
 import ca.uwaterloo.joos.ast.decl.VariableDeclaration;
 import ca.uwaterloo.joos.ast.expr.AssignmentExpression;
@@ -70,6 +73,9 @@ public class CodeGenerator extends SemanticsVisitor {
 		this.complexNodes = new HashSet<Class<?>>();
 		this.complexNodes.add(ReferenceType.class);
 		this.complexNodes.add(FieldAccess.class);
+		this.complexNodes.add(PackageDeclaration.class);
+		this.complexNodes.add(SingleImport.class);
+		this.complexNodes.add(OnDemandImport.class);
 	}
 	
 	private void initialize() {
@@ -156,6 +162,7 @@ public class CodeGenerator extends SemanticsVisitor {
 
 	@Override
 	public boolean visit(ASTNode node) throws Exception {
+		int i = 0;
 		logger.finest("Visiting " + node);
 		
 		if (node instanceof MethodInvokeExpression) {
@@ -201,7 +208,22 @@ public class CodeGenerator extends SemanticsVisitor {
 				this.generateVariableAddress(entry);
 			}
 			return false;
-		}
+		} else if (node instanceof QualifiedName) {
+			this.texts.add("mov eax, [ebp + 8]\t; Current object");
+			
+			TableEntry entry = ((QualifiedName) node).getOriginalDeclaration();
+			this.generateVariableDereference(entry);
+			
+			List<TableEntry> originalDeclarations = ((QualifiedName) node).originalDeclarations;
+			for(i = 0; i < originalDeclarations.size(); i++) {
+				entry = originalDeclarations.get(i);
+				if (i != originalDeclarations.size() - 1 || this.dereferenceVariable) {
+					this.generateVariableDereference(entry);
+				} else {
+					this.generateVariableAddress(entry);
+				}
+			}
+		} 
 		
 		return !this.complexNodes.contains(node.getClass());
 	}
@@ -361,7 +383,7 @@ public class CodeGenerator extends SemanticsVisitor {
 			for(TableEntry entry: originalDeclarations) {
 				this.generateVariableDereference(entry);
 			}
-		}  else if (name instanceof SimpleName) {
+		} else if (name instanceof SimpleName) {
 			// Invoking method within same Type, THIS is parameter #0
 			logger.finest("Generating method invoke for simple name " + name);
 			this.texts.add("mov eax, [ebp + 8]\t; Current object");
