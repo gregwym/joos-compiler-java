@@ -560,7 +560,8 @@ public class TypeChecker extends SemanticsVisitor {
 				}
 
 				this.isAccessible(false, entry, typeScope, currentTypeScope);
-
+				fieldName.setOriginalDeclaration(entry);
+				
 				type = entry.getType();
 			}
 			this.pushType(type);

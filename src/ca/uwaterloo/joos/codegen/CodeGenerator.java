@@ -34,7 +34,6 @@ import ca.uwaterloo.joos.ast.expr.UnaryExpression;
 import ca.uwaterloo.joos.ast.expr.name.Name;
 import ca.uwaterloo.joos.ast.expr.name.QualifiedName;
 import ca.uwaterloo.joos.ast.expr.name.SimpleName;
-import ca.uwaterloo.joos.ast.expr.primary.FieldAccess;
 import ca.uwaterloo.joos.ast.expr.primary.LiteralPrimary;
 import ca.uwaterloo.joos.ast.expr.primary.Primary;
 import ca.uwaterloo.joos.ast.statement.Block;
@@ -72,7 +71,6 @@ public class CodeGenerator extends SemanticsVisitor {
 		
 		this.complexNodes = new HashSet<Class<?>>();
 		this.complexNodes.add(ReferenceType.class);
-		this.complexNodes.add(FieldAccess.class);
 		this.complexNodes.add(PackageDeclaration.class);
 		this.complexNodes.add(SingleImport.class);
 		this.complexNodes.add(OnDemandImport.class);
@@ -179,6 +177,9 @@ public class CodeGenerator extends SemanticsVisitor {
 			return false;
 		} else if (node instanceof UnaryExpression) {
 			this.generateUnaryExpression((UnaryExpression) node);
+			return false;
+		} else if (node instanceof LocalVariableDeclaration) {
+			this.generateLocalVariableDeclaration((LocalVariableDeclaration) node);
 			return false;
 		} else if (node instanceof AssignmentExpression) {
 			this.generateAssignmentExpression((AssignmentExpression) node);
@@ -615,6 +616,19 @@ public class CodeGenerator extends SemanticsVisitor {
 			break;
 		default:
 			break;
+		}
+	}
+	
+	private void generateLocalVariableDeclaration(LocalVariableDeclaration decl) throws Exception {
+		Expression initialization = decl.getInitial();
+		if (initialization != null) {
+			this.dereferenceVariable = false;
+			decl.getName().accept(this);
+			this.dereferenceVariable = true;
+			this.texts.add("push eax\t\t\t; Push LHS to stack");
+			initialization.accept(this);
+			this.texts.add("pop ebx");
+			this.texts.add("mov [ebx], eax");
 		}
 	}
 	
