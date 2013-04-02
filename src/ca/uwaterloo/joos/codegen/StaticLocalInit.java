@@ -1,24 +1,17 @@
 package ca.uwaterloo.joos.codegen;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
 import java.util.Stack;
 
 import ca.uwaterloo.joos.ast.ASTNode;
-import ca.uwaterloo.joos.ast.ASTNode.ChildTypeUnmatchException;
 import ca.uwaterloo.joos.ast.Modifiers.Modifier;
-import ca.uwaterloo.joos.ast.body.TypeBody;
 import ca.uwaterloo.joos.ast.decl.ClassDeclaration;
 import ca.uwaterloo.joos.ast.decl.FieldDeclaration;
 import ca.uwaterloo.joos.ast.decl.LocalVariableDeclaration;
 import ca.uwaterloo.joos.ast.decl.MethodDeclaration;
 import ca.uwaterloo.joos.ast.decl.ParameterDeclaration;
 import ca.uwaterloo.joos.ast.decl.TypeDeclaration;
-import ca.uwaterloo.joos.ast.type.ReferenceType;
 import ca.uwaterloo.joos.checker.HierarchyChecker;
 import ca.uwaterloo.joos.symboltable.SemanticsVisitor;
 import ca.uwaterloo.joos.symboltable.SymbolTable;
@@ -41,10 +34,10 @@ public class StaticLocalInit extends SemanticsVisitor {
 	ArrayList<FieldDeclaration> staticFields = new ArrayList<FieldDeclaration>();
 	ArrayList<String> checkedType = new ArrayList<String>();
 	
-	protected int parameters = 1;
-	protected int locals = 0;		// Counts the local variable declarations
+	protected int parameters = 2;
+	protected int locals = 1;		// Counts the local variable declarations
 	
-	protected int fields = 0;
+	protected int fields = 1;
 	protected int methods = 0;		// Counts the methods
 
 	public StaticLocalInit(SymbolTable table) {
@@ -77,11 +70,11 @@ public class StaticLocalInit extends SemanticsVisitor {
 			}
 		}
 		if (node instanceof TypeDeclaration) {
-			this.fields = 0;
+			this.fields = 1;
 			this.methods = 0;
 		} else if (node instanceof MethodDeclaration) {
-			this.parameters = 1;
-			this.locals = 0;
+			this.parameters = 2;
+			this.locals = 1;
 		} else if (node instanceof FieldDeclaration){
 			if (((FieldDeclaration)node).getModifiers().containModifier(Modifier.STATIC)){
 				staticFields.add(((FieldDeclaration)node));
