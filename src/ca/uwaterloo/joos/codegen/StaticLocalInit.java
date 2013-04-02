@@ -1,24 +1,17 @@
 package ca.uwaterloo.joos.codegen;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
 import java.util.Stack;
 
 import ca.uwaterloo.joos.ast.ASTNode;
-import ca.uwaterloo.joos.ast.ASTNode.ChildTypeUnmatchException;
 import ca.uwaterloo.joos.ast.Modifiers.Modifier;
-import ca.uwaterloo.joos.ast.body.TypeBody;
 import ca.uwaterloo.joos.ast.decl.ClassDeclaration;
 import ca.uwaterloo.joos.ast.decl.FieldDeclaration;
 import ca.uwaterloo.joos.ast.decl.LocalVariableDeclaration;
 import ca.uwaterloo.joos.ast.decl.MethodDeclaration;
 import ca.uwaterloo.joos.ast.decl.ParameterDeclaration;
 import ca.uwaterloo.joos.ast.decl.TypeDeclaration;
-import ca.uwaterloo.joos.ast.type.ReferenceType;
 import ca.uwaterloo.joos.checker.HierarchyChecker;
 import ca.uwaterloo.joos.symboltable.SemanticsVisitor;
 import ca.uwaterloo.joos.symboltable.SymbolTable;

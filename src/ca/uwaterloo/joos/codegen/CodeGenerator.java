@@ -91,11 +91,11 @@ public class CodeGenerator extends SemanticsVisitor {
 			Modifiers modifiers = ((MethodDeclaration) node).getModifiers();
 			if (!modifiers.containModifier(Modifier.NATIVE) && !modifiers.containModifier(Modifier.ABSTRACT)) {
 				// Define method labels
-				this.methodLabel = this.methodLabel(this.getCurrentScope().getName());
+				this.methodLabel = methodLabel(this.getCurrentScope().getName());
 				if(((MethodDeclaration) node).getName().getSimpleName().equals("test") && 
 						modifiers.containModifier(Modifier.STATIC)) {
 					this.methodLabel = "_start";
-				} 
+				}
 				
 				this.texts.add("global " + this.methodLabel);
 				this.texts.add(this.methodLabel + ":");
@@ -113,6 +113,13 @@ public class CodeGenerator extends SemanticsVisitor {
 				this.texts.add("push ecx");
 				this.texts.add("push edx");
 				this.texts.add("");
+			}
+		} else if (node instanceof FieldDeclaration) {
+			if (((FieldDeclaration) node).getModifiers().containModifier(Modifier.STATIC)) {
+				TableEntry entry = this.getCurrentScope().getParentTypeScope().getFieldDecl((FieldDeclaration) node);
+				String label = staticLabel(entry.getName());
+				this.data.add("global " + label);
+				this.data.add(label + ": dd 0x0");
 			}
 		}
 	}
@@ -154,7 +161,7 @@ public class CodeGenerator extends SemanticsVisitor {
 			}
 			
 			for(String line: this.texts) {
-				if(!line.startsWith("global")) {
+				if(!line.startsWith("global") && !line.startsWith("section")) {
 					line = "\t" + line;
 					if(!line.endsWith(":")) {
 						line = "\t" + line;
@@ -180,7 +187,7 @@ public class CodeGenerator extends SemanticsVisitor {
 				// Postamble
 				this.texts.add(this.methodLabel + "_END:");
 				// Pop registers
-				this.texts.add("pop edx\t\t\t; Postamble");
+				this.texts.add("pop edx\t\t\t\t; Postamble");
 				this.texts.add("pop ecx");
 				this.texts.add("pop ebx");
 				// this.texts.add("pop eax");		// Leave eax as return value 
@@ -204,13 +211,19 @@ public class CodeGenerator extends SemanticsVisitor {
 		super.didVisit(node);
 	}
 	
-	private String methodLabel(String methodSignature) {
+	private static String methodLabel(String methodSignature) {
 		String label = methodSignature.replaceAll("[(),]", "_");
 		label = label.replaceAll("\\[\\]", "_ARRAY");
 		return label;
 	}
 	
+	private static String staticLabel(String fieldName) {
+		String label = "STATIC" + fieldName;
+		return label;
+	}
+	
 	private void generateMethodInvoke(MethodInvokeExpression methodInvoke) throws Exception {
+		
 		// Push parameters to stack
 		List<Expression> args = methodInvoke.getArguments();
 		int i = args.size();
@@ -218,7 +231,24 @@ public class CodeGenerator extends SemanticsVisitor {
 			Expression arg = args.get(i);
 			// Generate code for arg
 			arg.accept(this);
-			this.texts.add("push eax\t\t\t; Push parameter #" + i + " to stack");
+			this.texts.add("push eax\t\t\t; Push parameter #" + (i + 1) + " to stack");
+		}
+		
+		String methodName = methodInvoke.fullyQualifiedName;
+		String methodLabel = methodLabel(methodName);
+		if(methodLabel.equals("java.io.OutputStream.nativeWrite_INT__")) {
+			// Calling native write
+			methodLabel = "NATIVEjava.io.OutputStream.nativeWrite";
+			this.texts.add("pop eax\t\t\t\t; Pop parameter for native write");
+			this.texts.add("push ebx");
+			this.texts.add("push ecx");
+			this.texts.add("push edx");
+			this.texts.add("call " + methodLabel);
+			this.texts.add("pop edx");
+			this.texts.add("pop ecx");
+			this.texts.add("pop ebx");
+			this.texts.add("");
+			return;
 		}
 		
 		// Push THIS to stack, THIS should be the address of the object
@@ -229,39 +259,40 @@ public class CodeGenerator extends SemanticsVisitor {
 			primary.accept(this);
 		} else if (name instanceof QualifiedName) {
 			logger.finest("Generating method invoke for name " + name + " with #" + ((QualifiedName)name).originalDeclarations.size() + " entries");
-			this.texts.add("mov eax, [ebp + 8]");
+			this.texts.add("mov eax, [ebp + 8]\t; Current object");
 			List<TableEntry> originalDeclarations = ((QualifiedName) name).originalDeclarations;
 			for(TableEntry entry: originalDeclarations) {
 				VariableDeclaration varDecl = (VariableDeclaration) entry.getNode();
 				if (varDecl instanceof ParameterDeclaration) {
-					this.texts.add("mov eax, [ebp + " + (8 + varDecl.getIndex() * 4) + "]\t\t\t; Calling " + name.getName());
+					this.texts.add("mov eax, [ebp + " + (8 + varDecl.getIndex() * 4) + "]\t; Accessing parameter: " + entry.getName());
 				} else if (varDecl instanceof FieldDeclaration) {
-					this.texts.add("mov eax, [eax + " + (4 + varDecl.getIndex() * 4) + "]\t\t\t; Calling " + name.getName());
+					if (varDecl.getModifiers().containModifier(Modifier.STATIC)) {
+						String label = staticLabel(entry.getName());
+						this.externs.add(label);
+						this.texts.add("mov eax, " + label + "\t; Accessing static: " + entry.getName());
+					} else {
+						this.texts.add("mov eax, [eax + " + (4 + varDecl.getIndex() * 4) + "]\t; Accessing field: " + entry.getName());
+					}
 				} else if (varDecl instanceof LocalVariableDeclaration) {
-					this.texts.add("mov eax, [ebp - " + (varDecl.getIndex() * 4) + "]\t\t\t; Calling " + name.getName());
+					this.texts.add("mov eax, [ebp - " + (varDecl.getIndex() * 4) + "]\t; Accessing local: " + entry.getName());
 				}
 			}
 		}  else if (name instanceof SimpleName) {
 			// Invoking method within same Type, THIS is parameter #0
 			logger.finest("Generating method invoke for simple name " + name);
-			this.texts.add("mov eax, [ebp + 8]\t\t\t; Calling " + name.getName());
+			this.texts.add("mov eax, [ebp + 8]\t; Current object");
 		}
-		this.texts.add("push eax");
+		this.texts.add("push eax\t\t\t; Push THIS as parameter #0");
 		
 		// Invoke the method
 		// TODO: call from vtable
-		String methodName = methodInvoke.fullyQualifiedName;
-		String methodLabel = this.methodLabel(methodName);
-		if(methodLabel.equals("java.io.OutputStream.nativeWrite_INT__")) {
-			methodLabel = "NATIVEjava.io.OutputStream.nativeWrite";
-		}
 		this.texts.add("call " + methodLabel);
 		
 		// Pop THIS from stack
-		this.texts.add("pop edx\t\t\t; Pop THIS");
+		this.texts.add("pop edx\t\t\t\t; Pop THIS");
 		// Pop parameters from stack
 		for(i = 0; i < args.size(); i++) {
-			this.texts.add("pop edx\t\t\t; Pop parameters #" + i + " from stack");
+			this.texts.add("pop edx\t\t\t\t; Pop parameter #" + (i + 1) + " from stack");
 		}
 		
 		// Add to extern if is not local method
@@ -291,14 +322,14 @@ public class CodeGenerator extends SemanticsVisitor {
 		
 		// Invoke the constructor
 		String constructorName = classCreate.fullyQualifiedName;
-		String constructorLabel = this.methodLabel(constructorName);
+		String constructorLabel = methodLabel(constructorName);
 		this.texts.add("call " + constructorLabel);
 		
 		// Pop THIS from stack
-		this.texts.add("pop edx\t\t\t; Pop THIS");
+		this.texts.add("pop edx\t\t\t\t; Pop THIS");
 		// Pop parameters from stack
 		for(i = 0; i < args.size(); i++) {
-			this.texts.add("pop edx\t\t\t; Pop parameters #" + i + " from stack");
+			this.texts.add("pop edx\t\t\t\t; Pop parameters #" + i + " from stack");
 		}
 		
 		// Add to extern if is not local method
@@ -323,7 +354,7 @@ public class CodeGenerator extends SemanticsVisitor {
 		
 		// Generate code for the first operand and result stay in eax
 		operands.get(0).accept(this);
-		this.texts.add("pop edx\t\t\t; Pop second operand value to edx");
+		this.texts.add("pop edx\t\t\t\t; Pop second operand value to edx");
 		
 		switch(operator) {
 		case AND:
@@ -399,11 +430,11 @@ public class CodeGenerator extends SemanticsVisitor {
 		case PERCENT:
 			// eax = first operand % second operand
 			this.texts.add("cmp edx, 0\t\t\t; Check zero divider");
-			this.texts.add("je __exception\t\t\t; Throw exception");
+			this.texts.add("je __exception\t\t; Throw exception");
 			this.texts.add("mov ebx, 0");
-			this.texts.add("xchg edx, ebx\t\t\t; Set edx to 0, and ebx to be the divider");
+			this.texts.add("xchg edx, ebx\t\t; Set edx to 0, and ebx to be the divider");
 			this.texts.add("idiv ebx\t\t\t; Divide edx:eax with ebx");
-			this.texts.add("mov eax, edx\t\t\t; Move the remainder to eax");
+			this.texts.add("mov eax, edx\t\t; Move the remainder to eax");
 			break;
 		case PLUS:
 			// TODO: String addition
@@ -413,9 +444,9 @@ public class CodeGenerator extends SemanticsVisitor {
 		case SLASH:
 			// eax = first operand / second operand
 			this.texts.add("cmp edx, 0\t\t\t; Check zero divider");
-			this.texts.add("je __exception\t\t\t; Throw exception");
+			this.texts.add("je __exception\t\t; Throw exception");
 			this.texts.add("mov ebx, 0");
-			this.texts.add("xchg edx, ebx\t\t\t; Set edx to 0, and ebx to be the divider");
+			this.texts.add("xchg edx, ebx\t\t; Set edx to 0, and ebx to be the divider");
 			this.texts.add("idiv ebx\t\t\t; Divide edx:eax with ebx, quotient will be in eax");
 			break;
 		case STAR:
