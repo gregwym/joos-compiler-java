@@ -21,6 +21,7 @@ import ca.uwaterloo.joos.ast.decl.MethodDeclaration;
 import ca.uwaterloo.joos.ast.decl.ParameterDeclaration;
 import ca.uwaterloo.joos.ast.decl.TypeDeclaration;
 import ca.uwaterloo.joos.ast.decl.VariableDeclaration;
+import ca.uwaterloo.joos.ast.expr.AssignmentExpression;
 import ca.uwaterloo.joos.ast.expr.ClassCreateExpression;
 import ca.uwaterloo.joos.ast.expr.Expression;
 import ca.uwaterloo.joos.ast.expr.InfixExpression;
@@ -30,9 +31,13 @@ import ca.uwaterloo.joos.ast.expr.UnaryExpression;
 import ca.uwaterloo.joos.ast.expr.name.Name;
 import ca.uwaterloo.joos.ast.expr.name.QualifiedName;
 import ca.uwaterloo.joos.ast.expr.name.SimpleName;
+import ca.uwaterloo.joos.ast.expr.primary.FieldAccess;
 import ca.uwaterloo.joos.ast.expr.primary.LiteralPrimary;
 import ca.uwaterloo.joos.ast.expr.primary.Primary;
+import ca.uwaterloo.joos.ast.statement.Block;
+import ca.uwaterloo.joos.ast.statement.ForStatement;
 import ca.uwaterloo.joos.ast.statement.ReturnStatement;
+import ca.uwaterloo.joos.ast.type.ReferenceType;
 import ca.uwaterloo.joos.symboltable.SemanticsVisitor;
 import ca.uwaterloo.joos.symboltable.SymbolTable;
 import ca.uwaterloo.joos.symboltable.TableEntry;
@@ -53,10 +58,18 @@ public class CodeGenerator extends SemanticsVisitor {
 	private String methodLabel = null;
 	private Integer literalCount = 0;
 	private Integer comparisonCount = 0;
+	private Integer loopCount = 0;
+	private Boolean dereferenceVariable = true;
+	
+	private Set<Class<?>> complexNodes = null;
 
 	public CodeGenerator(SymbolTable table) {
 		super(table);
 		logger.setLevel(Level.FINER);
+		
+		this.complexNodes = new HashSet<Class<?>>();
+		this.complexNodes.add(ReferenceType.class);
+		this.complexNodes.add(FieldAccess.class);
 	}
 	
 	private void initialize() {
@@ -67,6 +80,8 @@ public class CodeGenerator extends SemanticsVisitor {
 		this.methodLabel = null;
 		this.literalCount = 0;
 		this.comparisonCount = 0;
+		this.loopCount = 0;
+		this.dereferenceVariable = true;
 		
 		// Place the runtime.s externs
 		this.externs.add("__malloc");
@@ -81,6 +96,19 @@ public class CodeGenerator extends SemanticsVisitor {
 		this.data.add("");
 		this.data.add("section .data");
 		this.data.add("");
+	}
+	
+	private void addExtern(String label, TableEntry originalDeclaration) {
+		if(!this.getCurrentScope().getParentTypeScope().getSymbols().containsKey(originalDeclaration.getName())) {
+			logger.fine("Adding extern " + originalDeclaration.getName() + " within scope " + this.getCurrentScope().getParentTypeScope());
+			this.externs.add(label);
+		}
+	}
+	
+	private void addVtable(String fullyQualifiedTypeName) {
+		if(!this.getCurrentScope().getParentTypeScope().getName().equals(fullyQualifiedTypeName)) {
+			this.externs.add(fullyQualifiedTypeName + "_VTABLE");
+		}
 	}
 
 	@Override
@@ -123,18 +151,13 @@ public class CodeGenerator extends SemanticsVisitor {
 				this.texts.add("push edx");
 				this.texts.add("");
 			}
-		} else if (node instanceof FieldDeclaration) {
-			if (((FieldDeclaration) node).getModifiers().containModifier(Modifier.STATIC)) {
-				TableEntry entry = this.getCurrentScope().getParentTypeScope().getFieldDecl((FieldDeclaration) node);
-				String label = staticLabel(entry.getName());
-				this.data.add("global " + label);
-				this.data.add(label + ": dd 0x0");
-			}
 		}
 	}
 
 	@Override
 	public boolean visit(ASTNode node) throws Exception {
+		logger.finest("Visiting " + node);
+		
 		if (node instanceof MethodInvokeExpression) {
 			this.generateMethodInvoke((MethodInvokeExpression) node);
 			return false;
@@ -150,8 +173,37 @@ public class CodeGenerator extends SemanticsVisitor {
 		} else if (node instanceof UnaryExpression) {
 			this.generateUnaryExpression((UnaryExpression) node);
 			return false;
+		} else if (node instanceof AssignmentExpression) {
+			this.generateAssignmentExpression((AssignmentExpression) node);
+			return false;
+		} else if (node instanceof ForStatement) {
+			this.generateForLoop((ForStatement) node);
+			return false;
+		} else if (node instanceof FieldDeclaration) {
+			if (((FieldDeclaration) node).getModifiers().containModifier(Modifier.STATIC)) {
+				TableEntry entry = this.getCurrentScope().getParentTypeScope().getFieldDecl((FieldDeclaration) node);
+				String label = staticLabel(entry.getName());
+				this.data.add("global " + label);
+				this.data.add(label + ": dd 0x0");
+			}
+			return false;
+		} else if (node instanceof MethodDeclaration) {
+			Block body = ((MethodDeclaration) node).getBody();
+			if(body != null) {
+				body.accept(this);
+			}
+			return false;
+		} else if (node instanceof SimpleName) {
+			TableEntry entry = ((SimpleName) node).getOriginalDeclaration();
+			if (this.dereferenceVariable) {
+				this.generateVariableDereference(entry);
+			} else {
+				this.generateVariableAddress(entry);
+			}
+			return false;
 		}
-		return super.visit(node);
+		
+		return !this.complexNodes.contains(node.getClass());
 	}
 
 	@Override
@@ -231,6 +283,42 @@ public class CodeGenerator extends SemanticsVisitor {
 		return label;
 	}
 	
+	private void generateVariableDereference(TableEntry entry) throws Exception {
+		VariableDeclaration varDecl = (VariableDeclaration) entry.getNode();
+		if (varDecl instanceof ParameterDeclaration) {
+			this.texts.add("mov eax, [ebp + " + (4 + varDecl.getIndex() * 4) + "]\t; Accessing parameter: " + entry.getName());
+		} else if (varDecl instanceof FieldDeclaration) {
+			if (varDecl.getModifiers().containModifier(Modifier.STATIC)) {
+				String label = staticLabel(entry.getName());
+				this.addExtern(label, entry);
+				this.texts.add("mov eax, [" + label + "]\t; Accessing static: " + entry.getName());
+			} else {
+				this.texts.add("mov eax, [eax + " + (varDecl.getIndex() * 4) + "]\t; Accessing field: " + entry.getName());
+			}
+		} else if (varDecl instanceof LocalVariableDeclaration) {
+			this.texts.add("mov eax, [ebp - " + (varDecl.getIndex() * 4) + "]\t; Accessing local: " + entry.getName());
+		}
+	}
+	
+	private void generateVariableAddress(TableEntry entry) throws Exception {
+		VariableDeclaration varDecl = (VariableDeclaration) entry.getNode();
+		if (varDecl instanceof ParameterDeclaration) {
+			this.texts.add("mov eax, ebp");
+			this.texts.add("add eax, " + (4 + varDecl.getIndex() * 4) + "\t\t\t; Address of parameter: " + entry.getName());
+		} else if (varDecl instanceof FieldDeclaration) {
+			if (varDecl.getModifiers().containModifier(Modifier.STATIC)) {
+				String label = staticLabel(entry.getName());
+				this.addExtern(label, entry);
+				this.texts.add("mov eax, " + label + "\t; Address of static: " + entry.getName());
+			} else {
+				this.texts.add("add eax, " + (varDecl.getIndex() * 4) + "\t\t\t; Address of field: " + entry.getName());
+			}
+		} else if (varDecl instanceof LocalVariableDeclaration) {
+			this.texts.add("mov eax, ebp");
+			this.texts.add("sub eax, " + (varDecl.getIndex() * 4) + "\t\t\t; Address of local: " + entry.getName());
+		}
+	}
+	
 	private void generateMethodInvoke(MethodInvokeExpression methodInvoke) throws Exception {
 		
 		// Push parameters to stack
@@ -271,20 +359,7 @@ public class CodeGenerator extends SemanticsVisitor {
 			this.texts.add("mov eax, [ebp + 8]\t; Current object");
 			List<TableEntry> originalDeclarations = ((QualifiedName) name).originalDeclarations;
 			for(TableEntry entry: originalDeclarations) {
-				VariableDeclaration varDecl = (VariableDeclaration) entry.getNode();
-				if (varDecl instanceof ParameterDeclaration) {
-					this.texts.add("mov eax, [ebp + " + (8 + varDecl.getIndex() * 4) + "]\t; Accessing parameter: " + entry.getName());
-				} else if (varDecl instanceof FieldDeclaration) {
-					if (varDecl.getModifiers().containModifier(Modifier.STATIC)) {
-						String label = staticLabel(entry.getName());
-						this.externs.add(label);
-						this.texts.add("mov eax, [" + label + "]\t; Accessing static: " + entry.getName());
-					} else {
-						this.texts.add("mov eax, [eax + " + (4 + varDecl.getIndex() * 4) + "]\t; Accessing field: " + entry.getName());
-					}
-				} else if (varDecl instanceof LocalVariableDeclaration) {
-					this.texts.add("mov eax, [ebp - " + (varDecl.getIndex() * 4) + "]\t; Accessing local: " + entry.getName());
-				}
+				this.generateVariableDereference(entry);
 			}
 		}  else if (name instanceof SimpleName) {
 			// Invoking method within same Type, THIS is parameter #0
@@ -489,7 +564,9 @@ public class CodeGenerator extends SemanticsVisitor {
 			this.texts.add("mov eax, " + NULL);
 			break;
 		case STRINGLIT:
-			this.data.add("__STRING_LIT_" + this.literalCount + " dd " + literal.getValue());
+			this.addVtable("java.lang.String");
+			this.data.add("__STRING_LIT_" + this.literalCount + " dd java.lang.String_VTABLE");
+			this.data.add("dd " + literal.getValue());
 			this.texts.add("mov eax, " + "__STRING_LIT_" + this.literalCount);
 			this.literalCount++;
 			break;
@@ -517,5 +594,36 @@ public class CodeGenerator extends SemanticsVisitor {
 		default:
 			break;
 		}
+	}
+	
+	private void generateAssignmentExpression(AssignmentExpression assignExpr) throws Exception {
+		this.dereferenceVariable = false;
+		((ASTNode) assignExpr.getLeftHand()).accept(this);
+		this.dereferenceVariable = true;
+		this.texts.add("push eax\t\t\t; Push LHS to stack");
+		assignExpr.getExpression().accept(this);
+		this.texts.add("pop ebx");
+		this.texts.add("mov [ebx], eax");
+	}
+	
+	private void generateForLoop(ForStatement forStatement) throws Exception {
+		Integer loopCount = this.loopCount++;
+		// Init
+		this.texts.add("__LOOP_INIT_" + loopCount + ":");
+		((ASTNode) forStatement.getForInit()).accept(this);
+		
+		this.texts.add("__LOOP_CONDITION_" + loopCount + ":");
+		forStatement.getForCondition().accept(this);
+		this.texts.add("cmp eax, " + BOOLEAN_FALSE);
+		this.texts.add("je __LOOP_END_" + loopCount);
+
+		this.texts.add("__LOOP_STATEMENT_" + loopCount + ":");
+		forStatement.getForStatement().accept(this);
+		
+		this.texts.add("__LOOP_UPDATE_" + loopCount + ":");
+		forStatement.getForUpdate().accept(this);
+		this.texts.add("jmp __LOOP_CONDITION_" + loopCount);
+		
+		this.texts.add("__LOOP_END_" + loopCount + ":");
 	}
 }

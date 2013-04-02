@@ -34,10 +34,10 @@ public class StaticLocalInit extends SemanticsVisitor {
 	ArrayList<FieldDeclaration> staticFields = new ArrayList<FieldDeclaration>();
 	ArrayList<String> checkedType = new ArrayList<String>();
 	
-	protected int parameters = 1;
-	protected int locals = 0;		// Counts the local variable declarations
+	protected int parameters = 2;
+	protected int locals = 1;		// Counts the local variable declarations
 	
-	protected int fields = 0;
+	protected int fields = 1;
 	protected int methods = 0;		// Counts the methods
 
 	public StaticLocalInit(SymbolTable table) {
@@ -70,11 +70,11 @@ public class StaticLocalInit extends SemanticsVisitor {
 			}
 		}
 		if (node instanceof TypeDeclaration) {
-			this.fields = 0;
+			this.fields = 1;
 			this.methods = 0;
 		} else if (node instanceof MethodDeclaration) {
-			this.parameters = 1;
-			this.locals = 0;
+			this.parameters = 2;
+			this.locals = 1;
 		} else if (node instanceof FieldDeclaration){
 			if (((FieldDeclaration)node).getModifiers().containModifier(Modifier.STATIC)){
 				staticFields.add(((FieldDeclaration)node));
