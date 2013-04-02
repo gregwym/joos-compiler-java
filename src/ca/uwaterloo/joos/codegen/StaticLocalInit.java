@@ -56,6 +56,7 @@ public class StaticLocalInit extends SemanticsVisitor {
 		
 		if (node instanceof ClassDeclaration){
 			int methods = 0;
+			int fields = 0;
 			Stack<TypeScope> chain = HierarchyChain.get(node);
 			while (!chain.isEmpty()){
 				TypeScope ts = chain.pop();
@@ -64,13 +65,14 @@ public class StaticLocalInit extends SemanticsVisitor {
 					checkedType.add(ts.getName());
 					//TODO Count all methods here...
 					methods += methodCount((TypeDeclaration)ts.getReferenceNode(), methods);
+					fields += fieldCount((TypeDeclaration)ts.getReferenceNode(), fields);
 				}
 				methods += ((TypeDeclaration)ts.getReferenceNode()).totalMethodDeclarations;
-			
+				fields += ((TypeDeclaration)ts.getReferenceNode()).totalFieldDeclarations;
 			}
 		}
 		if (node instanceof TypeDeclaration) {
-			this.fields = 1;
+			this.fields = this.fields + 1;
 			this.methods = 0;
 		} else if (node instanceof MethodDeclaration) {
 			this.parameters = 2;
@@ -82,6 +84,17 @@ public class StaticLocalInit extends SemanticsVisitor {
 		}
 	}
 
+	private int fieldCount(TypeDeclaration referenceNode, int icount) throws Exception {
+		//TODO count the fields in the refnode and set that node's field counter
+		int count = icount;
+		for (FieldDeclaration fd : referenceNode.getBody().getFields()){
+			fd.setIndex(count);
+			count++;
+			System.out.println(referenceNode.fullyQualifiedName+"." + fd.getIdentifier() + ": " + fd.getIndex());
+		}
+		referenceNode.totalFieldDeclarations = count;
+		return count-icount;
+	}
 	private int methodCount(TypeDeclaration referenceNode, int icount) throws Exception {
 		//TODO Give indicies for each method here
 		//		Set total method count...
@@ -121,7 +134,7 @@ public class StaticLocalInit extends SemanticsVisitor {
 	@Override
 	public void didVisit(ASTNode node) throws Exception{
 		if (node instanceof TypeDeclaration) {
-			((TypeDeclaration) node).totalFieldDeclarations = this.fields;
+//			((TypeDeclaration) node).totalFieldDeclarations = this.fields;
 //			((TypeDeclaration) node).totalMethodDeclarations = this.methods;
 		} else if (node instanceof MethodDeclaration) {
 			((MethodDeclaration) node).totalLocalVariables = this.locals;
