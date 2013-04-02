@@ -160,7 +160,6 @@ public class CodeGenerator extends SemanticsVisitor {
 
 	@Override
 	public boolean visit(ASTNode node) throws Exception {
-		int i = 0;
 		logger.finest("Visiting " + node);
 		
 		if (node instanceof MethodInvokeExpression) {
@@ -201,30 +200,9 @@ public class CodeGenerator extends SemanticsVisitor {
 				body.accept(this);
 			}
 			return false;
-		} else if (node instanceof SimpleName) {
-			TableEntry entry = ((SimpleName) node).getOriginalDeclaration();
-			if (this.dereferenceVariable) {
-				this.generateVariableDereference(entry);
-			} else {
-				this.generateVariableAddress(entry);
-			}
-			return false;
-		} else if (node instanceof QualifiedName) {
-			this.texts.add("mov eax, [ebp + 8]\t; Current object");
-			
-			TableEntry entry = ((QualifiedName) node).getOriginalDeclaration();
-			this.generateVariableDereference(entry);
-			
-			List<TableEntry> originalDeclarations = ((QualifiedName) node).originalDeclarations;
-			for(i = 0; i < originalDeclarations.size(); i++) {
-				entry = originalDeclarations.get(i);
-				if (i != originalDeclarations.size() - 1 || this.dereferenceVariable) {
-					this.generateVariableDereference(entry);
-				} else {
-					this.generateVariableAddress(entry);
-				}
-			}
-		} 
+		} else if (node instanceof Name) {
+			this.generateVariableAccess((Name) node);
+		}
 		
 		return !this.complexNodes.contains(node.getClass());
 	}
@@ -339,6 +317,51 @@ public class CodeGenerator extends SemanticsVisitor {
 		} else if (varDecl instanceof LocalVariableDeclaration) {
 			this.texts.add("mov eax, ebp");
 			this.texts.add("sub eax, " + (varDecl.getIndex() * 4) + "\t\t\t; Address of local: " + entry.getName());
+		}
+	}
+	
+	private void generateVariableAccess(Name name) throws Exception {
+		int i = 0;
+		
+		if (name instanceof SimpleName) {
+			TableEntry entry = ((SimpleName) name).getOriginalDeclaration();
+			if (entry == null) {
+				String field = ((SimpleName) name).getName();
+				if (field.equals("length")) {
+					this.texts.add("mov eax, [eax]\t\t; Fetch array length");
+				} else {
+					throw new Exception("Unknown field " + field);
+				}
+			} else if (this.dereferenceVariable) {
+				this.generateVariableDereference(entry);
+			} else {
+				this.generateVariableAddress(entry);
+			}
+		} else if (name instanceof QualifiedName) {
+			this.texts.add("mov eax, [ebp + 8]\t; Current object");
+			
+			TableEntry entry = ((QualifiedName) name).getOriginalDeclaration();
+			this.generateVariableDereference(entry);
+			
+			List<TableEntry> originalDeclarations = ((QualifiedName) name).originalDeclarations;
+			for(i = 0; i < originalDeclarations.size(); i++) {
+				entry = originalDeclarations.get(i);
+				if (i != originalDeclarations.size() - 1 || this.dereferenceVariable) {
+					this.generateVariableDereference(entry);
+				} else {
+					this.generateVariableAddress(entry);
+				}
+			}
+			
+			List<String> components = ((QualifiedName) name).getComponents();
+			if(components.size() - originalDeclarations.size() > 1) {
+				String field = components.get(components.size() - 1);
+				if (field.equals("length")) {
+					this.texts.add("mov eax, [eax]\t\t; Fetch array size");
+				} else {
+					throw new Exception("Unknown field " + field);
+				}
+			}
 		}
 	}
 	
@@ -588,9 +611,11 @@ public class CodeGenerator extends SemanticsVisitor {
 			break;
 		case STRINGLIT:
 			this.addVtable("java.lang.String");
-			this.data.add("__STRING_LIT_" + this.literalCount + " dd java.lang.String_VTABLE");
+			this.data.add("__STRING_" + this.literalCount + " dd java.lang.String_VTABLE");
+			this.data.add("dd " + "__STRING_LIT_" + this.literalCount);
+			this.data.add("__STRING_LIT_" + this.literalCount + " dd " + (literal.getValue().length() - 2));
 			this.data.add("dd " + literal.getValue());
-			this.texts.add("mov eax, " + "__STRING_LIT_" + this.literalCount);
+			this.texts.add("mov eax, " + "__STRING_" + this.literalCount);
 			this.literalCount++;
 			break;
 		default:
