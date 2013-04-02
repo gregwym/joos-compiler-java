@@ -137,8 +137,9 @@ public class CodeGenerator extends SemanticsVisitor {
 			this.initialize();
 		} else if (node instanceof TypeDeclaration) {
 			// Construct output file
-			String filename = this.getCurrentScope().getName();
-			filename = filename.replace('.', '/');
+//			String filename = this.getCurrentScope().getName();
+			String filename = node.getIdentifier();
+//			filename = filename.replace('.', '/');
 			filename = "./output/" + filename + ".s";
 			logger.finer(filename);
 			this.asmFile = new File(filename);
