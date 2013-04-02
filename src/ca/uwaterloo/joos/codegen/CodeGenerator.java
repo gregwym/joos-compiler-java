@@ -57,9 +57,16 @@ public class CodeGenerator extends SemanticsVisitor {
 	public CodeGenerator(SymbolTable table) {
 		super(table);
 		logger.setLevel(Level.FINER);
-		externs = new HashSet<String>();
-		texts = new ArrayList<String>();
-		data = new ArrayList<String>();
+	}
+	
+	private void initialize() {
+		this.asmFile = null;
+		this.externs = new HashSet<String>();
+		this.texts = new ArrayList<String>();
+		this.data = new ArrayList<String>();
+		this.methodLabel = null;
+		this.literalCount = 0;
+		this.comparisonCount = 0;
 		
 		// Place the runtime.s externs
 		this.externs.add("__malloc");
@@ -80,7 +87,9 @@ public class CodeGenerator extends SemanticsVisitor {
 	public void willVisit(ASTNode node) throws Exception {
 		super.willVisit(node);
 		
-		if (node instanceof TypeDeclaration) {
+		if (node instanceof FileUnit) {
+			this.initialize();
+		} else if (node instanceof TypeDeclaration) {
 			// Construct output file
 			String filename = this.getCurrentScope().getName();
 			filename = filename.replace('.', '/');
@@ -269,7 +278,7 @@ public class CodeGenerator extends SemanticsVisitor {
 					if (varDecl.getModifiers().containModifier(Modifier.STATIC)) {
 						String label = staticLabel(entry.getName());
 						this.externs.add(label);
-						this.texts.add("mov eax, " + label + "\t; Accessing static: " + entry.getName());
+						this.texts.add("mov eax, [" + label + "]\t; Accessing static: " + entry.getName());
 					} else {
 						this.texts.add("mov eax, [eax + " + (4 + varDecl.getIndex() * 4) + "]\t; Accessing field: " + entry.getName());
 					}
