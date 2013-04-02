@@ -323,6 +323,7 @@ public class TypeChecker extends SemanticsVisitor {
 				entry = typeScope.resolveVariableToDecl(new SimpleName(component, node));
 				if (entry != null) {
 					this.isAccessible(staticAccess, entry, typeScope, currentTypeScope);
+					qualifiedName.originalDeclarations.add(entry);
 
 					staticAccess = false;
 					type = entry.getType();
@@ -559,7 +560,8 @@ public class TypeChecker extends SemanticsVisitor {
 				}
 
 				this.isAccessible(false, entry, typeScope, currentTypeScope);
-
+				fieldName.setOriginalDeclaration(entry);
+				
 				type = entry.getType();
 			}
 			this.pushType(type);
