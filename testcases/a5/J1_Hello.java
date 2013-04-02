@@ -1,7 +1,7 @@
 public class J1_Hello {
     public J1_Hello() {}
     public static int test() {
-        System.out.println("Hello, World!");
+        System.out.write('H');
         return 123;
     }
 }

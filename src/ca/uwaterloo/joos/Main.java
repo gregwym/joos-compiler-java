@@ -177,8 +177,8 @@ public class Main {
 			ast.getRoot().accept(visitor);
 		}
 		
+		CodeGenerator generator = new CodeGenerator(table);
 		for(AST ast: asts) {
-			CodeGenerator generator = new CodeGenerator(table);
 			ast.getRoot().accept(generator);
 		}
 		logger.info("Code Generated");
