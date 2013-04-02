@@ -34,6 +34,7 @@ import ca.uwaterloo.joos.ast.expr.UnaryExpression;
 import ca.uwaterloo.joos.ast.expr.name.Name;
 import ca.uwaterloo.joos.ast.expr.name.QualifiedName;
 import ca.uwaterloo.joos.ast.expr.name.SimpleName;
+import ca.uwaterloo.joos.ast.expr.primary.ArrayAccess;
 import ca.uwaterloo.joos.ast.expr.primary.LiteralPrimary;
 import ca.uwaterloo.joos.ast.expr.primary.Primary;
 import ca.uwaterloo.joos.ast.statement.Block;
@@ -171,6 +172,9 @@ public class CodeGenerator extends SemanticsVisitor {
 		} else if (node instanceof InfixExpression) {
 			this.generateInfixExpression((InfixExpression) node);
 			return false;
+		} else if (node instanceof ArrayAccess) {
+			this.generateArrayAccess((ArrayAccess) node);
+			return false;
 		} else if (node instanceof LiteralPrimary) {
 			this.generateLiteral((LiteralPrimary) node);
 			return false;
@@ -202,6 +206,7 @@ public class CodeGenerator extends SemanticsVisitor {
 			return false;
 		} else if (node instanceof Name) {
 			this.generateVariableAccess((Name) node);
+			return false;
 		}
 		
 		return !this.complexNodes.contains(node.getClass());
@@ -589,7 +594,18 @@ public class CodeGenerator extends SemanticsVisitor {
 		this.texts.add("");
 	}
 	
+	private void generateArrayAccess(ArrayAccess arrayAccess) throws Exception {
+		arrayAccess.getExpression().accept(this);
+		this.texts.add("push eax\t\t\t; Push array address to stack first");
+		arrayAccess.getIndex().accept(this);
+		this.texts.add("pop edx");
+		this.texts.add("add edx, 4\t\t; Shift for array length");
+		this.texts.add("add edx, eax\t; Shift to index eax");
+		this.texts.add("mov eax, [edx]");
+	}
+	
 	private void generateLiteral(LiteralPrimary literal) throws Exception {
+		char c = '\0';
 		switch(literal.getLiteralType()) {
 		case BOOLLIT:
 			if(literal.getValue().equals("true")) {
@@ -599,8 +615,20 @@ public class CodeGenerator extends SemanticsVisitor {
 			}
 			break;
 		case CHARLIT:
-			// Assuming char literal in format 'a'
-			this.texts.add("mov eax, " + ((int) literal.getValue().charAt(1)));
+			c = literal.getValue().charAt(1);
+			if(c == '\\' && literal.getValue().length() > 3) {
+				c = literal.getValue().charAt(2);
+				if (c == 'b') c = '\b';
+				else if (c == 't') c = '\t';
+				else if (c == 'n') c = '\n';
+				else if (c == 'f') c = '\f';
+				else if (c == 'r') c = '\r';
+				else if (c == '"') c = '"';
+				else if (c == '\'') c = '\'';
+				else if (c == '\\') c = '\\';
+				else c = '\0';
+			}
+			this.texts.add("mov eax, " + ((int) c));
 			break;
 		case INTLIT:
 			// Assuming int literal within interger range
@@ -615,6 +643,7 @@ public class CodeGenerator extends SemanticsVisitor {
 			this.data.add("dd " + "__STRING_LIT_" + this.literalCount);
 			this.data.add("__STRING_LIT_" + this.literalCount + " dd " + (literal.getValue().length() - 2));
 			this.data.add("dd " + literal.getValue());
+			this.data.add("align 4");
 			this.texts.add("mov eax, " + "__STRING_" + this.literalCount);
 			this.literalCount++;
 			break;
