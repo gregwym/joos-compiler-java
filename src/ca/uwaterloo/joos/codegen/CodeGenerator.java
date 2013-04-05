@@ -15,6 +15,8 @@ import ca.uwaterloo.joos.ast.ASTNode;
 import ca.uwaterloo.joos.ast.FileUnit;
 import ca.uwaterloo.joos.ast.Modifiers;
 import ca.uwaterloo.joos.ast.Modifiers.Modifier;
+import ca.uwaterloo.joos.ast.decl.ClassDeclaration;
+import ca.uwaterloo.joos.ast.decl.ConstructorDeclaration;
 import ca.uwaterloo.joos.ast.decl.FieldDeclaration;
 import ca.uwaterloo.joos.ast.decl.LocalVariableDeclaration;
 import ca.uwaterloo.joos.ast.decl.MethodDeclaration;
@@ -41,6 +43,7 @@ import ca.uwaterloo.joos.ast.statement.Block;
 import ca.uwaterloo.joos.ast.statement.ForStatement;
 import ca.uwaterloo.joos.ast.statement.ReturnStatement;
 import ca.uwaterloo.joos.ast.type.ReferenceType;
+import ca.uwaterloo.joos.symboltable.Scope;
 import ca.uwaterloo.joos.symboltable.SemanticsVisitor;
 import ca.uwaterloo.joos.symboltable.SymbolTable;
 import ca.uwaterloo.joos.symboltable.TableEntry;
@@ -48,7 +51,6 @@ import ca.uwaterloo.joos.symboltable.TypeScope;
 
 public class CodeGenerator extends SemanticsVisitor {
 	public static final Logger logger = Main.getLogger(CodeGenerator.class);
-	
 	protected static final String BOOLEAN_TRUE = "0xffffffff";
 	protected static final String BOOLEAN_FALSE = "0x0";
 	protected static final String NULL = "0x0";
@@ -155,6 +157,24 @@ public class CodeGenerator extends SemanticsVisitor {
 				this.texts.add("push ecx");
 				this.texts.add("push edx");
 				this.texts.add("");
+				if (node instanceof ConstructorDeclaration){
+					//TODO call super constructor...
+						//Call any superclass constructor
+						//We need to initialize field variables here
+					System.out.println(this.getCurrentScope().getParentTypeScope().getReferenceNode());
+					//Get the class holding the constructor
+					ClassDeclaration cd = (ClassDeclaration) this.getCurrentScope().getParentTypeScope().getReferenceNode();
+					List<FieldDeclaration> fds = cd.getBody().getFields();
+					for (FieldDeclaration fd : fds){
+						//Generate initer code for each NON STATIC field...
+						//This code is placed in the constructor and run whenever the 
+						//object is instantiated.
+						//The field pointer is located at this+(4*(fieldIndex + 1))
+						//THIS is in eax : eax+(4*(fieldIndex + 1))
+						this.texts.add("mov [eax + " + 4*fd.getIndex() + "], 0" );
+						
+					}
+				}
 			}
 		}
 	}
@@ -191,12 +211,17 @@ public class CodeGenerator extends SemanticsVisitor {
 			this.generateForLoop((ForStatement) node);
 			return false;
 		} else if (node instanceof FieldDeclaration) {
+			TableEntry entry = this.getCurrentScope().getParentTypeScope().getFieldDecl((FieldDeclaration) node);
+			String label;
 			if (((FieldDeclaration) node).getModifiers().containModifier(Modifier.STATIC)) {
-				TableEntry entry = this.getCurrentScope().getParentTypeScope().getFieldDecl((FieldDeclaration) node);
-				String label = staticLabel(entry.getName());
+				label = staticLabel(entry.getName());
 				this.data.add("global " + label);
 				this.data.add(label + ": dd 0x0");
 			}
+//			else{//This is a nonstatic field...
+//				label = entry.getName();
+//				this.data.add(label + ": ");
+//			}
 			return false;
 		} else if (node instanceof MethodDeclaration) {
 			Block body = ((MethodDeclaration) node).getBody();
@@ -246,7 +271,20 @@ public class CodeGenerator extends SemanticsVisitor {
 		} else if (node instanceof TypeDeclaration) {
 			this.texts.add("global " + this.getCurrentScope().getName() + "_VTABLE");
 			this.texts.add(this.getCurrentScope().getName() + "_VTABLE:");
-			// TODO: append vtable contents
+			//TODO Add VTABLE inputs here
+			for (Integer key: ((TypeDeclaration)node).getSignatures().keySet()){
+				Scope methodScope = ((TypeDeclaration)node).getSignatures().get(key);
+				
+				if (!this.getCurrentScope().getSymbols().containsKey(methodScope.getName())){
+					this.externs.add(methodLabel(methodScope.getName()));
+				}
+				if (((MethodDeclaration)methodScope.getReferenceNode()).getModifiers().containModifier(Modifier.STATIC)&&
+					((MethodDeclaration)methodScope.getReferenceNode()).getName().getName().equals("test")){
+					this.texts.add("dd _start");
+				}
+				else this.texts.add("dd " + methodLabel(methodScope.getName()));
+				
+			}
 			this.texts.add("");
 		} else if (node instanceof MethodDeclaration) {
 			Modifiers modifiers = ((MethodDeclaration) node).getModifiers();
