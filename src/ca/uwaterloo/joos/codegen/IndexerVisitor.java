@@ -28,12 +28,10 @@ public class IndexerVisitor extends SemanticsVisitor{
 	HashMap<String, Integer> countList = new HashMap<String, Integer>();
 	Map<TypeDeclaration, Stack<TypeScope>> HierarchyChain = HierarchyChecker.getClassHierachyChain();
 	static ArrayList<String> checkedType = new ArrayList<String>();
-	//Hold method signatures. Send to CodeGenerator and convert there...
 	Map<Integer, Scope> methodList = new HashMap<Integer, Scope>(); 
 	
 	public IndexerVisitor(SymbolTable table) {
 		super(table);
-		// TODO Auto-generated constructor stub
 	}
 
 	@Override
@@ -108,14 +106,10 @@ public class IndexerVisitor extends SemanticsVisitor{
 	public void didVisit(ASTNode node)throws Exception{
 		
 		if(node instanceof MethodDeclaration){
-//			methodList.put(this.getCurrentScope().getName());
-//			System.out.println("ADDED METH: " + methodList.get(methodList.size()-1));
 		}
 		if (node instanceof TypeDeclaration){
 			((TypeDeclaration)node).setSignatures(methodList);
-//			System.out.println("SETTING: " + ((TypeDeclaration)node).getSignatures());
 			((TypeDeclaration)node).totalFieldDeclarations = ((TypeDeclaration) node).getBody().getFields().size();
-			System.out.println("FIELDS: " + node + ((TypeDeclaration)node).totalFieldDeclarations);
 			((TypeDeclaration) node).totalMethodDeclarations = methodIdx;
 			methodList = new HashMap<Integer,Scope>();
 			methodIdx = 0;
