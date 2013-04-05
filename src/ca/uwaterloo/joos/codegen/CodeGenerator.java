@@ -6,6 +6,7 @@ import java.io.FileWriter;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -161,7 +162,7 @@ public class CodeGenerator extends SemanticsVisitor {
 					//TODO call super constructor...
 						//Call any superclass constructor
 						//We need to initialize field variables here
-					System.out.println(this.getCurrentScope().getParentTypeScope().getReferenceNode());
+//					System.out.println(this.getCurrentScope().getParentTypeScope().getReferenceNode());
 					//Get the class holding the constructor
 					ClassDeclaration cd = (ClassDeclaration) this.getCurrentScope().getParentTypeScope().getReferenceNode();
 					List<FieldDeclaration> fds = cd.getBody().getFields();
@@ -212,16 +213,12 @@ public class CodeGenerator extends SemanticsVisitor {
 			return false;
 		} else if (node instanceof FieldDeclaration) {
 			TableEntry entry = this.getCurrentScope().getParentTypeScope().getFieldDecl((FieldDeclaration) node);
-			String label;
+			String label = null;
 			if (((FieldDeclaration) node).getModifiers().containModifier(Modifier.STATIC)) {
 				label = staticLabel(entry.getName());
 				this.data.add("global " + label);
 				this.data.add(label + ": dd 0x0");
 			}
-//			else{//This is a nonstatic field...
-//				label = entry.getName();
-//				this.data.add(label + ": ");
-//			}
 			return false;
 		} else if (node instanceof MethodDeclaration) {
 			Block body = ((MethodDeclaration) node).getBody();
@@ -272,8 +269,8 @@ public class CodeGenerator extends SemanticsVisitor {
 			this.texts.add("global " + this.getCurrentScope().getName() + "_VTABLE");
 			this.texts.add(this.getCurrentScope().getName() + "_VTABLE:");
 			//TODO Add VTABLE inputs here
-			for (Integer key: ((TypeDeclaration)node).getSignatures().keySet()){
-				Scope methodScope = ((TypeDeclaration)node).getSignatures().get(key);
+			for (Entry<Integer, Scope> entry: ((TypeDeclaration)node).getSignatures().entrySet()){
+				Scope methodScope = entry.getValue();
 				
 				if (!this.getCurrentScope().getSymbols().containsKey(methodScope.getName())){
 					this.externs.add(methodLabel(methodScope.getName()));
