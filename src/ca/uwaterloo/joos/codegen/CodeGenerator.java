@@ -267,7 +267,6 @@ public class CodeGenerator extends SemanticsVisitor {
 				if (!mainFile)staticInit.add("\textern " + label + "_INIT\n");
 //				if (!mainFile)staticInit.add("\textern " + label + "\n");
 				staticInit.add("\tcall " + label + "_INIT" + '\n');
-				//staticInit.add("\tmov [" + label + "], eax" + '\n');
 			}
 			if (dir != null) {
 				dir.mkdirs();
