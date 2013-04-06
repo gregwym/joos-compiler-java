@@ -55,6 +55,7 @@ import ca.uwaterloo.joos.symboltable.TypeScope;
 
 public class CodeGenerator extends SemanticsVisitor {
 	public static final Logger logger = Main.getLogger(CodeGenerator.class);
+	
 	protected static final String BOOLEAN_TRUE = "0xffffffff";
 	protected static final String BOOLEAN_FALSE = "0x0";
 	protected static final String NULL = "0x0";
