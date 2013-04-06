@@ -15,13 +15,13 @@ public class MethodDeclaration extends BodyDeclaration {
 
 	protected static final ChildListDescriptor PARAMETERS = new ChildListDescriptor(ParameterDeclaration.class);
 	protected static final ChildDescriptor BODY = new ChildDescriptor(Block.class);
-	private MethodDeclaration overideMehtod = null;
+	private MethodDeclaration overideMethod = null;
 
 	public MethodDeclaration getOverideMethod() {
-		return this.overideMehtod;
+		return this.overideMethod;
 	}
 	public void setOverideMethod(MethodDeclaration overideMehtod) {
-		this.overideMehtod = overideMehtod;
+		this.overideMethod = overideMehtod;
 	}
 
 	public MethodDeclaration(Node node, ASTNode parent) throws Exception {

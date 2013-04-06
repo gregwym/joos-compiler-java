@@ -31,7 +31,9 @@ public class HierarchyChecker extends SemanticsVisitor {
 	private static Map<TypeDeclaration, Stack<TypeScope>> classHierachyChain = new HashMap<TypeDeclaration, Stack<TypeScope>>();
 
 	public static Map<TypeDeclaration, Stack<TypeScope>> getClassHierachyChain() {
-		return HierarchyChecker.classHierachyChain;
+		Map<TypeDeclaration, Stack<TypeScope>> ret = new HashMap<TypeDeclaration, Stack<TypeScope>>();
+		ret.putAll(classHierachyChain);
+		return ret;
 	}
 
 	public HierarchyChecker(SymbolTable table) {

@@ -1,6 +1,9 @@
 package ca.uwaterloo.joos.ast.decl;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import ca.uwaterloo.joos.ast.ASTNode;
 import ca.uwaterloo.joos.ast.Modifiers;
@@ -13,6 +16,7 @@ import ca.uwaterloo.joos.ast.type.ReferenceType;
 import ca.uwaterloo.joos.parser.ParseTree.LeafNode;
 import ca.uwaterloo.joos.parser.ParseTree.Node;
 import ca.uwaterloo.joos.parser.ParseTree.TreeNode;
+import ca.uwaterloo.joos.symboltable.Scope;
 
 public abstract class TypeDeclaration extends ASTNode {
 
@@ -20,8 +24,22 @@ public abstract class TypeDeclaration extends ASTNode {
 	protected static final ChildListDescriptor IMPLEMNTS = new ChildListDescriptor(ReferenceType.class);
 	protected static final ChildDescriptor BODY = new ChildDescriptor(TypeBody.class);
 	public String fullyQualifiedName;
+	public boolean checked = false;
 	public int totalFieldDeclarations = 0;
 	public int totalMethodDeclarations = 0;
+	Map<Integer, Scope> sigList = new HashMap<Integer,Scope>();	//Holds the scopes of the methods in this type
+	
+	public void setSignatures(Map<Integer, Scope> methodList){
+		//Called in StaticLocalInit
+		sigList.putAll(methodList);
+	}
+	
+	public Map<Integer, Scope> getSignatures(){
+		//called in CodeGenerator. The Signatures need to be converted 
+		//with methodLabel
+		//TODO static methods
+		return sigList;
+	}
 	
 	public TypeDeclaration(Node node, ASTNode parent) throws Exception {
 		super(node, parent);

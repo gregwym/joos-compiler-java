@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -16,6 +17,8 @@ import ca.uwaterloo.joos.ast.ASTNode.ChildTypeUnmatchException;
 import ca.uwaterloo.joos.ast.FileUnit;
 import ca.uwaterloo.joos.ast.Modifiers;
 import ca.uwaterloo.joos.ast.Modifiers.Modifier;
+import ca.uwaterloo.joos.ast.decl.ClassDeclaration;
+import ca.uwaterloo.joos.ast.decl.ConstructorDeclaration;
 import ca.uwaterloo.joos.ast.decl.FieldDeclaration;
 import ca.uwaterloo.joos.ast.decl.LocalVariableDeclaration;
 import ca.uwaterloo.joos.ast.decl.MethodDeclaration;
@@ -44,6 +47,7 @@ import ca.uwaterloo.joos.ast.statement.IfStatement;
 import ca.uwaterloo.joos.ast.statement.ReturnStatement;
 import ca.uwaterloo.joos.ast.statement.WhileStatement;
 import ca.uwaterloo.joos.ast.type.ReferenceType;
+import ca.uwaterloo.joos.symboltable.Scope;
 import ca.uwaterloo.joos.symboltable.SemanticsVisitor;
 import ca.uwaterloo.joos.symboltable.SymbolTable;
 import ca.uwaterloo.joos.symboltable.TableEntry;
@@ -57,10 +61,13 @@ public class CodeGenerator extends SemanticsVisitor {
 	protected static final String NULL = "0x0";
 
 	protected File asmFile = null;
+	protected static File startFile = null;
 	protected Set<String> externs = null;
 	protected List<String> texts = null;
 	protected List<String> data = null;
-
+	protected List<String> statics = null;
+	protected static List<String> staticInit = new ArrayList<String>();
+	
 	private String methodLabel = null;
 	private Integer literalCount = 0;
 	private Integer comparisonCount = 0;
@@ -69,7 +76,8 @@ public class CodeGenerator extends SemanticsVisitor {
 	private Boolean dereferenceVariable = true;
 
 	private Set<Class<?>> complexNodes = null;
-
+	private boolean mainFile = false;
+	
 	public CodeGenerator(SymbolTable table) {
 		super(table);
 		logger.setLevel(Level.FINER);
@@ -83,6 +91,7 @@ public class CodeGenerator extends SemanticsVisitor {
 
 	private void initialize() {
 		this.asmFile = null;
+		this.statics = new ArrayList<String>();
 		this.externs = new HashSet<String>();
 		this.texts = new ArrayList<String>();
 		this.data = new ArrayList<String>();
@@ -140,6 +149,8 @@ public class CodeGenerator extends SemanticsVisitor {
 				this.methodLabel = methodLabel(this.getCurrentScope().getName());
 				if (((MethodDeclaration) node).getName().getSimpleName().equals("test") && modifiers.containModifier(Modifier.STATIC)) {
 					this.methodLabel = "_start";
+					startFile = this.asmFile;
+					mainFile = true;
 				}
 
 				this.texts.add("global " + this.methodLabel);
@@ -158,6 +169,30 @@ public class CodeGenerator extends SemanticsVisitor {
 				this.texts.add("push ecx");
 				this.texts.add("push edx");
 				this.texts.add("");
+				if(((MethodDeclaration) node).getName().getSimpleName().equals("test") && 
+						modifiers.containModifier(Modifier.STATIC)) {
+					this.texts.add("call Start_StaticInit");
+				}
+				if (node instanceof ConstructorDeclaration){
+					//TODO call super constructor...
+						//Call any superclass constructor
+						//We need to initialize field variables here
+//					System.out.println(this.getCurrentScope().getParentTypeScope().getReferenceNode());
+					//Get the class holding the constructor
+					ClassDeclaration cd = (ClassDeclaration) this.getCurrentScope().getParentTypeScope().getReferenceNode();
+					List<FieldDeclaration> fds = cd.getBody().getFields();
+					this.texts.add("mov ebx, " + this.getCurrentScope().getParentTypeScope().getName() + "_VTABLE");
+					this.texts.add("mov [ebp + 8], ebx");
+					for (FieldDeclaration fd : fds){
+						//Generate initer code for each NON STATIC field...
+						//This code is placed in the constructor and run whenever the 
+						//object is instantiated.
+						//The field pointer is located at this+(4*(fieldIndex + 1))
+						//THIS is in eax : eax+(4*(fieldIndex + 1))
+//						this.texts.add("mov [eax + " + 4*fd.getIndex() + "], 0" );
+						
+					}
+				}
 			}
 		}
 	}
@@ -203,8 +238,9 @@ public class CodeGenerator extends SemanticsVisitor {
 			if (((FieldDeclaration) node).getModifiers().containModifier(Modifier.STATIC)) {
 				TableEntry entry = this.getCurrentScope().getParentTypeScope().getFieldDecl((FieldDeclaration) node);
 				String label = staticLabel(entry.getName());
-				this.data.add("global " + label);
-				this.data.add(label + ": dd 0x0");
+				//note: moved static declaration generation into function
+				this.generateStaticFieldDeclaration((FieldDeclaration)node);
+				
 			}
 			return false;
 		} else if (node instanceof MethodDeclaration) {
@@ -226,6 +262,12 @@ public class CodeGenerator extends SemanticsVisitor {
 		if (node instanceof FileUnit) {
 			// File content generated, write to file
 			File dir = this.asmFile.getParentFile();
+			for (String label : this.statics){
+				if (!mainFile)staticInit.add("\textern " + label + "_INIT\n");
+//				if (!mainFile)staticInit.add("\textern " + label + "\n");
+				staticInit.add("\tcall " + label + "_INIT" + '\n');
+				//staticInit.add("\tmov [" + label + "], eax" + '\n');
+			}
 			if (dir != null) {
 				dir.mkdirs();
 			}
@@ -256,6 +298,20 @@ public class CodeGenerator extends SemanticsVisitor {
 			this.texts.add("global " + this.getCurrentScope().getName() + "_VTABLE");
 			this.texts.add(this.getCurrentScope().getName() + "_VTABLE:");
 			// TODO: append vtable contents
+			for (Entry<Integer, Scope> entry: ((TypeDeclaration)node).getSignatures().entrySet()){
+				Scope methodScope = entry.getValue();
+				
+				if (!this.getCurrentScope().getSymbols().containsKey(methodScope.getName())){
+					this.externs.add(methodLabel(methodScope.getName()));
+				}
+				if (((MethodDeclaration)methodScope.getReferenceNode()).getModifiers().containModifier(Modifier.STATIC)&&
+					((MethodDeclaration)methodScope.getReferenceNode()).getName().getName().equals("test")){
+					this.texts.add("dd _start");
+					this.startFile = asmFile;
+				}
+				else this.texts.add("dd " + methodLabel(methodScope.getName()));
+				
+			}
 			this.texts.add("");
 		} else if (node instanceof MethodDeclaration) {
 			Modifiers modifiers = ((MethodDeclaration) node).getModifiers();
@@ -765,4 +821,42 @@ public class CodeGenerator extends SemanticsVisitor {
 			ifStatement.getElseStatement().accept(this);
 		} 
 	}
+	private void generateStaticFieldDeclaration(FieldDeclaration decl) throws Exception {
+		//TODO Move below
+		TableEntry entry = this.getCurrentScope().getParentTypeScope().getFieldDecl((FieldDeclaration) decl);
+		String label = null;
+		label = staticLabel(entry.getName());
+		this.texts.add("global " + label + "_INIT");
+		this.texts.add(label + "_INIT:");
+		this.data.add("global " + label);
+		this.data.add(label + ": dd 0x0");
+		//Place the node into a list...
+		statics.add(label);
+		Expression initialization = decl.getInitial();
+		if (initialization != null) {
+			this.dereferenceVariable = false;
+			decl.getName().accept(this);
+			this.dereferenceVariable = true;
+			this.texts.add("push eax\t\t\t; Push LHS to stack");
+			initialization.accept(this);
+			this.texts.add("pop ebx");
+			this.texts.add("mov [ebx], eax");
+		}
+		this.texts.add("ret");
+	}
+	
+	public void writeStaticInit() throws Exception{	
+		BufferedWriter asmWriter = new BufferedWriter(new FileWriter(startFile, true));
+		//Adds the static initer code to the _Start function
+		asmWriter.write("\nsection .text\n");
+		asmWriter.write("Start_StaticInit:\n");
+		for (String label: staticInit){
+			asmWriter.write(label);
+		}
+		asmWriter.write("ret\n");
+		asmWriter.close();
+		
+	}
 }
+
+
