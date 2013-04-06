@@ -13,6 +13,7 @@ import ca.uwaterloo.joos.ast.decl.ClassDeclaration;
 import ca.uwaterloo.joos.ast.decl.FieldDeclaration;
 import ca.uwaterloo.joos.ast.decl.LocalVariableDeclaration;
 import ca.uwaterloo.joos.ast.decl.MethodDeclaration;
+import ca.uwaterloo.joos.ast.decl.ParameterDeclaration;
 import ca.uwaterloo.joos.ast.decl.TypeDeclaration;
 import ca.uwaterloo.joos.ast.statement.Block;
 import ca.uwaterloo.joos.checker.HierarchyChecker;
@@ -22,13 +23,16 @@ import ca.uwaterloo.joos.symboltable.SymbolTable;
 import ca.uwaterloo.joos.symboltable.TypeScope;
 
 public class IndexerVisitor extends SemanticsVisitor{
-	int methodIdx = 0;
-	int fieldIdx = 1;
+	int methods = 0;
+	int fields = 1;
+	int locals = 1;
+	private int parameters = 2;
 	public static ArrayList<FieldDeclaration> StaticFields = new ArrayList<FieldDeclaration>();
 	HashMap<String, Integer> countList = new HashMap<String, Integer>();
 	Map<TypeDeclaration, Stack<TypeScope>> HierarchyChain = HierarchyChecker.getClassHierachyChain();
 	static ArrayList<String> checkedType = new ArrayList<String>();
-	Map<Integer, Scope> methodList = new HashMap<Integer, Scope>(); 
+	Map<Integer, Scope> methodList = new HashMap<Integer, Scope>();
+	
 	
 	public IndexerVisitor(SymbolTable table) {
 		super(table);
@@ -49,7 +53,7 @@ public class IndexerVisitor extends SemanticsVisitor{
 					ts.getReferenceNode().accept(iv);
 				}
 				methodList.putAll(((TypeDeclaration) ts.getReferenceNode()).getSignatures());
-				methodIdx = ((TypeDeclaration)ts.getReferenceNode()).getSignatures().size();
+				methods = ((TypeDeclaration)ts.getReferenceNode()).getSignatures().size();
 				
 			}
 		}
@@ -68,9 +72,9 @@ public class IndexerVisitor extends SemanticsVisitor{
 			}
 			else {
 				//Not overriden. Need to set an index...
-				methodList.put(methodIdx, this.getCurrentScope());
-				((MethodDeclaration) node).setIndex(methodIdx);
-				methodIdx++;
+				methodList.put(methods, this.getCurrentScope());
+				((MethodDeclaration) node).setIndex(methods);
+				methods++;
 			}
 		}
 	}
@@ -82,10 +86,14 @@ public class IndexerVisitor extends SemanticsVisitor{
 		}
 		
 		if (node instanceof MethodDeclaration) {
+			for (ParameterDeclaration param : ((MethodDeclaration)node).getParameters()){
+				param.setIndex(parameters);
+				parameters++;
+			}
 			Block body = ((MethodDeclaration)node).getBody();
 			if (body != null){
 				List<LocalVariableDeclaration> vars = ((MethodDeclaration) node).getBody().getLocalVariable();
-				if (vars != null)((MethodDeclaration)node).totalLocalVariables = vars.size();
+				if (vars != null)((MethodDeclaration)node).totalLocalVariables = vars.size(); //TODO REMOVE
 			}
 		}
 		
@@ -94,11 +102,15 @@ public class IndexerVisitor extends SemanticsVisitor{
 				StaticFields.add((FieldDeclaration)node);
 			}
 			else{
-				((FieldDeclaration)node).setIndex(fieldIdx);
-				fieldIdx++;
+				((FieldDeclaration)node).setIndex(fields);
+				fields++;
 			}
 		}
 		
+		if (node instanceof LocalVariableDeclaration){
+			((LocalVariableDeclaration)node).setIndex(locals);
+			locals++;
+		}
 		return true;
 	}
 	
@@ -106,15 +118,18 @@ public class IndexerVisitor extends SemanticsVisitor{
 	public void didVisit(ASTNode node)throws Exception{
 		
 		if(node instanceof MethodDeclaration){
+			((MethodDeclaration)node).totalLocalVariables = locals;
+			locals = 1;
+			parameters = 2;
 		}
 		if (node instanceof TypeDeclaration){
 			((TypeDeclaration)node).setSignatures(methodList);
 			((TypeDeclaration)node).totalFieldDeclarations = ((TypeDeclaration) node).getBody().getFields().size();
-			((TypeDeclaration) node).totalMethodDeclarations = methodIdx;
+			((TypeDeclaration) node).totalMethodDeclarations = methods;
 			methodList = new HashMap<Integer,Scope>();
-			methodIdx = 0;
+			methods = 0;
 			((TypeDeclaration)node).checked = true;
-			fieldIdx = 1;
+			fields = 1;
 		}
 		super.didVisit(node);
 	}
