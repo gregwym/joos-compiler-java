@@ -17,6 +17,7 @@ import ca.uwaterloo.joos.ast.ASTNode.ChildTypeUnmatchException;
 import ca.uwaterloo.joos.ast.FileUnit;
 import ca.uwaterloo.joos.ast.Modifiers;
 import ca.uwaterloo.joos.ast.Modifiers.Modifier;
+import ca.uwaterloo.joos.ast.decl.BodyDeclaration;
 import ca.uwaterloo.joos.ast.decl.ClassDeclaration;
 import ca.uwaterloo.joos.ast.decl.ConstructorDeclaration;
 import ca.uwaterloo.joos.ast.decl.FieldDeclaration;
@@ -47,6 +48,8 @@ import ca.uwaterloo.joos.ast.statement.IfStatement;
 import ca.uwaterloo.joos.ast.statement.ReturnStatement;
 import ca.uwaterloo.joos.ast.statement.WhileStatement;
 import ca.uwaterloo.joos.ast.type.ReferenceType;
+import ca.uwaterloo.joos.ast.type.Type;
+import ca.uwaterloo.joos.symboltable.BlockScope;
 import ca.uwaterloo.joos.symboltable.Scope;
 import ca.uwaterloo.joos.symboltable.SemanticsVisitor;
 import ca.uwaterloo.joos.symboltable.SymbolTable;
@@ -189,7 +192,7 @@ public class CodeGenerator extends SemanticsVisitor {
 						//This code is placed in the constructor and run whenever the 
 						//object is instantiated.
 						//The field pointer is located at this+(4*(fieldIndex + 1))
-						//THIS is in eax : eax+(4*(fieldIndex + 1))
+//						THIS is in eax : eax+(4*(fieldIndex + 1))
 //						this.texts.add("mov [eax + " + 4*fd.getIndex() + "], 0" );
 						
 					}
@@ -487,18 +490,23 @@ public class CodeGenerator extends SemanticsVisitor {
 
 		// Invoke the method
 		// TODO: call from vtable
-		this.texts.add("call " + methodLabel);
-
+		BlockScope methodBlock = this.table.getBlock(methodInvoke.fullyQualifiedName);
+		BodyDeclaration methodNode = (BodyDeclaration) methodBlock.getReferenceNode();
+		this.texts.add("mov edx, " + methodBlock.getParentTypeScope().getName() + "_VTABLE");
+		this.texts.add("call [edx + " + Integer.toString(methodNode.getIndex()* 4)  + "]\t;call method label from vtable");
+		
 		// Pop THIS from stack
 		this.texts.add("pop edx\t\t\t\t; Pop THIS");
 		// Pop parameters from stack
 		for (i = 0; i < args.size(); i++) {
 			this.texts.add("pop edx\t\t\t\t; Pop parameter #" + (i + 1) + " from stack");
 		}
-
-		// Add to extern if is not local method
-		if (!this.getCurrentScope().getParentTypeScope().getSymbols().containsKey(methodName)) {
-			this.externs.add(methodLabel);
+		
+		//Add the vtable containing the method label to externs if it is defined in another class
+		String currentType = this.getCurrentScope().getParentTypeScope().getName();
+		String methodScope = methodBlock.getParentTypeScope().getName();
+		if (currentType != methodScope){
+			this.externs.add(methodScope + "_VTABLE");
 		}
 		this.texts.add("");
 	}
