@@ -197,6 +197,7 @@ public class CodeGenerator extends SemanticsVisitor {
 						// THIS is in eax : eax+(4*(fieldIndex + 1))
 						// this.texts.add("mov [eax + " + 4*fd.getIndex() +
 						// "], 0" );
+
 					}
 				}
 			}
