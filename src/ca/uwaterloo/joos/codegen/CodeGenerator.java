@@ -189,14 +189,13 @@ public class CodeGenerator extends SemanticsVisitor {
 					this.texts.add("mov [ebp + 8], ebx");
 					for (FieldDeclaration fd : fds){
 						// Generate initer code for each NON STATIC field...
-						// This code is placed in the constructor and run whenever the 
+						// This code is placed in the constructor and run whenever the
 						// object is instantiated.
-						// The field pointer is located at this+(4*(fieldIndex + 
+						// The field pointer is located at this+(4*(fieldIndex +
 						// 1))
 						// THIS is in eax : eax+(4*(fieldIndex + 1))
-						// this.texts.add("mov [eax + " + 4*fd.getIndex() + 
+						// this.texts.add("mov [eax + " + 4*fd.getIndex() +
 						// "], 0" );
-						
 					}
 				}
 			}
