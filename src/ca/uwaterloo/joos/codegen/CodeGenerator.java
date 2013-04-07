@@ -195,8 +195,8 @@ public class CodeGenerator extends SemanticsVisitor {
 						// The field pointer is located at this+(4*(fieldIndex +
 						// 1))
 						// THIS is in eax : eax+(4*(fieldIndex + 1))
-						// this.texts.add("mov [eax + " + 4*fd.getIndex() +
-						// "], 0" );
+						this.texts.add ("mov eax, [ebp + 8]");
+						 this.texts.add("mov [eax + " + 4*fd.getIndex() + "], 0" );
 
 					}
 				}
