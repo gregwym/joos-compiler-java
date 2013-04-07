@@ -187,7 +187,7 @@ public class CodeGenerator extends SemanticsVisitor {
 					List<FieldDeclaration> fds = cd.getBody().getFields();
 					this.texts.add("mov ebx, " + this.getCurrentScope().getParentTypeScope().getName() + "_VTABLE");
 					this.texts.add("mov [ebp + 8], ebx");
-					for (FieldDeclaration fd : fds){
+					for (FieldDeclaration fd : fds) {
 						// Generate initer code for each NON STATIC field...
 						// This code is placed in the constructor and run
 						// whenever the
@@ -197,7 +197,6 @@ public class CodeGenerator extends SemanticsVisitor {
 						// THIS is in eax : eax+(4*(fieldIndex + 1))
 						// this.texts.add("mov [eax + " + 4*fd.getIndex() +
 						// "], 0" );
-						
 					}
 				}
 			}
