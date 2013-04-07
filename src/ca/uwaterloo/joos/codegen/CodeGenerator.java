@@ -815,6 +815,7 @@ public class CodeGenerator extends SemanticsVisitor {
 
 		this.texts.add("__LOOP_STATEMENT_" + loopCount + ":");
 		whileStatement.getWhileStatement().accept(this);
+		this.texts.add("jmp __LOOP_CONDITION_" + loopCount);
 
 		this.texts.add("__LOOP_END_" + loopCount + ":");
 	}
