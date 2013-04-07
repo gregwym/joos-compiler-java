@@ -412,7 +412,9 @@ public class CodeGenerator extends SemanticsVisitor {
 			this.texts.add("mov eax, [ebp + 8]\t; Current object");
 
 			TableEntry entry = ((QualifiedName) name).getOriginalDeclaration();
-			this.generateVariableDereference(entry);
+			if(entry.getNode() instanceof VariableDeclaration) {
+				this.generateVariableDereference(entry);
+			}
 
 			List<TableEntry> originalDeclarations = ((QualifiedName) name).originalDeclarations;
 			for (i = 0; i < originalDeclarations.size(); i++) {
