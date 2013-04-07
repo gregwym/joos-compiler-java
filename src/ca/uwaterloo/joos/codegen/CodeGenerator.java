@@ -264,7 +264,7 @@ public class CodeGenerator extends SemanticsVisitor {
 			// File content generated, write to file
 			File dir = this.asmFile.getParentFile();
 			for (String label : this.statics){
-				if (!mainFile)staticInit.add("\textern " + label + "_INIT\n");
+				staticInit.add("\t" + label + "_INIT\n");
 //				if (!mainFile)staticInit.add("\textern " + label + "\n");
 				staticInit.add("\tcall " + label + "_INIT" + '\n');
 			}
@@ -306,6 +306,7 @@ public class CodeGenerator extends SemanticsVisitor {
 				}
 				if (((MethodDeclaration)methodScope.getReferenceNode()).getModifiers().containModifier(Modifier.STATIC)&&
 					((MethodDeclaration)methodScope.getReferenceNode()).getName().getName().equals("test")){
+					this.externs.add("Start_StaticInit");
 					this.texts.add("dd _start");
 					this.startFile = asmFile;
 				}
@@ -846,13 +847,34 @@ public class CodeGenerator extends SemanticsVisitor {
 	}
 	
 	public void writeStaticInit() throws Exception{	
-		BufferedWriter asmWriter = new BufferedWriter(new FileWriter(startFile, true));
-		//Adds the static initer code to the _Start function
-		asmWriter.write("\nsection .text\n");
-		asmWriter.write("Start_StaticInit:\n");
-		for (String label: staticInit){
-			asmWriter.write(label);
+		this.texts = new ArrayList<String>();
+		this.externs = new HashSet<String>();
+		asmFile = new File("./output/staticInit.s");
+		
+		this.asmFile.createNewFile();
+		this.texts.add("global Start_StaticInit\n");
+		this.texts.add("Start_StaticInit:\n");
+		for (int i = 0; i < staticInit.size(); i=i+2){
+			this.externs.add(staticInit.get(i));
+			this.texts.add(staticInit.get(i+1));
 		}
+		BufferedWriter asmWriter = new BufferedWriter(new FileWriter(this.asmFile));
+		for (String line : this.externs) {
+			asmWriter.write("extern " + line);
+			
+		}
+		asmWriter.newLine();
+		for (String line : this.texts) {
+			if (!line.startsWith("global") && !line.startsWith("section")) {
+				line = "\t" + line;
+				if (!line.endsWith(":")) {
+					line = "\t" + line;
+				}
+			}
+			asmWriter.write(line);
+			
+		}
+		asmWriter.newLine();
 		asmWriter.write("ret\n");
 		asmWriter.close();
 		
