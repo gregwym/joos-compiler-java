@@ -40,6 +40,7 @@ import ca.uwaterloo.joos.ast.expr.name.QualifiedName;
 import ca.uwaterloo.joos.ast.expr.name.SimpleName;
 import ca.uwaterloo.joos.ast.expr.primary.ArrayAccess;
 import ca.uwaterloo.joos.ast.expr.primary.LiteralPrimary;
+import ca.uwaterloo.joos.ast.expr.primary.LiteralPrimary.LiteralType;
 import ca.uwaterloo.joos.ast.expr.primary.Primary;
 import ca.uwaterloo.joos.ast.statement.Block;
 import ca.uwaterloo.joos.ast.statement.ForStatement;
@@ -67,7 +68,7 @@ public class CodeGenerator extends SemanticsVisitor {
 	protected List<String> data = null;
 	protected List<String> statics = null;
 	protected static List<String> staticInit = new ArrayList<String>();
-	
+
 	private String methodLabel = null;
 	private Integer literalCount = 0;
 	private Integer comparisonCount = 0;
@@ -77,7 +78,7 @@ public class CodeGenerator extends SemanticsVisitor {
 
 	private Set<Class<?>> complexNodes = null;
 	private boolean mainFile = false;
-	
+
 	public CodeGenerator(SymbolTable table) {
 		super(table);
 		logger.setLevel(Level.FINER);
@@ -137,9 +138,9 @@ public class CodeGenerator extends SemanticsVisitor {
 			this.initialize();
 		} else if (node instanceof TypeDeclaration) {
 			// Construct output file
-//			String filename = this.getCurrentScope().getName();
+			// String filename = this.getCurrentScope().getName();
 			String filename = node.getIdentifier();
-//			filename = filename.replace('.', '/');
+			// filename = filename.replace('.', '/');
 			filename = "./output/" + filename + ".s";
 			logger.finer(filename);
 			this.asmFile = new File(filename);
@@ -170,28 +171,30 @@ public class CodeGenerator extends SemanticsVisitor {
 				this.texts.add("push ecx");
 				this.texts.add("push edx");
 				this.texts.add("");
-				if(((MethodDeclaration) node).getName().getSimpleName().equals("test") && 
-						modifiers.containModifier(Modifier.STATIC)) {
+				if (((MethodDeclaration) node).getName().getSimpleName().equals("test") && modifiers.containModifier(Modifier.STATIC)) {
 					this.texts.add("call Start_StaticInit");
 				}
-				if (node instanceof ConstructorDeclaration){
-					//TODO call super constructor...
-						//Call any superclass constructor
-						//We need to initialize field variables here
-//					System.out.println(this.getCurrentScope().getParentTypeScope().getReferenceNode());
-					//Get the class holding the constructor
+				if (node instanceof ConstructorDeclaration) {
+					// TODO call super constructor...
+					// Call any superclass constructor
+					// We need to initialize field variables here
+					// System.out.println(this.getCurrentScope().getParentTypeScope().getReferenceNode());
+					// Get the class holding the constructor
 					ClassDeclaration cd = (ClassDeclaration) this.getCurrentScope().getParentTypeScope().getReferenceNode();
 					List<FieldDeclaration> fds = cd.getBody().getFields();
 					this.texts.add("mov ebx, " + this.getCurrentScope().getParentTypeScope().getName() + "_VTABLE");
 					this.texts.add("mov [ebp + 8], ebx");
-					for (FieldDeclaration fd : fds){
-						//Generate initer code for each NON STATIC field...
-						//This code is placed in the constructor and run whenever the 
-						//object is instantiated.
-						//The field pointer is located at this+(4*(fieldIndex + 1))
-						//THIS is in eax : eax+(4*(fieldIndex + 1))
-//						this.texts.add("mov [eax + " + 4*fd.getIndex() + "], 0" );
-						
+					for (FieldDeclaration fd : fds) {
+						// Generate initer code for each NON STATIC field...
+						// This code is placed in the constructor and run
+						// whenever the
+						// object is instantiated.
+						// The field pointer is located at this+(4*(fieldIndex +
+						// 1))
+						// THIS is in eax : eax+(4*(fieldIndex + 1))
+						// this.texts.add("mov [eax + " + 4*fd.getIndex() +
+						// "], 0" );
+
 					}
 				}
 			}
@@ -239,9 +242,9 @@ public class CodeGenerator extends SemanticsVisitor {
 			if (((FieldDeclaration) node).getModifiers().containModifier(Modifier.STATIC)) {
 				TableEntry entry = this.getCurrentScope().getParentTypeScope().getFieldDecl((FieldDeclaration) node);
 				String label = staticLabel(entry.getName());
-				//note: moved static declaration generation into function
-				this.generateStaticFieldDeclaration((FieldDeclaration)node);
-				
+				// note: moved static declaration generation into function
+				this.generateStaticFieldDeclaration((FieldDeclaration) node);
+
 			}
 			return false;
 		} else if (node instanceof MethodDeclaration) {
@@ -263,9 +266,9 @@ public class CodeGenerator extends SemanticsVisitor {
 		if (node instanceof FileUnit) {
 			// File content generated, write to file
 			File dir = this.asmFile.getParentFile();
-			for (String label : this.statics){
+			for (String label : this.statics) {
 				staticInit.add("\t" + label + "_INIT\n");
-//				if (!mainFile)staticInit.add("\textern " + label + "\n");
+				// if (!mainFile)staticInit.add("\textern " + label + "\n");
 				staticInit.add("\tcall " + label + "_INIT" + '\n');
 			}
 			if (dir != null) {
@@ -298,20 +301,19 @@ public class CodeGenerator extends SemanticsVisitor {
 			this.texts.add("global " + this.getCurrentScope().getName() + "_VTABLE");
 			this.texts.add(this.getCurrentScope().getName() + "_VTABLE:");
 			// TODO: append vtable contents
-			for (Entry<Integer, Scope> entry: ((TypeDeclaration)node).getSignatures().entrySet()){
+			for (Entry<Integer, Scope> entry : ((TypeDeclaration) node).getSignatures().entrySet()) {
 				Scope methodScope = entry.getValue();
-				
-				if (!this.getCurrentScope().getSymbols().containsKey(methodScope.getName())){
+
+				if (!this.getCurrentScope().getSymbols().containsKey(methodScope.getName())) {
 					this.externs.add(methodLabel(methodScope.getName()));
 				}
-				if (((MethodDeclaration)methodScope.getReferenceNode()).getModifiers().containModifier(Modifier.STATIC)&&
-					((MethodDeclaration)methodScope.getReferenceNode()).getName().getName().equals("test")){
+				if (((MethodDeclaration) methodScope.getReferenceNode()).getModifiers().containModifier(Modifier.STATIC) && ((MethodDeclaration) methodScope.getReferenceNode()).getName().getName().equals("test")) {
 					this.externs.add("Start_StaticInit");
 					this.texts.add("dd _start");
 					this.startFile = asmFile;
-				}
-				else this.texts.add("dd " + methodLabel(methodScope.getName()));
-				
+				} else
+					this.texts.add("dd " + methodLabel(methodScope.getName()));
+
 			}
 			this.texts.add("");
 		} else if (node instanceof MethodDeclaration) {
@@ -412,7 +414,7 @@ public class CodeGenerator extends SemanticsVisitor {
 			this.texts.add("mov eax, [ebp + 8]\t; Current object");
 
 			TableEntry entry = ((QualifiedName) name).getOriginalDeclaration();
-			if(entry.getNode() instanceof VariableDeclaration) {
+			if (entry.getNode() instanceof VariableDeclaration) {
 				this.generateVariableDereference(entry);
 			}
 
@@ -735,7 +737,16 @@ public class CodeGenerator extends SemanticsVisitor {
 		case MINUS:
 			if (operand instanceof LiteralPrimary) {
 				// Assuming is int literal
-				this.texts.add("mov eax, " + Integer.valueOf("-" + ((LiteralPrimary) operand).getValue()));
+				if (((LiteralPrimary) operand).getLiteralType().equals(LiteralType.INTLIT)) {
+					this.texts.add("mov eax, " + Integer.parseInt("-" + ((LiteralPrimary) operand).getValue()));
+				}
+					
+				if (((LiteralPrimary) operand).getLiteralType().equals(LiteralType.CHARLIT)) {
+				
+					int charNumber = (int)((LiteralPrimary) operand).getValue().charAt(1);
+					this.texts.add("mov eax, " + Integer.parseInt("-" +charNumber));
+				}
+				System.out.println(((LiteralPrimary) operand));
 			} else {
 				operand.accept(this);
 				this.texts.add("neg eax");
@@ -822,10 +833,11 @@ public class CodeGenerator extends SemanticsVisitor {
 		this.texts.add("__ELSE_STATEMENT_" + conditionCount + ":");
 		if (ifStatement.getElseStatement() != null) {
 			ifStatement.getElseStatement().accept(this);
-		} 
+		}
 	}
+
 	private void generateStaticFieldDeclaration(FieldDeclaration decl) throws Exception {
-		//TODO Move below
+		// TODO Move below
 		TableEntry entry = this.getCurrentScope().getParentTypeScope().getFieldDecl((FieldDeclaration) decl);
 		String label = null;
 		label = staticLabel(entry.getName());
@@ -833,7 +845,7 @@ public class CodeGenerator extends SemanticsVisitor {
 		this.texts.add(label + "_INIT:");
 		this.data.add("global " + label);
 		this.data.add(label + ": dd 0x0");
-		//Place the node into a list...
+		// Place the node into a list...
 		statics.add(label);
 		Expression initialization = decl.getInitial();
 		if (initialization != null) {
@@ -847,23 +859,23 @@ public class CodeGenerator extends SemanticsVisitor {
 		}
 		this.texts.add("ret");
 	}
-	
-	public void writeStaticInit() throws Exception{	
+
+	public void writeStaticInit() throws Exception {
 		this.texts = new ArrayList<String>();
 		this.externs = new HashSet<String>();
 		asmFile = new File("./output/staticInit.s");
-		
+
 		this.asmFile.createNewFile();
 		this.texts.add("global Start_StaticInit\n");
 		this.texts.add("Start_StaticInit:\n");
-		for (int i = 0; i < staticInit.size(); i=i+2){
+		for (int i = 0; i < staticInit.size(); i = i + 2) {
 			this.externs.add(staticInit.get(i));
-			this.texts.add(staticInit.get(i+1));
+			this.texts.add(staticInit.get(i + 1));
 		}
 		BufferedWriter asmWriter = new BufferedWriter(new FileWriter(this.asmFile));
 		for (String line : this.externs) {
 			asmWriter.write("extern " + line);
-			
+
 		}
 		asmWriter.newLine();
 		for (String line : this.texts) {
@@ -874,13 +886,11 @@ public class CodeGenerator extends SemanticsVisitor {
 				}
 			}
 			asmWriter.write(line);
-			
+
 		}
 		asmWriter.newLine();
 		asmWriter.write("ret\n");
 		asmWriter.close();
-		
+
 	}
 }
-
-
