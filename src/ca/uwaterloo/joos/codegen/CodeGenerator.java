@@ -40,6 +40,7 @@ import ca.uwaterloo.joos.ast.expr.name.Name;
 import ca.uwaterloo.joos.ast.expr.name.QualifiedName;
 import ca.uwaterloo.joos.ast.expr.name.SimpleName;
 import ca.uwaterloo.joos.ast.expr.primary.ArrayAccess;
+import ca.uwaterloo.joos.ast.expr.primary.FieldAccess;
 import ca.uwaterloo.joos.ast.expr.primary.LiteralPrimary;
 import ca.uwaterloo.joos.ast.expr.primary.LiteralPrimary.LiteralType;
 import ca.uwaterloo.joos.ast.expr.primary.Primary;
@@ -81,6 +82,8 @@ public class CodeGenerator extends SemanticsVisitor {
 
 	private Set<Class<?>> complexNodes = null;
 	private boolean mainFile = false;
+
+	private boolean classCreate = false;
 
 	public CodeGenerator(SymbolTable table) {
 		super(table);
@@ -185,9 +188,21 @@ public class CodeGenerator extends SemanticsVisitor {
 					// Get the class holding the constructor
 					ClassDeclaration cd = (ClassDeclaration) this.getCurrentScope().getParentTypeScope().getReferenceNode();
 					List<FieldDeclaration> fds = cd.getBody().getFields();
-					this.texts.add("mov ebx, " + this.getCurrentScope().getParentTypeScope().getName() + "_VTABLE");
-					this.texts.add("mov [ebp + 8], ebx");
+					//this.texts.add("mov ebx, " + this.getCurrentScope().getParentTypeScope().getName() + "_VTABLE");
+					//this.texts.add("mov [ebp + 8], ebx");
+					this.texts.add("push eax");
+					this.texts.add("mov ebx, [ebp + 8]\t\t\t;Current Object");
+					this.texts.add("add ebx, 4\t\t\t;First space reserved");
 					for (FieldDeclaration fd : fds) {
+						if (fd.getInitial() != null){
+							this.texts.add ("push ebx\t\t\t;Push address of field");
+							this.dereferenceVariable = true;
+							fd.getInitial().accept(this);
+							this.dereferenceVariable = false;
+							this.texts.add("pop ebx\t\t\t;get LHS");
+							this.texts.add("mov [ebx], eax");
+						}
+						this.texts.add("add ebx, 4");
 						// Generate initer code for each NON STATIC field...
 						// This code is placed in the constructor and run
 						// whenever the
@@ -195,10 +210,11 @@ public class CodeGenerator extends SemanticsVisitor {
 						// The field pointer is located at this+(4*(fieldIndex +
 						// 1))
 						// THIS is in eax : eax+(4*(fieldIndex + 1))
-						this.texts.add ("mov eax, [ebp + 8]");
-						 this.texts.add("mov [eax + " + 4*fd.getIndex() + "], 0" );
-
+						//this.texts.add ("mov eax, [ebp + 8]");
+						//this.texts.add("mov eax , [eax + " + fd.getIndex() + "]");
+						
 					}
+					this.texts.add("pop eax\t\t\t;Restore THIS pointer to eax");
 				}
 			}
 		}
@@ -212,6 +228,7 @@ public class CodeGenerator extends SemanticsVisitor {
 			this.generateMethodInvoke((MethodInvokeExpression) node);
 			return false;
 		} else if (node instanceof ClassCreateExpression) {
+//			this.classCreate = true;
 			this.generateClassCreate((ClassCreateExpression) node);
 			return false;
 		} else if (node instanceof InfixExpression) {
@@ -245,9 +262,11 @@ public class CodeGenerator extends SemanticsVisitor {
 			if (((FieldDeclaration) node).getModifiers().containModifier(Modifier.STATIC)) {
 				TableEntry entry = this.getCurrentScope().getParentTypeScope().getFieldDecl((FieldDeclaration) node);
 				String label = staticLabel(entry.getName());
-				// note: moved static declaration generation into function
 				this.generateStaticFieldDeclaration((FieldDeclaration) node);
 
+			}
+			else{
+				//
 			}
 			return false;
 		} else if (node instanceof MethodDeclaration) {
@@ -313,7 +332,7 @@ public class CodeGenerator extends SemanticsVisitor {
 				if (((MethodDeclaration) methodScope.getReferenceNode()).getModifiers().containModifier(Modifier.STATIC) && ((MethodDeclaration) methodScope.getReferenceNode()).getName().getName().equals("test")) {
 					this.externs.add("Start_StaticInit");
 					this.texts.add("dd _start");
-					this.startFile = asmFile;
+					startFile = asmFile;
 				} else
 					this.texts.add("dd " + methodLabel(methodScope.getName()));
 
@@ -345,6 +364,8 @@ public class CodeGenerator extends SemanticsVisitor {
 			}
 		} else if (node instanceof ReturnStatement) {
 			this.texts.add("jmp " + this.methodLabel + "_END");
+		} else if (node instanceof FieldAccess){
+			this.classCreate = false;
 		}
 		super.didVisit(node);
 	}
@@ -370,6 +391,7 @@ public class CodeGenerator extends SemanticsVisitor {
 				this.addExtern(label, entry);
 				this.texts.add("mov eax, [" + label + "]\t; Accessing static: " + entry.getName());
 			} else {
+				this.texts.add("mov eax, [ebp + 8]");
 				this.texts.add("mov eax, [eax + " + (varDecl.getIndex() * 4) + "]\t; Accessing field: " + entry.getName());
 			}
 		} else if (varDecl instanceof LocalVariableDeclaration) {
@@ -388,7 +410,16 @@ public class CodeGenerator extends SemanticsVisitor {
 				this.addExtern(label, entry);
 				this.texts.add("mov eax, " + label + "\t; Address of static: " + entry.getName());
 			} else {
-				this.texts.add("add eax, " + (varDecl.getIndex() * 4) + "\t\t\t; Address of field: " + entry.getName());
+				//TODO:
+				//Make sure eax is pointing to the correct object
+				if (this.classCreate){
+					this.texts.add("add eax, " + (varDecl.getIndex() * 4) + "\t\t\t; Address of field: " + entry.getName());
+					this.texts.add("mov eax, [eax]");
+				}
+				else {
+					this.texts.add("mov eax, [ebp + 8]\t\t\t;MCurrent Object");
+					this.texts.add("add eax, " + (varDecl.getIndex() * 4) + "\t\t\t; Address of field: " + entry.getName());
+				}
 			}
 		} else if (varDecl instanceof LocalVariableDeclaration) {
 			this.texts.add("mov eax, ebp");
