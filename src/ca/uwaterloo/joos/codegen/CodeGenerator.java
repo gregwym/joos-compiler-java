@@ -746,7 +746,7 @@ public class CodeGenerator extends SemanticsVisitor {
 					int charNumber = (int)((LiteralPrimary) operand).getValue().charAt(1);
 					this.texts.add("mov eax, " + Integer.parseInt("-" +charNumber));
 				}
-				System.out.println(((LiteralPrimary) operand));
+				
 			} else {
 				operand.accept(this);
 				this.texts.add("neg eax");
