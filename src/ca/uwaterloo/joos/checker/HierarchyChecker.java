@@ -93,7 +93,6 @@ public class HierarchyChecker extends SemanticsVisitor {
 			checkSuperCycle();
 			checkOverRide(node);
 			checkAbstractClass();
-
 		}
 
 	}
@@ -249,9 +248,13 @@ public class HierarchyChecker extends SemanticsVisitor {
 							boolean containProtected = existMethodNode.getModifiers().getModifiers().contains(Modifiers.Modifier.PROTECTED);
 							boolean containPublic = newMethodNode.getModifiers().getModifiers().contains(Modifiers.Modifier.PUBLIC);
 
-							if (containProtected == containPublic) {
-								throw new Exception("protected mothed can not override public");
-							}
+							if (containProtected && containPublic) {
+//								
+									throw new Exception("protected mothed can not override public");
+								} else {
+									parentMethods.put(currentSimpleParentMethodSig, currentParentMethod.getValue().getNode());
+								}
+							
 						} else {
 
 							parentMethods.put(currentSimpleParentMethodSig, currentParentMethod.getValue().getNode());
