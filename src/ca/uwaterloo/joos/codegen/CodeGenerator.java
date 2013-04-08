@@ -17,6 +17,7 @@ import ca.uwaterloo.joos.ast.ASTNode.ChildTypeUnmatchException;
 import ca.uwaterloo.joos.ast.FileUnit;
 import ca.uwaterloo.joos.ast.Modifiers;
 import ca.uwaterloo.joos.ast.Modifiers.Modifier;
+import ca.uwaterloo.joos.ast.decl.BodyDeclaration;
 import ca.uwaterloo.joos.ast.decl.ClassDeclaration;
 import ca.uwaterloo.joos.ast.decl.ConstructorDeclaration;
 import ca.uwaterloo.joos.ast.decl.FieldDeclaration;
@@ -39,6 +40,7 @@ import ca.uwaterloo.joos.ast.expr.name.Name;
 import ca.uwaterloo.joos.ast.expr.name.QualifiedName;
 import ca.uwaterloo.joos.ast.expr.name.SimpleName;
 import ca.uwaterloo.joos.ast.expr.primary.ArrayAccess;
+import ca.uwaterloo.joos.ast.expr.primary.FieldAccess;
 import ca.uwaterloo.joos.ast.expr.primary.LiteralPrimary;
 import ca.uwaterloo.joos.ast.expr.primary.LiteralPrimary.LiteralType;
 import ca.uwaterloo.joos.ast.expr.primary.Primary;
@@ -48,6 +50,8 @@ import ca.uwaterloo.joos.ast.statement.IfStatement;
 import ca.uwaterloo.joos.ast.statement.ReturnStatement;
 import ca.uwaterloo.joos.ast.statement.WhileStatement;
 import ca.uwaterloo.joos.ast.type.ReferenceType;
+import ca.uwaterloo.joos.ast.type.Type;
+import ca.uwaterloo.joos.symboltable.BlockScope;
 import ca.uwaterloo.joos.symboltable.Scope;
 import ca.uwaterloo.joos.symboltable.SemanticsVisitor;
 import ca.uwaterloo.joos.symboltable.SymbolTable;
@@ -182,9 +186,21 @@ public class CodeGenerator extends SemanticsVisitor {
 					// Get the class holding the constructor
 					ClassDeclaration cd = (ClassDeclaration) this.getCurrentScope().getParentTypeScope().getReferenceNode();
 					List<FieldDeclaration> fds = cd.getBody().getFields();
-					this.texts.add("mov ebx, " + this.getCurrentScope().getParentTypeScope().getName() + "_VTABLE");
-					this.texts.add("mov [ebp + 8], ebx");
+					//this.texts.add("mov ebx, " + this.getCurrentScope().getParentTypeScope().getName() + "_VTABLE");
+					//this.texts.add("mov [ebp + 8], ebx");
+					this.texts.add("push eax");
+					this.texts.add("mov ebx, [ebp + 8]\t\t\t;Current Object");
+					this.texts.add("add ebx, 4\t\t\t;First space reserved");
 					for (FieldDeclaration fd : fds) {
+						if (fd.getInitial() != null){
+							this.texts.add ("push ebx\t\t\t;Push address of field");
+							this.dereferenceVariable = true;
+							fd.getInitial().accept(this);
+							this.dereferenceVariable = false;
+							this.texts.add("pop ebx\t\t\t;get LHS");
+							this.texts.add("mov [ebx], eax");
+						}
+						this.texts.add("add ebx, 4");
 						// Generate initer code for each NON STATIC field...
 						// This code is placed in the constructor and run
 						// whenever the
@@ -192,10 +208,11 @@ public class CodeGenerator extends SemanticsVisitor {
 						// The field pointer is located at this+(4*(fieldIndex +
 						// 1))
 						// THIS is in eax : eax+(4*(fieldIndex + 1))
-						// this.texts.add("mov [eax + " + 4*fd.getIndex() +
-						// "], 0" );
-
+						//this.texts.add ("mov eax, [ebp + 8]");
+						//this.texts.add("mov eax , [eax + " + fd.getIndex() + "]");
+						
 					}
+					this.texts.add("pop eax\t\t\t;Restore THIS pointer to eax");
 				}
 			}
 		}
@@ -242,10 +259,10 @@ public class CodeGenerator extends SemanticsVisitor {
 			if (((FieldDeclaration) node).getModifiers().containModifier(Modifier.STATIC)) {
 				TableEntry entry = this.getCurrentScope().getParentTypeScope().getFieldDecl((FieldDeclaration) node);
 				String label = staticLabel(entry.getName());
-				// note: moved static declaration generation into function
 				this.generateStaticFieldDeclaration((FieldDeclaration) node);
 
 			}
+		
 			return false;
 		} else if (node instanceof MethodDeclaration) {
 			Block body = ((MethodDeclaration) node).getBody();
@@ -310,7 +327,7 @@ public class CodeGenerator extends SemanticsVisitor {
 				if (((MethodDeclaration) methodScope.getReferenceNode()).getModifiers().containModifier(Modifier.STATIC) && ((MethodDeclaration) methodScope.getReferenceNode()).getName().getName().equals("test")) {
 					this.externs.add("Start_StaticInit");
 					this.texts.add("dd _start");
-					this.startFile = asmFile;
+					startFile = asmFile;
 				} else
 					this.texts.add("dd " + methodLabel(methodScope.getName()));
 
@@ -386,6 +403,7 @@ public class CodeGenerator extends SemanticsVisitor {
 				this.texts.add("mov eax, " + label + "\t; Address of static: " + entry.getName());
 			} else {
 				this.texts.add("add eax, " + (varDecl.getIndex() * 4) + "\t\t\t; Address of field: " + entry.getName());
+				
 			}
 		} else if (varDecl instanceof LocalVariableDeclaration) {
 			this.texts.add("mov eax, ebp");
@@ -491,18 +509,23 @@ public class CodeGenerator extends SemanticsVisitor {
 
 		// Invoke the method
 		// TODO: call from vtable
-		this.texts.add("call " + methodLabel);
-
+		BlockScope methodBlock = this.table.getBlock(methodInvoke.fullyQualifiedName);
+		BodyDeclaration methodNode = (BodyDeclaration) methodBlock.getReferenceNode();
+		this.texts.add("mov edx, " + methodBlock.getParentTypeScope().getName() + "_VTABLE");
+		this.texts.add("call [edx + " + Integer.toString(methodNode.getIndex()* 4)  + "]\t;call method label from vtable");
+		
 		// Pop THIS from stack
 		this.texts.add("pop edx\t\t\t\t; Pop THIS");
 		// Pop parameters from stack
 		for (i = 0; i < args.size(); i++) {
 			this.texts.add("pop edx\t\t\t\t; Pop parameter #" + (i + 1) + " from stack");
 		}
-
-		// Add to extern if is not local method
-		if (!this.getCurrentScope().getParentTypeScope().getSymbols().containsKey(methodName)) {
-			this.externs.add(methodLabel);
+		
+		//Add the vtable containing the method label to externs if it is defined in another class
+		String currentType = this.getCurrentScope().getParentTypeScope().getName();
+		String methodScope = methodBlock.getParentTypeScope().getName();
+		if (currentType != methodScope){
+			this.externs.add(methodScope + "_VTABLE");
 		}
 		this.texts.add("");
 	}
