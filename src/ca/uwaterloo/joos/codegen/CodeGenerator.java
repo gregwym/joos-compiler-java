@@ -226,7 +226,6 @@ public class CodeGenerator extends SemanticsVisitor {
 			this.generateMethodInvoke((MethodInvokeExpression) node);
 			return false;
 		} else if (node instanceof ClassCreateExpression) {
-//			this.classCreate = true;
 			this.generateClassCreate((ClassCreateExpression) node);
 			return false;
 		} else if (node instanceof InfixExpression) {
