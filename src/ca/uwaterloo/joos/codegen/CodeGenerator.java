@@ -181,7 +181,7 @@ public class CodeGenerator extends SemanticsVisitor {
 				if (node instanceof ConstructorDeclaration) {
 					// Call any superclass constructor
 					// TODO call super constructor...
-					
+
 					// Get the class holding the constructor
 					ClassDeclaration cd = (ClassDeclaration) this.getCurrentScope().getParentTypeScope().getReferenceNode();
 					List<FieldDeclaration> fds = cd.getBody().getFields();
@@ -189,7 +189,7 @@ public class CodeGenerator extends SemanticsVisitor {
 					this.texts.add("push eax");
 					this.texts.add("mov ebx, [ebp + 8]\t\t\t;Current Object");
 					this.texts.add("add ebx, 4\t\t\t;First space reserved");
-					
+
 					// Initialize field variables here
 					for (FieldDeclaration fd : fds) {
 						if (fd.getInitial() != null) {
@@ -498,8 +498,12 @@ public class CodeGenerator extends SemanticsVisitor {
 		// Invoke the method
 		BlockScope methodBlock = this.table.getBlock(methodInvoke.fullyQualifiedName);
 		BodyDeclaration methodNode = (BodyDeclaration) methodBlock.getReferenceNode();
-		this.texts.add("mov edx, [eax]\t;Dereference for the address of VTable");
-		this.texts.add("call [edx + " + Integer.toString(methodNode.getIndex() * 4) + "]\t;call method label from vtable");
+		if (methodNode.getModifiers().containModifier(Modifier.STATIC)) {
+			this.texts.add("mov edx, " + methodBlock.getParentTypeScope().getName() + "_VTABLE");
+		} else {
+			this.texts.add("mov edx, [eax]\t; Dereference for the address of VTable");
+		}
+		this.texts.add("call [edx + " + Integer.toString(methodNode.getIndex() * 4) + "]\t; Call " + methodInvoke.fullyQualifiedName);
 
 		// Pop THIS from stack
 		this.texts.add("pop edx\t\t\t\t; Pop THIS");
@@ -558,7 +562,7 @@ public class CodeGenerator extends SemanticsVisitor {
 		List<Expression> operands = infixExpr.getOperands();
 		int comparisonCount = this.comparisonCount;
 		this.comparisonCount++;
-		
+
 		// Instance of
 		if (operator.equals(InfixOperator.INSTANCEOF)) {
 			// TODO instanceof
