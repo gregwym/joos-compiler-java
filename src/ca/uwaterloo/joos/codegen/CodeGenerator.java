@@ -194,9 +194,7 @@ public class CodeGenerator extends SemanticsVisitor {
 					for (FieldDeclaration fd : fds) {
 						if (fd.getInitial() != null){
 							this.texts.add ("push ebx\t\t\t;Push address of field");
-//							this.dereferenceVariable = true;
 							fd.getInitial().accept(this);
-//							this.dereferenceVariable = false;
 							this.texts.add("pop ebx\t\t\t;get LHS");
 							this.texts.add("mov [ebx], eax");
 						}
