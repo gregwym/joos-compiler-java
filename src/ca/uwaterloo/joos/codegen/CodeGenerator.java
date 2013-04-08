@@ -596,10 +596,6 @@ public class CodeGenerator extends SemanticsVisitor {
 			TypeScope typeScope = this.table.getType(rhsType.getFullyQualifiedName());
 			TypeDeclaration typeNode = (TypeDeclaration) typeScope.getReferenceNode();
 
-			System.out.println("index:" + typeNode.getHierarchyTableIndex());
-
-			// infixExpr.getRHS().getFullyQualifiedName()
-			// System.out.println();
 			this.texts.add("mov ebx," + typeNode.getHierarchyTableIndex() + "\t; get the index of RHS of instanceof");
 			this.texts.add("mov edx," + HierarchyChecker.getTotalClassNum() + "\t; get the fixed shift");
 			this.texts.add("mov ecx, SubtypeTable\t; get the subtypeTable");
