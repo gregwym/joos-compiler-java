@@ -52,9 +52,8 @@ import ca.uwaterloo.joos.ast.statement.IfStatement;
 import ca.uwaterloo.joos.ast.statement.ReturnStatement;
 import ca.uwaterloo.joos.ast.statement.WhileStatement;
 import ca.uwaterloo.joos.ast.type.PrimitiveType;
-import ca.uwaterloo.joos.ast.type.ReferenceType;
-import ca.uwaterloo.joos.ast.type.Type;
 import ca.uwaterloo.joos.ast.type.PrimitiveType.Primitive;
+import ca.uwaterloo.joos.ast.type.ReferenceType;
 import ca.uwaterloo.joos.ast.type.Type;
 import ca.uwaterloo.joos.checker.HierarchyChecker;
 import ca.uwaterloo.joos.symboltable.BlockScope;
@@ -515,7 +514,7 @@ public class CodeGenerator extends SemanticsVisitor {
 		this.texts.add("call [edx + " + Integer.toString(methodNode.getIndex() * 4) + "]\t;call method label from vtable");
 
 		this.texts.add("mov edx, " + methodBlock.getParentTypeScope().getName() + "_VTABLE");
-		this.texts.add("call [edx + " + Integer.toString(methodNode.getIndex() * 4+4) + "]\t;call method label from vtable");
+		this.texts.add("call [edx + " + Integer.toString(methodNode.getIndex() * 4 + 4) + "]\t;call method label from vtable");
 
 
 		// Pop THIS from stack
@@ -547,9 +546,14 @@ public class CodeGenerator extends SemanticsVisitor {
 		this.texts.add("mov eax, " + (4 + typeDecl.totalFieldDeclarations * 4) + "\t\t\t; Size of the object");
 		this.texts.add("call __malloc");
 		this.texts.add("push eax\t\t\t; Push new object pointer as THIS");
+
 		this.addVtable(typeScope.getName());
 		this.texts.add("mov ebx, " + typeScope.getName() + "_VTABLE");
 		this.texts.add("mov [eax], ebx");
+
+//		this.addVtable(typeScope.getName());
+//		this.texts.add("mov [eax], " + typeScope.getName() + "_VTABLE");
+
 
 		// Invoke the constructor
 		String constructorName = classCreate.fullyQualifiedName;
@@ -579,28 +583,31 @@ public class CodeGenerator extends SemanticsVisitor {
 		// Instance of
 		if (operator.equals(InfixOperator.INSTANCEOF)) {
 			// TODO instanceof
-			Expression operand = infixExpr.getOperands().get(0);
+			Expression operand = operands.get(0);
 			Type rhsType = infixExpr.getRHS();
-//			if(infixExpr.getOperands().get(0) instanceof SimpleName){
-//				SimpleName instanceObj = (SimpleName)infixExpr.getOperands().get(0);
-//				TableEntry originalDecl = instanceObj.getOriginalDeclaration();
-//				System.out.println(((BodyDeclaration)originalDecl.getNode()));
-				operand.accept(this);
-				this.texts.add("mov eax,[eax]\t\t\t; get Vtable of current object");
-				this.texts.add("mov eax,[eax]\t\t\t; get the index of current object");
-				TypeScope typeScope = this.table.getType(rhsType.getFullyQualifiedName());
-				TypeDeclaration typeNode = (TypeDeclaration) typeScope.getReferenceNode();
-				
-				System.out.println("index:" + typeNode.getHierarchyTableIndex());
-				
-				//infixExpr.getRHS().getFullyQualifiedName()
-				//System.out.println();
-				this.texts.add("mov ebx," + typeNode.getHierarchyTableIndex()+"; get the index of RHS of instanceof");
-				this.texts.add("mov edx,"+ HierarchyChecker.getTotalClassNum()+"; get the fixed shift");
-				this.texts.add("mov ecx,"+"SubtypeTable; get the subtypeTable");
-				this.texts.add("imul eax, edx;");
-				this.texts.add("mov eax,"+"[ecx+eax+ebx]; get the subtypeTable");
-//	}
+			// if(infixExpr.getOperands().get(0) instanceof SimpleName){
+			// SimpleName instanceObj =
+			// (SimpleName)infixExpr.getOperands().get(0);
+			// TableEntry originalDecl = instanceObj.getOriginalDeclaration();
+			// System.out.println(((BodyDeclaration)originalDecl.getNode()));
+			operand.accept(this);
+			this.texts.add("mov eax,[eax]\t\t\t; get Vtable of current object");
+			this.texts.add("mov eax,[eax]\t\t\t; get the index of current object");
+			TypeScope typeScope = this.table.getType(rhsType.getFullyQualifiedName());
+			TypeDeclaration typeNode = (TypeDeclaration) typeScope.getReferenceNode();
+
+			System.out.println("index:" + typeNode.getHierarchyTableIndex());
+
+			// infixExpr.getRHS().getFullyQualifiedName()
+			// System.out.println();
+			this.texts.add("mov ebx," + typeNode.getHierarchyTableIndex() + "\t; get the index of RHS of instanceof");
+			this.texts.add("mov edx," + HierarchyChecker.getTotalClassNum() + "\t; get the fixed shift");
+			this.texts.add("mov ecx, SubtypeTable\t; get the subtypeTable");
+			this.texts.add("imul eax, edx\t; Multiply row with row width");
+			this.texts.add("add eax, ecx");
+			this.texts.add("add eax, ebx");
+			this.texts.add("mov eax, [eax]\t; get the subtype flag value");
+			// }
 			return;
 		}
 
@@ -991,7 +998,7 @@ public class CodeGenerator extends SemanticsVisitor {
 
 	public void generateSubtypeTable() throws Exception {
 		LinkedHashMap<TypeDeclaration, Stack<TypeScope>> classHierachyChain = HierarchyChecker.getLinkedClassHierachyChain();
-		//System.out.println(HierarchyChecker.getLinkedClassHierachyChain());
+		// System.out.println(HierarchyChecker.getLinkedClassHierachyChain());
 		asmFile = new File("./output/subtypeTable.s");
 		this.asmFile.createNewFile();
 		BufferedWriter asmWriter = new BufferedWriter(new FileWriter(this.asmFile));
@@ -1003,11 +1010,11 @@ public class CodeGenerator extends SemanticsVisitor {
 		boolean[] subtypeArr = new boolean[classNum * classNum];
 		int i = 0;
 		for (Entry<TypeDeclaration, Stack<TypeScope>> entry : classHierachyChain.entrySet()) {
-			//System.out.println(entry+"entry:");
+			// System.out.println(entry+"entry:");
 			// entry.
 			Stack<TypeScope> classScopes = entry.getValue();
-			
-			while(!classScopes.empty()) {
+
+			while (!classScopes.empty()) {
 				TypeScope classScope = classScopes.pop();
 				if (classScope.getReferenceNode() instanceof TypeDeclaration) {
 					int index = ((TypeDeclaration) classScope.getReferenceNode()).getHierarchyTableIndex();
@@ -1016,7 +1023,6 @@ public class CodeGenerator extends SemanticsVisitor {
 
 			}
 			i++;
-			
 
 		}
 		for (i = 0; i < subtypeArr.length; i++) {
@@ -1028,7 +1034,7 @@ public class CodeGenerator extends SemanticsVisitor {
 
 		}
 		for (String line : this.texts) {
-			
+
 			asmWriter.write(line);
 			asmWriter.newLine();
 
