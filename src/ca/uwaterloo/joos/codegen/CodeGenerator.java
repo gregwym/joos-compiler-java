@@ -51,6 +51,7 @@ import ca.uwaterloo.joos.ast.statement.ForStatement;
 import ca.uwaterloo.joos.ast.statement.IfStatement;
 import ca.uwaterloo.joos.ast.statement.ReturnStatement;
 import ca.uwaterloo.joos.ast.statement.WhileStatement;
+import ca.uwaterloo.joos.ast.type.ArrayType;
 import ca.uwaterloo.joos.ast.type.PrimitiveType;
 import ca.uwaterloo.joos.ast.type.PrimitiveType.Primitive;
 import ca.uwaterloo.joos.ast.type.ReferenceType;
@@ -745,7 +746,7 @@ public class CodeGenerator extends SemanticsVisitor {
 		this.texts.add("pop edx");
 		this.texts.add("add edx, 4\t\t\t; Shift for array length");
 
-		Type arrayElementType = arrayAccess.arrayType.getType();
+		Type arrayElementType = ((ArrayType) arrayAccess.exprType).getType();
 		if (!(arrayElementType instanceof PrimitiveType && ((PrimitiveType) arrayElementType).getPrimitive().equals(Primitive.CHAR))) {
 			this.texts.add("imul eax, 4\t\t\t; Multiply the array index by byte size");
 		}
