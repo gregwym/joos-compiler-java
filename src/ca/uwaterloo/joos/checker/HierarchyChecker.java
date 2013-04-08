@@ -32,12 +32,10 @@ public class HierarchyChecker extends SemanticsVisitor {
 	private static LinkedHashMap<TypeDeclaration, Stack<TypeScope>> classHierachyChain = new LinkedHashMap<TypeDeclaration, Stack<TypeScope>>();
 	private static int classIndex = 0;
 	public static Map<TypeDeclaration, Stack<TypeScope>> getClassHierachyChain() {
-		Map<TypeDeclaration, Stack<TypeScope>> ret = new HashMap<TypeDeclaration, Stack<TypeScope>>(classHierachyChain);
-		return ret;
+		return HierarchyChecker.classHierachyChain;
 	}
 	public static LinkedHashMap<TypeDeclaration, Stack<TypeScope>> getLinkedClassHierachyChain() {
-		LinkedHashMap<TypeDeclaration, Stack<TypeScope>> ret = new LinkedHashMap<TypeDeclaration, Stack<TypeScope>>(classHierachyChain);
-		return ret;
+		return HierarchyChecker.classHierachyChain;
 	}
 	public static int getTotalClassNum() {
 		return HierarchyChecker.classIndex;
@@ -113,6 +111,7 @@ public class HierarchyChecker extends SemanticsVisitor {
 			//System.out.println("hierachyStack"+ hierachyStack);
 			classHierachyChain.put(node, hierachyStack);
 			node.setHierarchyTableIndex(HierarchyChecker.classIndex);
+			System.out.println(node+"index:"+ HierarchyChecker.getTotalClassNum());
 			HierarchyChecker.classIndex++;
 		}
 
