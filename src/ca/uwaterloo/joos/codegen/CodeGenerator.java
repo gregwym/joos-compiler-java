@@ -6,8 +6,8 @@ import java.io.FileWriter;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -40,7 +40,7 @@ import ca.uwaterloo.joos.ast.expr.name.Name;
 import ca.uwaterloo.joos.ast.expr.name.QualifiedName;
 import ca.uwaterloo.joos.ast.expr.name.SimpleName;
 import ca.uwaterloo.joos.ast.expr.primary.ArrayAccess;
-import ca.uwaterloo.joos.ast.expr.primary.FieldAccess;
+import ca.uwaterloo.joos.ast.expr.primary.ArrayCreate;
 import ca.uwaterloo.joos.ast.expr.primary.LiteralPrimary;
 import ca.uwaterloo.joos.ast.expr.primary.LiteralPrimary.LiteralType;
 import ca.uwaterloo.joos.ast.expr.primary.Primary;
@@ -50,7 +50,6 @@ import ca.uwaterloo.joos.ast.statement.IfStatement;
 import ca.uwaterloo.joos.ast.statement.ReturnStatement;
 import ca.uwaterloo.joos.ast.statement.WhileStatement;
 import ca.uwaterloo.joos.ast.type.ReferenceType;
-import ca.uwaterloo.joos.ast.type.Type;
 import ca.uwaterloo.joos.symboltable.BlockScope;
 import ca.uwaterloo.joos.symboltable.Scope;
 import ca.uwaterloo.joos.symboltable.SemanticsVisitor;
@@ -81,7 +80,6 @@ public class CodeGenerator extends SemanticsVisitor {
 	private Boolean dereferenceVariable = true;
 
 	private Set<Class<?>> complexNodes = null;
-	private boolean mainFile = false;
 
 	public CodeGenerator(SymbolTable table) {
 		super(table);
@@ -156,7 +154,6 @@ public class CodeGenerator extends SemanticsVisitor {
 				if (((MethodDeclaration) node).getName().getSimpleName().equals("test") && modifiers.containModifier(Modifier.STATIC)) {
 					this.methodLabel = "_start";
 					startFile = this.asmFile;
-					mainFile = true;
 				}
 
 				this.texts.add("global " + this.methodLabel);
@@ -186,14 +183,16 @@ public class CodeGenerator extends SemanticsVisitor {
 					// Get the class holding the constructor
 					ClassDeclaration cd = (ClassDeclaration) this.getCurrentScope().getParentTypeScope().getReferenceNode();
 					List<FieldDeclaration> fds = cd.getBody().getFields();
-					//this.texts.add("mov ebx, " + this.getCurrentScope().getParentTypeScope().getName() + "_VTABLE");
-					//this.texts.add("mov [ebp + 8], ebx");
+					// this.texts.add("mov ebx, " +
+					// this.getCurrentScope().getParentTypeScope().getName() +
+					// "_VTABLE");
+					// this.texts.add("mov [ebp + 8], ebx");
 					this.texts.add("push eax");
 					this.texts.add("mov ebx, [ebp + 8]\t\t\t;Current Object");
 					this.texts.add("add ebx, 4\t\t\t;First space reserved");
 					for (FieldDeclaration fd : fds) {
 						if (fd.getInitial() != null){
-							this.texts.add ("push ebx\t\t\t;Push address of field");
+							this.texts.add("push ebx\t\t\t;Push address of field");
 							fd.getInitial().accept(this);
 							this.texts.add("pop ebx\t\t\t;get LHS");
 							this.texts.add("mov [ebx], eax");
@@ -206,9 +205,10 @@ public class CodeGenerator extends SemanticsVisitor {
 						// The field pointer is located at this+(4*(fieldIndex +
 						// 1))
 						// THIS is in eax : eax+(4*(fieldIndex + 1))
-						//this.texts.add ("mov eax, [ebp + 8]");
-						//this.texts.add("mov eax , [eax + " + fd.getIndex() + "]");
-						
+						// this.texts.add ("mov eax, [ebp + 8]");
+						// this.texts.add("mov eax , [eax + " + fd.getIndex() +
+						// "]");
+
 					}
 					this.texts.add("pop eax\t\t\t;Restore THIS pointer to eax");
 				}
@@ -228,6 +228,9 @@ public class CodeGenerator extends SemanticsVisitor {
 			return false;
 		} else if (node instanceof InfixExpression) {
 			this.generateInfixExpression((InfixExpression) node);
+			return false;
+		} else if (node instanceof ArrayCreate) {
+			this.generateArrayCreate((ArrayCreate) node);
 			return false;
 		} else if (node instanceof ArrayAccess) {
 			this.generateArrayAccess((ArrayAccess) node);
@@ -255,12 +258,8 @@ public class CodeGenerator extends SemanticsVisitor {
 			return false;
 		} else if (node instanceof FieldDeclaration) {
 			if (((FieldDeclaration) node).getModifiers().containModifier(Modifier.STATIC)) {
-				TableEntry entry = this.getCurrentScope().getParentTypeScope().getFieldDecl((FieldDeclaration) node);
-				String label = staticLabel(entry.getName());
 				this.generateStaticFieldDeclaration((FieldDeclaration) node);
-
 			}
-		
 			return false;
 		} else if (node instanceof MethodDeclaration) {
 			Block body = ((MethodDeclaration) node).getBody();
@@ -401,7 +400,7 @@ public class CodeGenerator extends SemanticsVisitor {
 				this.texts.add("mov eax, " + label + "\t; Address of static: " + entry.getName());
 			} else {
 				this.texts.add("add eax, " + (varDecl.getIndex() * 4) + "\t\t\t; Address of field: " + entry.getName());
-				
+
 			}
 		} else if (varDecl instanceof LocalVariableDeclaration) {
 			this.texts.add("mov eax, ebp");
@@ -512,19 +511,20 @@ public class CodeGenerator extends SemanticsVisitor {
 		BlockScope methodBlock = this.table.getBlock(methodInvoke.fullyQualifiedName);
 		BodyDeclaration methodNode = (BodyDeclaration) methodBlock.getReferenceNode();
 		this.texts.add("mov edx, " + methodBlock.getParentTypeScope().getName() + "_VTABLE");
-		this.texts.add("call [edx + " + Integer.toString(methodNode.getIndex()* 4)  + "]\t;call method label from vtable");
-		
+		this.texts.add("call [edx + " + Integer.toString(methodNode.getIndex() * 4) + "]\t;call method label from vtable");
+
 		// Pop THIS from stack
 		this.texts.add("pop edx\t\t\t\t; Pop THIS");
 		// Pop parameters from stack
 		for (i = 0; i < args.size(); i++) {
 			this.texts.add("pop edx\t\t\t\t; Pop parameter #" + (i + 1) + " from stack");
 		}
-		
-		//Add the vtable containing the method label to externs if it is defined in another class
+
+		// Add the vtable containing the method label to externs if it is
+		// defined in another class
 		String currentType = this.getCurrentScope().getParentTypeScope().getName();
 		String methodScope = methodBlock.getParentTypeScope().getName();
-		if (currentType != methodScope){
+		if (currentType != methodScope) {
 			this.externs.add(methodScope + "_VTABLE");
 		}
 		this.texts.add("");
@@ -687,14 +687,32 @@ public class CodeGenerator extends SemanticsVisitor {
 		this.texts.add("");
 	}
 
+	private void generateArrayCreate(ArrayCreate arrayCreate) throws Exception {
+		arrayCreate.getDimension().accept(this);
+		this.texts.add("push eax\t\t\t; Push array dimension to stack");
+		this.texts.add("imul eax, 4\t\t\t; Multiply the array dimension by byte size");
+		this.texts.add("add eax, 4\t\t\t; Extra space to store array length");
+		this.texts.add("call __malloc\t\t; Malloc space for the array");
+		this.texts.add("pop ebx\t\t\t\t; Pop array dimension");
+		this.texts.add("mov [eax], ebx\t\t; Save array dimension to the beginning of array");
+	}
+
 	private void generateArrayAccess(ArrayAccess arrayAccess) throws Exception {
+		boolean originDereferenceSetting = this.dereferenceVariable;
+		this.dereferenceVariable = true;
 		arrayAccess.getExpression().accept(this);
 		this.texts.add("push eax\t\t\t; Push array address to stack first");
+		this.dereferenceVariable = originDereferenceSetting;
+
 		arrayAccess.getIndex().accept(this);
 		this.texts.add("pop edx");
-		this.texts.add("add edx, 4\t\t; Shift for array length");
-		this.texts.add("add edx, eax\t; Shift to index eax");
-		this.texts.add("mov eax, [edx]");
+		this.texts.add("add edx, 4\t\t\t; Shift for array length");
+		this.texts.add("add edx, eax\t\t; Shift to index eax");
+		if (this.dereferenceVariable) {
+			this.texts.add("mov eax, [edx]\t\t; Dereference the array element");
+		} else {
+			this.texts.add("mov eax, edx\t\t; Address of the array element");
+		}
 	}
 
 	private void generateLiteral(LiteralPrimary literal) throws Exception {
@@ -763,13 +781,13 @@ public class CodeGenerator extends SemanticsVisitor {
 				if (((LiteralPrimary) operand).getLiteralType().equals(LiteralType.INTLIT)) {
 					this.texts.add("mov eax, " + Integer.parseInt("-" + ((LiteralPrimary) operand).getValue()));
 				}
-					
+
 				if (((LiteralPrimary) operand).getLiteralType().equals(LiteralType.CHARLIT)) {
-				
-					int charNumber = (int)((LiteralPrimary) operand).getValue().charAt(1);
-					this.texts.add("mov eax, " + Integer.parseInt("-" +charNumber));
+
+					int charNumber = (int) ((LiteralPrimary) operand).getValue().charAt(1);
+					this.texts.add("mov eax, " + Integer.parseInt("-" + charNumber));
 				}
-				
+
 			} else {
 				operand.accept(this);
 				this.texts.add("neg eax");
@@ -794,6 +812,7 @@ public class CodeGenerator extends SemanticsVisitor {
 			initialization.accept(this);
 			this.texts.add("pop ebx");
 			this.texts.add("mov [ebx], eax");
+			this.texts.add("");
 		}
 	}
 
@@ -805,6 +824,7 @@ public class CodeGenerator extends SemanticsVisitor {
 		assignExpr.getExpression().accept(this);
 		this.texts.add("pop ebx");
 		this.texts.add("mov [ebx], eax");
+		this.texts.add("");
 	}
 
 	private void generateForLoop(ForStatement forStatement) throws Exception {
