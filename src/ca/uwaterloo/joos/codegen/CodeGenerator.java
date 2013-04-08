@@ -194,9 +194,9 @@ public class CodeGenerator extends SemanticsVisitor {
 					for (FieldDeclaration fd : fds) {
 						if (fd.getInitial() != null){
 							this.texts.add ("push ebx\t\t\t;Push address of field");
-							this.dereferenceVariable = true;
+//							this.dereferenceVariable = true;
 							fd.getInitial().accept(this);
-							this.dereferenceVariable = false;
+//							this.dereferenceVariable = false;
 							this.texts.add("pop ebx\t\t\t;get LHS");
 							this.texts.add("mov [ebx], eax");
 						}
@@ -424,8 +424,10 @@ public class CodeGenerator extends SemanticsVisitor {
 					throw new Exception("Unknown field " + field);
 				}
 			} else if (this.dereferenceVariable) {
+				this.texts.add("mov eax, [ebp + 8]\t; Current object");
 				this.generateVariableDereference(entry);
 			} else {
+				this.texts.add("mov eax, [ebp + 8]\t; Current object");
 				this.generateVariableAddress(entry);
 			}
 		} else if (name instanceof QualifiedName) {
