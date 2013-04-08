@@ -572,25 +572,34 @@ public class CodeGenerator extends SemanticsVisitor {
 
 	private void generateInfixExpression(InfixExpression infixExpr) throws Exception {
 		InfixOperator operator = infixExpr.getOperator();
+		List<Expression> operands = infixExpr.getOperands();
+		int comparisonCount = this.comparisonCount;
+		this.comparisonCount++;
+		
 		// Instance of
 		if (operator.equals(InfixOperator.INSTANCEOF)) {
 			// TODO instanceof
 			return;
 		}
 
-		List<Expression> operands = infixExpr.getOperands();
-		// Generate code for the second operand and push to the stack
-		operands.get(1).accept(this);
-		this.texts.add("push eax\t\t\t; Push second operand value");
+		if (operator.equals(InfixOperator.AND) || operator.equals(InfixOperator.OR)) {
+			operands.get(0).accept(this);
+		} else {
+			// Generate code for the second operand and push to the stack
+			operands.get(1).accept(this);
+			this.texts.add("push eax\t\t\t; Push second operand value");
 
-		// Generate code for the first operand and result stay in eax
-		operands.get(0).accept(this);
-		this.texts.add("pop edx\t\t\t\t; Pop second operand value to edx");
+			// Generate code for the first operand and result stay in eax
+			operands.get(0).accept(this);
+			this.texts.add("pop edx\t\t\t\t; Pop second operand value to edx");
+		}
 
 		switch (operator) {
 		case AND:
-			// TODO: lazy and
-			this.texts.add("or eax, edx");
+			this.texts.add("cmp eax, " + BOOLEAN_FALSE);
+			this.texts.add("je " + "__COMPARISON_FALSE_" + comparisonCount + "\t; If Lazy AND reach false, skip second operands");
+			operands.get(1).accept(this);
+			this.texts.add("__COMPARISON_FALSE_" + comparisonCount + ":");
 			break;
 		case BAND:
 			this.texts.add("and eax, edx");
@@ -606,7 +615,6 @@ public class CodeGenerator extends SemanticsVisitor {
 			this.texts.add("__COMPARISON_TRUE_" + comparisonCount + ":");
 			this.texts.add("mov eax, " + BOOLEAN_TRUE);
 			this.texts.add("__COMPARISON_FALSE_" + comparisonCount + ":");
-			this.comparisonCount++;
 			break;
 		case GEQ:
 			this.texts.add("cmp eax, edx");
@@ -616,7 +624,6 @@ public class CodeGenerator extends SemanticsVisitor {
 			this.texts.add("__COMPARISON_TRUE_" + comparisonCount + ":");
 			this.texts.add("mov eax, " + BOOLEAN_TRUE);
 			this.texts.add("__COMPARISON_FALSE_" + comparisonCount + ":");
-			this.comparisonCount++;
 			break;
 		case GT:
 			this.texts.add("cmp eax, edx");
@@ -626,7 +633,6 @@ public class CodeGenerator extends SemanticsVisitor {
 			this.texts.add("__COMPARISON_TRUE_" + comparisonCount + ":");
 			this.texts.add("mov eax, " + BOOLEAN_TRUE);
 			this.texts.add("__COMPARISON_FALSE_" + comparisonCount + ":");
-			this.comparisonCount++;
 			break;
 		case LEQ:
 			this.texts.add("cmp eax, edx");
@@ -636,7 +642,6 @@ public class CodeGenerator extends SemanticsVisitor {
 			this.texts.add("__COMPARISON_TRUE_" + comparisonCount + ":");
 			this.texts.add("mov eax, " + BOOLEAN_TRUE);
 			this.texts.add("__COMPARISON_FALSE_" + comparisonCount + ":");
-			this.comparisonCount++;
 			break;
 		case LT:
 			this.texts.add("cmp eax, edx");
@@ -646,7 +651,6 @@ public class CodeGenerator extends SemanticsVisitor {
 			this.texts.add("__COMPARISON_TRUE_" + comparisonCount + ":");
 			this.texts.add("mov eax, " + BOOLEAN_TRUE);
 			this.texts.add("__COMPARISON_FALSE_" + comparisonCount + ":");
-			this.comparisonCount++;
 			break;
 		case MINUS:
 			// eax = first operand - second operand
@@ -660,11 +664,12 @@ public class CodeGenerator extends SemanticsVisitor {
 			this.texts.add("__COMPARISON_TRUE_" + comparisonCount + ":");
 			this.texts.add("mov eax, " + BOOLEAN_TRUE);
 			this.texts.add("__COMPARISON_FALSE_" + comparisonCount + ":");
-			this.comparisonCount++;
 			break;
 		case OR:
-			// TODO: lazy or
-			this.texts.add("and eax, edx");
+			this.texts.add("cmp eax, " + BOOLEAN_FALSE);
+			this.texts.add("jne " + "__COMPARISON_TRUE_" + comparisonCount + "\t; If Lazy OR reach true, skip second operands");
+			operands.get(1).accept(this);
+			this.texts.add("__COMPARISON_TRUE_" + comparisonCount + ":");
 			break;
 		case PERCENT:
 			// eax = first operand % second operand
@@ -844,6 +849,7 @@ public class CodeGenerator extends SemanticsVisitor {
 		this.texts.add("push eax\t\t\t; Push LHS to stack");
 		assignExpr.getExpression().accept(this);
 		this.texts.add("pop ebx");
+		// TODO: Assignment to char array should use `al`
 		this.texts.add("mov [ebx], eax");
 		this.texts.add("");
 	}
