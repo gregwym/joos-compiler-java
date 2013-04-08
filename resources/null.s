@@ -54,8 +54,10 @@ section .data
 __STRING_0 dd java.lang.String_VTABLE
 dd __STRING_LIT_0
 __STRING_LIT_0 dd 4
-dd "null"
-align 4
+dd 110
+dd 117
+dd 108
+dd 108
 
 global __NULL_LIT_
 __NULL_LIT_ dd __NULL__VTABLE
