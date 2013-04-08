@@ -309,7 +309,7 @@ public class CodeGenerator extends SemanticsVisitor {
 			this.texts.add("global " + this.getCurrentScope().getName() + "_VTABLE");
 			this.texts.add(this.getCurrentScope().getName() + "_VTABLE:");
 			this.texts.add("dd " + ((TypeDeclaration) node).getHierarchyTableIndex());
-			// TODO: append vtable contents
+
 			for (Entry<Integer, Scope> entry : ((TypeDeclaration) node).getSignatures().entrySet()) {
 				Scope methodScope = entry.getValue();
 
@@ -625,15 +625,9 @@ public class CodeGenerator extends SemanticsVisitor {
 
 		// Instance of
 		if (operator.equals(InfixOperator.INSTANCEOF)) {
-			// TODO instanceof
 			Expression operand = operands.get(0);
-			System.out.println("operand" + operand);
 			Type rhsType = infixExpr.getRHS();
-			// if(infixExpr.getOperands().get(0) instanceof SimpleName){
-			// SimpleName instanceObj =
-			// (SimpleName)infixExpr.getOperands().get(0);
-			// TableEntry originalDecl = instanceObj.getOriginalDeclaration();
-			// System.out.println(((BodyDeclaration)originalDecl.getNode()));
+
 			operand.accept(this);
 			this.texts.add("mov eax,[eax]\t\t\t; get Vtable of current object");
 			this.texts.add("mov eax,[eax]\t\t\t; get the index of current object");
@@ -647,7 +641,6 @@ public class CodeGenerator extends SemanticsVisitor {
 			this.texts.add("add eax, ecx");
 			this.texts.add("add eax, ebx");
 			this.texts.add("mov eax, [eax]\t; get the subtype flag value");
-			// }
 			return;
 		}
 
