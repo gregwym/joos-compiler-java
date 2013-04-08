@@ -5,6 +5,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -28,14 +29,17 @@ public class HierarchyChecker extends SemanticsVisitor {
 	private Map<String, TypeScope> interfaceScopes;
 	static Set<TypeDeclaration> checkedClass = new HashSet<TypeDeclaration>();
 	private Stack<TypeScope> hierachyStack = new Stack<TypeScope>();
-	private static Map<TypeDeclaration, Stack<TypeScope>> classHierachyChain = new HashMap<TypeDeclaration, Stack<TypeScope>>();
-
+	private static LinkedHashMap<TypeDeclaration, Stack<TypeScope>> classHierachyChain = new LinkedHashMap<TypeDeclaration, Stack<TypeScope>>();
+	private static int classIndex = 0;
 	public static Map<TypeDeclaration, Stack<TypeScope>> getClassHierachyChain() {
-		Map<TypeDeclaration, Stack<TypeScope>> ret = new HashMap<TypeDeclaration, Stack<TypeScope>>();
-		ret.putAll(classHierachyChain);
-		return ret;
+		return HierarchyChecker.classHierachyChain;
 	}
-
+	public static LinkedHashMap<TypeDeclaration, Stack<TypeScope>> getLinkedClassHierachyChain() {
+		return HierarchyChecker.classHierachyChain;
+	}
+	public static int getTotalClassNum() {
+		return HierarchyChecker.classIndex;
+	}
 	public HierarchyChecker(SymbolTable table) {
 		super(table);
 	}
@@ -93,6 +97,8 @@ public class HierarchyChecker extends SemanticsVisitor {
 			checkSuperCycle();
 			checkOverRide(node);
 			checkAbstractClass();
+			//System.out.println(node+"index:"+node.getHierarchyTableIndex());
+			//System.out.println("classHierachyChain:"+classHierachyChain);
 		}
 
 	}
@@ -102,7 +108,11 @@ public class HierarchyChecker extends SemanticsVisitor {
 		Stack<TypeScope> hierachyStack2 = new Stack<TypeScope>();
 		hierachyStack2.addAll(hierachyStack);
 		if (!classHierachyChain.containsKey(node)) {
+			//System.out.println("hierachyStack"+ hierachyStack);
 			classHierachyChain.put(node, hierachyStack);
+			node.setHierarchyTableIndex(HierarchyChecker.classIndex);
+			//System.out.println(node+"index:"+ HierarchyChecker.getTotalClassNum());
+			HierarchyChecker.classIndex++;
 		}
 
 		while (!hierachyStack2.empty() && !checkedClass.contains(node)) {

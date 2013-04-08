@@ -45,7 +45,7 @@ public class Main {
 	private final LR1Parser parser;
 	private final Preprocessor preprocessor;
 	private final Weeder weeder;
-	
+	private HierarchyChecker hierarchyChecker;
 	public Main() {
 		// Construct Preprocessor
 		this.preprocessor = new Preprocessor();
@@ -135,11 +135,12 @@ public class Main {
 		logger.info("Deep Declaration constructed");
 		
 		for(AST ast: asts) {
-			HierarchyChecker hierarchyChecker = new HierarchyChecker(table);
+			 hierarchyChecker = new HierarchyChecker(table);
 			ast.getRoot().accept(hierarchyChecker);
+			
 		}
-		logger.info("Hierarchy Checking finished");
 		
+		logger.info("Hierarchy Checking finished");
 		return table;
 	}
 	
@@ -171,17 +172,20 @@ public class Main {
 	}
 	
 	public void generateCode(List<AST> asts, SymbolTable table) throws Exception {
-		// Sort out a list of static fields and assign index for each decl
+		
+		 //Sort out a list of static fields and assign index for each decl
 		IndexerVisitor visitor = new IndexerVisitor(table);
 		for(AST ast: asts) {
 			ast.getRoot().accept(visitor);
 		}
 		
 		CodeGenerator generator = new CodeGenerator(table);
+		
 		for(AST ast: asts) {
 			ast.getRoot().accept(generator);
 		}
 		generator.writeStaticInit();
+		generator.generateSubtypeTable();
 		logger.info("Code Generated");
 	}
 	
@@ -199,7 +203,6 @@ public class Main {
 		nameLinking(asts, table);
 		typeChecking(asts, table);
 //		staticChecking(asts, table);
-		
 		generateCode(asts, table);
 	}
 

@@ -25,6 +25,7 @@ public abstract class TypeDeclaration extends ASTNode {
 	protected static final ChildDescriptor BODY = new ChildDescriptor(TypeBody.class);
 	public String fullyQualifiedName;
 	public boolean checked = false;
+	public int hierarchyTableIndex = 0;
 	public int totalFieldDeclarations = 0;
 	public int totalMethodDeclarations = 0;
 	Map<Integer, Scope> sigList = new HashMap<Integer,Scope>();	//Holds the scopes of the methods in this type
@@ -34,6 +35,13 @@ public abstract class TypeDeclaration extends ASTNode {
 		sigList.putAll(methodList);
 	}
 	
+	public void setHierarchyTableIndex(int tableIndex){
+		this.hierarchyTableIndex = tableIndex;
+	}
+	
+	public int getHierarchyTableIndex(){
+		return this.hierarchyTableIndex;
+	}
 	public Map<Integer, Scope> getSignatures(){
 		//called in CodeGenerator. The Signatures need to be converted 
 		//with methodLabel
