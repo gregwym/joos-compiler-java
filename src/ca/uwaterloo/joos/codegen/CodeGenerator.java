@@ -921,7 +921,6 @@ public class CodeGenerator extends SemanticsVisitor {
 		this.texts.add("push eax\t\t\t; Push LHS to stack");
 		assignExpr.getExpression().accept(this);
 		this.texts.add("pop ebx");
-		// TODO: Assignment to char array should use `al`
 		this.texts.add("mov [ebx], eax");
 		this.texts.add("");
 	}
