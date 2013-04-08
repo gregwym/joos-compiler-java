@@ -40,6 +40,7 @@ global __NULL_.getClass__
 
 global __NULL__VTABLE
 	__NULL__VTABLE:
+		dd -1
 		dd __NULL_.NULL_THIS__
 		dd __NULL_.equals_java.lang.Object__
 		dd __NULL_.toString__

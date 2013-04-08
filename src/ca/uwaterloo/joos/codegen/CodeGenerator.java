@@ -513,7 +513,7 @@ public class CodeGenerator extends SemanticsVisitor {
 		} else {
 			this.texts.add("mov edx, [eax]\t; Dereference for the address of VTable");
 		}
-		this.texts.add("call [edx + " + Integer.toString(methodNode.getIndex() * 4 + 4) + "]\t; Call " + methodInvoke.fullyQualifiedName);
+		this.texts.add("call [edx + " + (methodNode.getIndex() * 4 + 4) + "]\t; Call " + methodInvoke.fullyQualifiedName);
 
 		// Pop THIS from stack
 		this.texts.add("pop edx\t\t\t\t; Pop THIS");
@@ -573,16 +573,16 @@ public class CodeGenerator extends SemanticsVisitor {
 			String valueOfLabel = "java.lang.String.valueOf_" + exprType.getFullyQualifiedName() + "__";
 			this.texts.add("push eax\t\t\t; Push the primitive as perameter #1");
 			this.texts.add("push eax\t\t\t; Push something as a fake THIS");
-			this.texts.add("Call " + valueOfLabel);
+			this.texts.add("call " + valueOfLabel);
 			this.addExtern(valueOfLabel, "java.lang.String.valueOf(" + exprType.getFullyQualifiedName() + ",)");
 			this.texts.add("pop edx");
 			this.texts.add("pop edx");
 		} else if (exprType instanceof ReferenceType) {
 			this.texts.add("push eax\t\t\t; Push the reference variable address as THIS");
 			this.texts.add("mov eax, [eax]\t; Obtain VTable address");
-			this.texts.add("add eax, 8\t\t; Shift to the index of toString");
+			this.texts.add("add eax, 12\t\t; Shift to the index of toString");
 			this.texts.add("mov eax, [eax]\t; Dereference address of toString");
-			this.texts.add("Call eax");
+			this.texts.add("call eax");
 			this.texts.add("pop edx");
 		}
 	}
@@ -611,7 +611,7 @@ public class CodeGenerator extends SemanticsVisitor {
 		// java.lang.String.concat(java.lang.String) now.
 		this.texts.add("push edx");
 		this.texts.add("push eax");
-		this.texts.add("Call java.lang.String.concat_java.lang.String__");
+		this.texts.add("call java.lang.String.concat_java.lang.String__");
 		this.addExtern("java.lang.String.concat_java.lang.String__", "java.lang.String.concat(java.lang.String,)");
 		this.texts.add("pop edx");
 		this.texts.add("pop edx");
