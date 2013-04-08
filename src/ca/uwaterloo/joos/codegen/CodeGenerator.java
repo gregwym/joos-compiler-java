@@ -47,6 +47,7 @@ import ca.uwaterloo.joos.ast.expr.primary.FieldAccess;
 import ca.uwaterloo.joos.ast.expr.primary.LiteralPrimary;
 import ca.uwaterloo.joos.ast.expr.primary.LiteralPrimary.LiteralType;
 import ca.uwaterloo.joos.ast.expr.primary.Primary;
+import ca.uwaterloo.joos.ast.expr.primary.ThisPrimary;
 import ca.uwaterloo.joos.ast.statement.Block;
 import ca.uwaterloo.joos.ast.statement.ForStatement;
 import ca.uwaterloo.joos.ast.statement.IfStatement;
@@ -233,6 +234,9 @@ public class CodeGenerator extends SemanticsVisitor {
 			return false;
 		} else if (node instanceof ArrayAccess) {
 			this.generateArrayAccess((ArrayAccess) node);
+			return false;
+		} else if (node instanceof ThisPrimary) {
+			this.texts.add("mov eax, [ebp + 8]\t; Current object");
 			return false;
 		} else if (node instanceof LiteralPrimary) {
 			this.generateLiteral((LiteralPrimary) node);
