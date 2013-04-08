@@ -269,6 +269,11 @@ public class CodeGenerator extends SemanticsVisitor {
 				//
 			}
 			return false;
+		//}else if (node instanceof FieldAccess){
+			//((FieldAccess) node).getPrimary().accept(this);
+			//this.generateVariableAccess(((FieldAccess) node).getName());
+			
+			//return false;
 		} else if (node instanceof MethodDeclaration) {
 			Block body = ((MethodDeclaration) node).getBody();
 			if (body != null) {
