@@ -53,9 +53,7 @@ import ca.uwaterloo.joos.ast.statement.ForStatement;
 import ca.uwaterloo.joos.ast.statement.IfStatement;
 import ca.uwaterloo.joos.ast.statement.ReturnStatement;
 import ca.uwaterloo.joos.ast.statement.WhileStatement;
-import ca.uwaterloo.joos.ast.type.ArrayType;
 import ca.uwaterloo.joos.ast.type.PrimitiveType;
-import ca.uwaterloo.joos.ast.type.PrimitiveType.Primitive;
 import ca.uwaterloo.joos.ast.type.ReferenceType;
 import ca.uwaterloo.joos.ast.type.Type;
 import ca.uwaterloo.joos.checker.HierarchyChecker;
@@ -780,12 +778,9 @@ public class CodeGenerator extends SemanticsVisitor {
 	}
 
 	private void generateArrayCreate(ArrayCreate arrayCreate) throws Exception {
-		Type arrayElementType = arrayCreate.getType().getType();
 		arrayCreate.getDimension().accept(this);
 		this.texts.add("push eax\t\t\t; Push array dimension to stack");
-		if (!(arrayElementType instanceof PrimitiveType && ((PrimitiveType) arrayElementType).getPrimitive().equals(Primitive.CHAR))) {
-			this.texts.add("imul eax, 4\t\t\t; Multiply the array dimension by byte size");
-		}
+		this.texts.add("imul eax, 4\t\t\t; Multiply the array dimension by byte size");
 		this.texts.add("add eax, 4\t\t\t; Extra space to store array length");
 		this.texts.add("call __malloc\t\t; Malloc space for the array");
 		this.texts.add("pop ebx\t\t\t\t; Pop array dimension");
@@ -803,10 +798,7 @@ public class CodeGenerator extends SemanticsVisitor {
 		this.texts.add("pop edx");
 		this.texts.add("add edx, 4\t\t\t; Shift for array length");
 
-		Type arrayElementType = ((ArrayType) arrayAccess.exprType).getType();
-		if (!(arrayElementType instanceof PrimitiveType && ((PrimitiveType) arrayElementType).getPrimitive().equals(Primitive.CHAR))) {
-			this.texts.add("imul eax, 4\t\t\t; Multiply the array index by byte size");
-		}
+		this.texts.add("imul eax, 4\t\t\t; Multiply the array index by byte size");
 		this.texts.add("add edx, eax\t\t; Shift to index eax");
 
 		this.dereferenceVariable = originDereferenceSetting;
@@ -819,18 +811,20 @@ public class CodeGenerator extends SemanticsVisitor {
 
 	private void generateLiteral(LiteralPrimary literal) throws Exception {
 		char c = '\0';
+		int i = 0;
+		String value = literal.getValue();
 		switch (literal.getLiteralType()) {
 		case BOOLLIT:
-			if (literal.getValue().equals("true")) {
+			if (value.equals("true")) {
 				this.texts.add("mov eax, " + BOOLEAN_TRUE);
 			} else {
 				this.texts.add("mov eax, " + BOOLEAN_FALSE);
 			}
 			break;
 		case CHARLIT:
-			c = literal.getValue().charAt(1);
-			if (c == '\\' && literal.getValue().length() > 3) {
-				c = literal.getValue().charAt(2);
+			c = value.charAt(1);
+			if (c == '\\' && value.length() > 3) {
+				c = value.charAt(2);
 				if (c == 'b')
 					c = '\b';
 				else if (c == 't')
@@ -854,7 +848,7 @@ public class CodeGenerator extends SemanticsVisitor {
 			break;
 		case INTLIT:
 			// Assuming int literal within interger range
-			this.texts.add("mov eax, " + Integer.valueOf(literal.getValue()));
+			this.texts.add("mov eax, " + Integer.valueOf(value));
 			break;
 		case NULL:
 			this.texts.add("mov eax, __NULL_LIT_");
@@ -864,9 +858,10 @@ public class CodeGenerator extends SemanticsVisitor {
 			this.addVtable("java.lang.String");
 			this.data.add("__STRING_" + this.literalCount + " dd java.lang.String_VTABLE");
 			this.data.add("dd " + "__STRING_LIT_" + this.literalCount);
-			this.data.add("__STRING_LIT_" + this.literalCount + " dd " + (literal.getValue().length() - 2));
-			this.data.add("dd " + literal.getValue());
-			this.data.add("align 4");
+			this.data.add("__STRING_LIT_" + this.literalCount + " dd " + (value.length() - 2));
+			for(i = 1; i < value.length() - 1; i++) {
+				this.data.add("dd " + ((int) value.charAt(i)));
+			}
 			this.texts.add("mov eax, " + "__STRING_" + this.literalCount);
 			this.literalCount++;
 			break;
