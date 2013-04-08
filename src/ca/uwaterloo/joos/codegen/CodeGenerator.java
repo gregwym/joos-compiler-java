@@ -269,11 +269,6 @@ public class CodeGenerator extends SemanticsVisitor {
 				//
 			}
 			return false;
-		//}else if (node instanceof FieldAccess){
-			//((FieldAccess) node).getPrimary().accept(this);
-			//this.generateVariableAccess(((FieldAccess) node).getName());
-			
-			//return false;
 		} else if (node instanceof MethodDeclaration) {
 			Block body = ((MethodDeclaration) node).getBody();
 			if (body != null) {
@@ -286,6 +281,10 @@ public class CodeGenerator extends SemanticsVisitor {
 		}
 
 		return !this.complexNodes.contains(node.getClass());
+	}
+
+	private void generateFieldAccess(Name name) {
+		
 	}
 
 	@Override
@@ -415,16 +414,8 @@ public class CodeGenerator extends SemanticsVisitor {
 				this.addExtern(label, entry);
 				this.texts.add("mov eax, " + label + "\t; Address of static: " + entry.getName());
 			} else {
-				//TODO:
-				//Make sure eax is pointing to the correct object
-				if (this.classCreate){
-					this.texts.add("add eax, " + (varDecl.getIndex() * 4) + "\t\t\t; Address of field: " + entry.getName());
-					this.texts.add("mov eax, [eax]");
-				}
-				else {
-					this.texts.add("mov eax, [ebp + 8]\t\t\t;MCurrent Object");
-					this.texts.add("add eax, " + (varDecl.getIndex() * 4) + "\t\t\t; Address of field: " + entry.getName());
-				}
+				this.texts.add("add eax, " + (varDecl.getIndex() * 4) + "\t\t\t; Address of field: " + entry.getName());
+				
 			}
 		} else if (varDecl instanceof LocalVariableDeclaration) {
 			this.texts.add("mov eax, ebp");
