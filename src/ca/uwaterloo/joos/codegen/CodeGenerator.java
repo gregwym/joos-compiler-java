@@ -179,20 +179,18 @@ public class CodeGenerator extends SemanticsVisitor {
 					this.texts.add("call Start_StaticInit");
 				}
 				if (node instanceof ConstructorDeclaration) {
-					// TODO call super constructor...
 					// Call any superclass constructor
-					// We need to initialize field variables here
-					// System.out.println(this.getCurrentScope().getParentTypeScope().getReferenceNode());
+					// TODO call super constructor...
+					
 					// Get the class holding the constructor
 					ClassDeclaration cd = (ClassDeclaration) this.getCurrentScope().getParentTypeScope().getReferenceNode();
 					List<FieldDeclaration> fds = cd.getBody().getFields();
-					// this.texts.add("mov ebx, " +
-					// this.getCurrentScope().getParentTypeScope().getName() +
-					// "_VTABLE");
-					// this.texts.add("mov [ebp + 8], ebx");
+
 					this.texts.add("push eax");
 					this.texts.add("mov ebx, [ebp + 8]\t\t\t;Current Object");
 					this.texts.add("add ebx, 4\t\t\t;First space reserved");
+					
+					// Initialize field variables here
 					for (FieldDeclaration fd : fds) {
 						if (fd.getInitial() != null) {
 							this.texts.add("push ebx\t\t\t;Push address of field");
@@ -201,17 +199,6 @@ public class CodeGenerator extends SemanticsVisitor {
 							this.texts.add("mov [ebx], eax");
 						}
 						this.texts.add("add ebx, 4");
-						// Generate initer code for each NON STATIC field...
-						// This code is placed in the constructor and run
-						// whenever the
-						// object is instantiated.
-						// The field pointer is located at this+(4*(fieldIndex +
-						// 1))
-						// THIS is in eax : eax+(4*(fieldIndex + 1))
-						// this.texts.add ("mov eax, [ebp + 8]");
-						// this.texts.add("mov eax , [eax + " + fd.getIndex() +
-						// "]");
-
 					}
 					this.texts.add("pop eax\t\t\t;Restore THIS pointer to eax");
 				}
@@ -285,7 +272,6 @@ public class CodeGenerator extends SemanticsVisitor {
 			File dir = this.asmFile.getParentFile();
 			for (String label : this.statics) {
 				staticInit.add("\t" + label + "_INIT\n");
-				// if (!mainFile)staticInit.add("\textern " + label + "\n");
 				staticInit.add("\tcall " + label + "_INIT" + '\n');
 			}
 			if (dir != null) {
@@ -510,10 +496,9 @@ public class CodeGenerator extends SemanticsVisitor {
 		this.texts.add("push eax\t\t\t; Push THIS as parameter #0");
 
 		// Invoke the method
-		// TODO: call from vtable
 		BlockScope methodBlock = this.table.getBlock(methodInvoke.fullyQualifiedName);
 		BodyDeclaration methodNode = (BodyDeclaration) methodBlock.getReferenceNode();
-		this.texts.add("mov edx, " + methodBlock.getParentTypeScope().getName() + "_VTABLE");
+		this.texts.add("mov edx, [eax]\t;Dereference for the address of VTable");
 		this.texts.add("call [edx + " + Integer.toString(methodNode.getIndex() * 4) + "]\t;call method label from vtable");
 
 		// Pop THIS from stack
@@ -523,13 +508,8 @@ public class CodeGenerator extends SemanticsVisitor {
 			this.texts.add("pop edx\t\t\t\t; Pop parameter #" + (i + 1) + " from stack");
 		}
 
-		// Add the vtable containing the method label to externs if it is
-		// defined in another class
-		String currentType = this.getCurrentScope().getParentTypeScope().getName();
-		String methodScope = methodBlock.getParentTypeScope().getName();
-		if (currentType != methodScope) {
-			this.externs.add(methodScope + "_VTABLE");
-		}
+		// Add the vtable containing the method label
+		this.addVtable(methodBlock.getParentTypeScope().getName());
 		this.texts.add("");
 	}
 
@@ -550,6 +530,9 @@ public class CodeGenerator extends SemanticsVisitor {
 		this.texts.add("mov eax, " + (4 + typeDecl.totalFieldDeclarations * 4) + "\t\t\t; Size of the object");
 		this.texts.add("call __malloc");
 		this.texts.add("push eax\t\t\t; Push new object pointer as THIS");
+		this.addVtable(typeScope.getName());
+		this.texts.add("mov ebx, " + typeScope.getName() + "_VTABLE");
+		this.texts.add("mov [eax], ebx");
 
 		// Invoke the constructor
 		String constructorName = classCreate.fullyQualifiedName;
