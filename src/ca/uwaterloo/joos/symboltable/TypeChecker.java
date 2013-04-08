@@ -290,15 +290,18 @@ public class TypeChecker extends SemanticsVisitor {
 
 		/* Type Providers */
 		if (node instanceof LiteralPrimary) {
+			((LiteralPrimary) node).exprType = ((LiteralPrimary) node).getType();
 			this.pushType(((LiteralPrimary) node).getType());
 		} else if (node instanceof ThisPrimary) {
 			String typeName = this.getCurrentScope().getParentTypeScope().getName();
 			if (this.inStatic) {
 				throw new Exception("Trying to access THIS within static scope " + this.getCurrentScope());
 			}
-			this.pushType(new ReferenceType(typeName, node));
+			((ThisPrimary) node).exprType = new ReferenceType(typeName, node); 
+			this.pushType(((ThisPrimary) node).exprType);
 		} else if (node instanceof SimpleName) {
 			Type nameType = ((SimpleName) node).getOriginalDeclaration().getType();
+			((SimpleName) node).exprType = nameType;
 			this.pushType(nameType);
 		} else if (node instanceof QualifiedName) {
 			QualifiedName qualifiedName = (QualifiedName) node;
@@ -336,6 +339,7 @@ public class TypeChecker extends SemanticsVisitor {
 				throw new Exception("Cannot resolve " + qualifiedName.getName() + " within scope " + entry.getTypeScope());
 			}
 
+			((QualifiedName) node).exprType = type;
 			this.pushType(type);
 		}
 
@@ -369,6 +373,7 @@ public class TypeChecker extends SemanticsVisitor {
 			// Save constructor fully qualified name to the ASTNode
 			((ClassCreateExpression) node).fullyQualifiedName = entry.getName();
 
+			((ClassCreateExpression) node).exprType = type;
 			this.pushType(type);
 		} else if (node instanceof ArrayAccess) {
 			Type indexType = this.popType();
@@ -376,7 +381,7 @@ public class TypeChecker extends SemanticsVisitor {
 			if (!(arrayType instanceof ArrayType) && !indexType.getFullyQualifiedName().equals("INT")) {
 				throw new Exception("Accessing array, but got type " + arrayType.getFullyQualifiedName());
 			}
-			((ArrayAccess) node).arrayType = (ArrayType) arrayType;
+			((ArrayAccess) node).exprType = (ArrayType) arrayType;
 			this.pushType(((ArrayType) arrayType).getType());
 		} else if (node instanceof ArrayCreate) {
 			Type dimType = this.popType();
@@ -386,6 +391,7 @@ public class TypeChecker extends SemanticsVisitor {
 			} else if (!dimType.getFullyQualifiedName().matches("^(INT|BYTE|SHORT|CHAR)$")) {
 				throw new Exception("Dimension of array expecting numeric but got " + dimType.getFullyQualifiedName());
 			}
+			((ArrayCreate) node).exprType = ((ArrayCreate) node).getType();
 			this.pushType(((ArrayCreate) node).getType());
 		} else if (node instanceof UnaryExpression) {
 			Type exprType = this.popType();
@@ -394,12 +400,14 @@ public class TypeChecker extends SemanticsVisitor {
 				if (!exprType.getFullyQualifiedName().equals("BOOLEAN")) {
 					throw new Exception("Unary Expression NOT expecting BOOLEAN but got " + exprType.getFullyQualifiedName());
 				}
+				((UnaryExpression) node).exprType = exprType;
 				this.pushType(exprType);
 			} else if (operator.equals(UnaryOperator.MINUS)) {
 				if (!(exprType instanceof PrimitiveType) || exprType.getFullyQualifiedName().equals("BOOLEAN")) {
 					throw new Exception("Unary Expression MINUS expecting BYTE, CHAR, INT or SHORT but got " + exprType.getFullyQualifiedName());
 				}
-				this.pushType(new PrimitiveType(Primitive.INT, node));
+				((UnaryExpression) node).exprType = new PrimitiveType(Primitive.INT, node); 
+				this.pushType(((UnaryExpression) node).exprType);
 			}
 		} else if (node instanceof CastExpression) {
 			Type exprType = this.popType();
@@ -408,6 +416,7 @@ public class TypeChecker extends SemanticsVisitor {
 			if (this.isAssignable(castType, exprType, true) == false && this.isAssignable(exprType, castType, true) == false) {
 				throw new Exception("Cannot cast " + exprType.getFullyQualifiedName() + " to " + castType.getFullyQualifiedName());
 			}
+			((CastExpression) node).exprType = castType;
 			this.pushType(castType);
 		} else if (node instanceof InfixExpression) {
 			InfixExpression infix = (InfixExpression) node;
@@ -420,11 +429,13 @@ public class TypeChecker extends SemanticsVisitor {
 				} else if (this.isAssignable(operandType, rhsType, false) == false && this.isAssignable(rhsType, operandType, false) == false) {
 					throw new Exception("Cannot instancof " + operandType.getFullyQualifiedName() + " with " + rhsType.getFullyQualifiedName());
 				}
-				this.pushType(new PrimitiveType(PrimitiveType.Primitive.BOOLEAN, infix));
+				((InfixExpression) node).exprType = new PrimitiveType(PrimitiveType.Primitive.BOOLEAN, infix); 
+				this.pushType(((InfixExpression) node).exprType);
 			} else {
 				Type op2Type = this.popType();
 				Type op1Type = this.popType();
 				Type resultType = expressionType(op1Type, op2Type, infix.getOperator());
+				((InfixExpression) node).exprType = resultType;
 				this.pushType(resultType);
 			}
 		}
@@ -538,8 +549,10 @@ public class TypeChecker extends SemanticsVisitor {
 
 			Type type = entry.getType();
 			if (type == null) {
-				this.pushType(new ReferenceType("__VOID__", node));
+				((MethodInvokeExpression) node).exprType = new ReferenceType("__VOID__", node); 
+				this.pushType(((MethodInvokeExpression) node).exprType);
 			} else {
+				((MethodInvokeExpression) node).exprType = type;
 				this.pushType(type);
 			}
 		} else if (node instanceof FieldAccess) {
@@ -565,6 +578,7 @@ public class TypeChecker extends SemanticsVisitor {
 				
 				type = entry.getType();
 			}
+			((FieldAccess) node).exprType = type;
 			this.pushType(type);
 		} else if (node instanceof AssignmentExpression) {
 			Type exprType = this.popType();
@@ -573,6 +587,7 @@ public class TypeChecker extends SemanticsVisitor {
 			if (this.isAssignable(varType, exprType, false) == false) {
 				throw new Exception("Cannot assign " + varType.getFullyQualifiedName() + " with " + exprType.getFullyQualifiedName());
 			}
+			((AssignmentExpression) node).exprType = varType;
 			this.pushType(varType);
 		}
 
@@ -669,6 +684,10 @@ public class TypeChecker extends SemanticsVisitor {
 			}
 			
 			this.pushType(new ReferenceType("__VOID__", node));
+		} else if (node instanceof Expression) {
+			Type exprType = this.popType();
+			((Expression) node).exprType = exprType;
+			this.pushType(exprType);
 		}
 
 		if (node instanceof FieldDeclaration || node instanceof Block) {

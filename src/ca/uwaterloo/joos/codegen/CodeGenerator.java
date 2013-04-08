@@ -13,6 +13,8 @@ import java.util.Stack;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import com.google.common.io.Files;
+
 import ca.uwaterloo.joos.Main;
 import ca.uwaterloo.joos.ast.ASTNode;
 import ca.uwaterloo.joos.ast.ASTNode.ChildTypeUnmatchException;
@@ -51,6 +53,7 @@ import ca.uwaterloo.joos.ast.statement.ForStatement;
 import ca.uwaterloo.joos.ast.statement.IfStatement;
 import ca.uwaterloo.joos.ast.statement.ReturnStatement;
 import ca.uwaterloo.joos.ast.statement.WhileStatement;
+import ca.uwaterloo.joos.ast.type.ArrayType;
 import ca.uwaterloo.joos.ast.type.PrimitiveType;
 import ca.uwaterloo.joos.ast.type.PrimitiveType.Primitive;
 import ca.uwaterloo.joos.ast.type.ReferenceType;
@@ -125,9 +128,9 @@ public class CodeGenerator extends SemanticsVisitor {
 		this.data.add("");
 	}
 
-	private void addExtern(String label, TableEntry originalDeclaration) {
-		if (!this.getCurrentScope().getParentTypeScope().getSymbols().containsKey(originalDeclaration.getName())) {
-			logger.fine("Adding extern " + originalDeclaration.getName() + " within scope " + this.getCurrentScope().getParentTypeScope());
+	private void addExtern(String label, String declarationName) {
+		if (!this.getCurrentScope().getParentTypeScope().getSymbols().containsKey(declarationName)) {
+			logger.fine("Adding extern " + declarationName + " within scope " + this.getCurrentScope().getParentTypeScope());
 			this.externs.add(label);
 		}
 	}
@@ -189,21 +192,20 @@ public class CodeGenerator extends SemanticsVisitor {
 					ClassDeclaration cd = (ClassDeclaration) this.getCurrentScope().getParentTypeScope().getReferenceNode();
 					List<FieldDeclaration> fds = cd.getBody().getFields();
 
-					this.texts.add("push eax");
-					this.texts.add("mov ebx, [ebp + 8]\t\t\t;Current Object");
-					this.texts.add("add ebx, 4\t\t\t;First space reserved");
+					this.texts.add("push eax\t\t\t; Push the new object address");
+					this.texts.add("mov ebx, [ebp + 8]\t\t; Current Object");
+					this.texts.add("add ebx, 4\t\t\t; First space reserved");
 
 					// Initialize field variables here
 					for (FieldDeclaration fd : fds) {
 						if (fd.getInitial() != null) {
-							this.texts.add("push ebx\t\t\t;Push address of field");
+							this.texts.add("push ebx\t\t\t; Push address of field");
 							fd.getInitial().accept(this);
-							this.texts.add("pop ebx\t\t\t;get LHS");
+							this.texts.add("pop ebx\t\t\t; Pop LHS");
 							this.texts.add("mov [ebx], eax");
 						}
-						this.texts.add("add ebx, 4");
+						this.texts.add("add ebx, 4\t\t\t; ");
 					}
-					this.texts.add("pop eax\t\t\t;Restore THIS pointer to eax");
 				}
 			}
 		}
@@ -307,7 +309,7 @@ public class CodeGenerator extends SemanticsVisitor {
 			this.texts.add("global " + this.getCurrentScope().getName() + "_VTABLE");
 			this.texts.add(this.getCurrentScope().getName() + "_VTABLE:");
 			this.texts.add("dd " + ((TypeDeclaration) node).getHierarchyTableIndex());
-			// TODO: append vtable contents
+
 			for (Entry<Integer, Scope> entry : ((TypeDeclaration) node).getSignatures().entrySet()) {
 				Scope methodScope = entry.getValue();
 
@@ -325,6 +327,9 @@ public class CodeGenerator extends SemanticsVisitor {
 			this.texts.add("");
 		} else if (node instanceof MethodDeclaration) {
 			Modifiers modifiers = ((MethodDeclaration) node).getModifiers();
+			if (node instanceof ConstructorDeclaration) {
+				this.texts.add("pop eax\t\t\t; Restore THIS pointer to eax");
+			}
 			if (!modifiers.containModifier(Modifier.NATIVE) && !modifiers.containModifier(Modifier.ABSTRACT)) {
 				// Postamble
 				this.texts.add(this.methodLabel + "_END:");
@@ -371,7 +376,7 @@ public class CodeGenerator extends SemanticsVisitor {
 		} else if (varDecl instanceof FieldDeclaration) {
 			if (varDecl.getModifiers().containModifier(Modifier.STATIC)) {
 				String label = staticLabel(entry.getName());
-				this.addExtern(label, entry);
+				this.addExtern(label, entry.getName());
 				this.texts.add("mov eax, [" + label + "]\t; Accessing static: " + entry.getName());
 			} else {
 				this.texts.add("mov eax, [eax + " + (varDecl.getIndex() * 4) + "]\t; Accessing field: " + entry.getName());
@@ -389,7 +394,7 @@ public class CodeGenerator extends SemanticsVisitor {
 		} else if (varDecl instanceof FieldDeclaration) {
 			if (varDecl.getModifiers().containModifier(Modifier.STATIC)) {
 				String label = staticLabel(entry.getName());
-				this.addExtern(label, entry);
+				this.addExtern(label, entry.getName());
 				this.texts.add("mov eax, " + label + "\t; Address of static: " + entry.getName());
 			} else {
 				this.texts.add("add eax, " + (varDecl.getIndex() * 4) + "\t\t\t; Address of field: " + entry.getName());
@@ -510,8 +515,6 @@ public class CodeGenerator extends SemanticsVisitor {
 		}
 		this.texts.add("call [edx + " + Integer.toString(methodNode.getIndex() * 4 + 4) + "]\t; Call " + methodInvoke.fullyQualifiedName);
 
-
-
 		// Pop THIS from stack
 		this.texts.add("pop edx\t\t\t\t; Pop THIS");
 		// Pop parameters from stack
@@ -546,7 +549,6 @@ public class CodeGenerator extends SemanticsVisitor {
 		this.texts.add("mov ebx, " + typeScope.getName() + "_VTABLE");
 		this.texts.add("mov [eax], ebx");
 
-
 		// Invoke the constructor
 		String constructorName = classCreate.fullyQualifiedName;
 		String constructorLabel = methodLabel(constructorName);
@@ -566,6 +568,55 @@ public class CodeGenerator extends SemanticsVisitor {
 		this.texts.add("");
 	}
 
+	private void generateValueToString(Type exprType) throws Exception {
+		if (exprType instanceof PrimitiveType) {
+			String valueOfLabel = "java.lang.String.valueOf_" + exprType.getFullyQualifiedName() + "__";
+			this.texts.add("push eax\t\t\t; Push the primitive as perameter #1");
+			this.texts.add("push eax\t\t\t; Push something as a fake THIS");
+			this.texts.add("Call " + valueOfLabel);
+			this.addExtern(valueOfLabel, "java.lang.String.valueOf(" + exprType.getFullyQualifiedName() + ",)");
+			this.texts.add("pop edx");
+			this.texts.add("pop edx");
+		} else if (exprType instanceof ReferenceType) {
+			this.texts.add("push eax\t\t\t; Push the reference variable address as THIS");
+			this.texts.add("mov eax, [eax]\t; Obtain VTable address");
+			this.texts.add("add eax, 8\t\t; Shift to the index of toString");
+			this.texts.add("mov eax, [eax]\t; Dereference address of toString");
+			this.texts.add("Call eax");
+			this.texts.add("pop edx");
+		}
+	}
+
+	private void generateStringConcat(Expression op1, Expression op2) throws Exception {
+		Type op1Type = op1.exprType;
+		Type op2Type = op2.exprType;
+
+		// op1 at EAX, op2 at EDX
+		if (!op1Type.getFullyQualifiedName().equals("java.lang.String")) {
+			this.texts.add("push edx\t\t\t; Push op2 to stack first");
+			this.generateValueToString(op1Type);
+			this.texts.add("pop edx\t\t\t\t; Pop op2");
+		}
+
+		// op1 String on stack, op2 at EDX
+		if (!op2Type.getFullyQualifiedName().equals("java.lang.String")) {
+			this.texts.add("push eax\t\t\t; Push op1 String to stack");
+			this.texts.add("mov eax, edx");
+			this.generateValueToString(op2Type);
+			this.texts.add("mov edx, eax");
+			this.texts.add("pop eax\t\t\t\t; Pop op1 String");
+		}
+
+		// op1 String at EAX, op2 String at EDX. Invoke
+		// java.lang.String.concat(java.lang.String) now.
+		this.texts.add("push edx");
+		this.texts.add("push eax");
+		this.texts.add("Call java.lang.String.concat_java.lang.String__");
+		this.addExtern("java.lang.String.concat_java.lang.String__", "java.lang.String.concat(java.lang.String,)");
+		this.texts.add("pop edx");
+		this.texts.add("pop edx");
+	}
+
 	private void generateInfixExpression(InfixExpression infixExpr) throws Exception {
 		InfixOperator operator = infixExpr.getOperator();
 		List<Expression> operands = infixExpr.getOperands();
@@ -574,15 +625,9 @@ public class CodeGenerator extends SemanticsVisitor {
 
 		// Instance of
 		if (operator.equals(InfixOperator.INSTANCEOF)) {
-			// TODO instanceof
 			Expression operand = operands.get(0);
-			System.out.println("operand"+operand);
 			Type rhsType = infixExpr.getRHS();
-			// if(infixExpr.getOperands().get(0) instanceof SimpleName){
-			// SimpleName instanceObj =
-			// (SimpleName)infixExpr.getOperands().get(0);
-			// TableEntry originalDecl = instanceObj.getOriginalDeclaration();
-			// System.out.println(((BodyDeclaration)originalDecl.getNode()));
+
 			operand.accept(this);
 			this.texts.add("mov eax,[eax]\t\t\t; get Vtable of current object");
 			this.texts.add("mov eax,[eax]\t\t\t; get the index of current object");
@@ -596,7 +641,6 @@ public class CodeGenerator extends SemanticsVisitor {
 			this.texts.add("add eax, ecx");
 			this.texts.add("add eax, ebx");
 			this.texts.add("mov eax, [eax]\t; get the subtype flag value");
-			// }
 			return;
 		}
 
@@ -699,9 +743,12 @@ public class CodeGenerator extends SemanticsVisitor {
 			this.texts.add("mov eax, edx\t\t; Move the remainder to eax");
 			break;
 		case PLUS:
-			// TODO: String addition
 			// eax = first operand + second operand
-			this.texts.add("add eax, edx");
+			if (operands.get(0).exprType.getFullyQualifiedName().equals("java.lang.String") || operands.get(1).exprType.getFullyQualifiedName().equals("java.lang.String")) {
+				this.generateStringConcat(operands.get(0), operands.get(1));
+			} else {
+				this.texts.add("add eax, edx");
+			}
 			break;
 		case SLASH:
 			// eax = first operand / second operand
@@ -745,7 +792,7 @@ public class CodeGenerator extends SemanticsVisitor {
 		this.texts.add("pop edx");
 		this.texts.add("add edx, 4\t\t\t; Shift for array length");
 
-		Type arrayElementType = arrayAccess.arrayType.getType();
+		Type arrayElementType = ((ArrayType) arrayAccess.exprType).getType();
 		if (!(arrayElementType instanceof PrimitiveType && ((PrimitiveType) arrayElementType).getPrimitive().equals(Primitive.CHAR))) {
 			this.texts.add("imul eax, 4\t\t\t; Multiply the array index by byte size");
 		}
@@ -799,7 +846,8 @@ public class CodeGenerator extends SemanticsVisitor {
 			this.texts.add("mov eax, " + Integer.valueOf(literal.getValue()));
 			break;
 		case NULL:
-			this.texts.add("mov eax, " + NULL);
+			this.texts.add("mov eax, __NULL_LIT_");
+			this.addExtern("__NULL_LIT_", "");
 			break;
 		case STRINGLIT:
 			this.addVtable("java.lang.String");
@@ -1031,4 +1079,9 @@ public class CodeGenerator extends SemanticsVisitor {
 		asmWriter.close();
 	}
 
+	public void copyNullAsm() throws Exception {
+		File nullAsm = new File("resources/null.s");
+		File outputAsm = new File("output/null.s");
+		Files.copy(nullAsm, outputAsm);
+	}
 }
