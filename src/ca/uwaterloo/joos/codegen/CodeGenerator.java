@@ -83,8 +83,6 @@ public class CodeGenerator extends SemanticsVisitor {
 	private Set<Class<?>> complexNodes = null;
 	private boolean mainFile = false;
 
-	private boolean classCreate = false;
-
 	public CodeGenerator(SymbolTable table) {
 		super(table);
 		logger.setLevel(Level.FINER);
@@ -265,9 +263,7 @@ public class CodeGenerator extends SemanticsVisitor {
 				this.generateStaticFieldDeclaration((FieldDeclaration) node);
 
 			}
-			else{
-				//
-			}
+		
 			return false;
 		} else if (node instanceof MethodDeclaration) {
 			Block body = ((MethodDeclaration) node).getBody();
@@ -281,10 +277,6 @@ public class CodeGenerator extends SemanticsVisitor {
 		}
 
 		return !this.complexNodes.contains(node.getClass());
-	}
-
-	private void generateFieldAccess(Name name) {
-		
 	}
 
 	@Override
@@ -368,8 +360,6 @@ public class CodeGenerator extends SemanticsVisitor {
 			}
 		} else if (node instanceof ReturnStatement) {
 			this.texts.add("jmp " + this.methodLabel + "_END");
-		} else if (node instanceof FieldAccess){
-			this.classCreate = false;
 		}
 		super.didVisit(node);
 	}
@@ -395,7 +385,6 @@ public class CodeGenerator extends SemanticsVisitor {
 				this.addExtern(label, entry);
 				this.texts.add("mov eax, [" + label + "]\t; Accessing static: " + entry.getName());
 			} else {
-				this.texts.add("mov eax, [ebp + 8]");
 				this.texts.add("mov eax, [eax + " + (varDecl.getIndex() * 4) + "]\t; Accessing field: " + entry.getName());
 			}
 		} else if (varDecl instanceof LocalVariableDeclaration) {
