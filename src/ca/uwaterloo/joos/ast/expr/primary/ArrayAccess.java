@@ -6,6 +6,7 @@ import ca.uwaterloo.joos.ast.ASTNode;
 import ca.uwaterloo.joos.ast.descriptor.ChildDescriptor;
 import ca.uwaterloo.joos.ast.expr.Expression;
 import ca.uwaterloo.joos.ast.expr.Lefthand;
+import ca.uwaterloo.joos.ast.type.ArrayType;
 import ca.uwaterloo.joos.parser.ParseTree.Node;
 import ca.uwaterloo.joos.parser.ParseTree.TreeNode;
 
@@ -13,6 +14,8 @@ public class ArrayAccess extends Primary implements Lefthand {
 	
 	public static final ChildDescriptor EXPRESSION = new ChildDescriptor(Expression.class);
 	public static final ChildDescriptor INDEX = new ChildDescriptor(Expression.class);
+	
+	public ArrayType arrayType = null;
 	
 	public Expression getExpression() throws ChildTypeUnmatchException {
 		return (Expression) this.getChildByDescriptor(EXPRESSION);

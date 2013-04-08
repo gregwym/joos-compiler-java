@@ -49,7 +49,10 @@ import ca.uwaterloo.joos.ast.statement.ForStatement;
 import ca.uwaterloo.joos.ast.statement.IfStatement;
 import ca.uwaterloo.joos.ast.statement.ReturnStatement;
 import ca.uwaterloo.joos.ast.statement.WhileStatement;
+import ca.uwaterloo.joos.ast.type.PrimitiveType;
 import ca.uwaterloo.joos.ast.type.ReferenceType;
+import ca.uwaterloo.joos.ast.type.Type;
+import ca.uwaterloo.joos.ast.type.PrimitiveType.Primitive;
 import ca.uwaterloo.joos.symboltable.BlockScope;
 import ca.uwaterloo.joos.symboltable.Scope;
 import ca.uwaterloo.joos.symboltable.SemanticsVisitor;
@@ -191,7 +194,7 @@ public class CodeGenerator extends SemanticsVisitor {
 					this.texts.add("mov ebx, [ebp + 8]\t\t\t;Current Object");
 					this.texts.add("add ebx, 4\t\t\t;First space reserved");
 					for (FieldDeclaration fd : fds) {
-						if (fd.getInitial() != null){
+						if (fd.getInitial() != null) {
 							this.texts.add("push ebx\t\t\t;Push address of field");
 							fd.getInitial().accept(this);
 							this.texts.add("pop ebx\t\t\t;get LHS");
@@ -650,6 +653,14 @@ public class CodeGenerator extends SemanticsVisitor {
 			this.texts.add("sub eax, edx");
 			break;
 		case NEQ:
+			this.texts.add("cmp eax, edx");
+			this.texts.add("jne " + "__COMPARISON_TRUE_" + comparisonCount);
+			this.texts.add("mov eax, " + BOOLEAN_FALSE);
+			this.texts.add("jmp " + "__COMPARISON_FALSE_" + comparisonCount);
+			this.texts.add("__COMPARISON_TRUE_" + comparisonCount + ":");
+			this.texts.add("mov eax, " + BOOLEAN_TRUE);
+			this.texts.add("__COMPARISON_FALSE_" + comparisonCount + ":");
+			this.comparisonCount++;
 			break;
 		case OR:
 			// TODO: lazy or
@@ -688,9 +699,12 @@ public class CodeGenerator extends SemanticsVisitor {
 	}
 
 	private void generateArrayCreate(ArrayCreate arrayCreate) throws Exception {
+		Type arrayElementType = arrayCreate.getType().getType();
 		arrayCreate.getDimension().accept(this);
 		this.texts.add("push eax\t\t\t; Push array dimension to stack");
-		this.texts.add("imul eax, 4\t\t\t; Multiply the array dimension by byte size");
+		if (!(arrayElementType instanceof PrimitiveType && ((PrimitiveType) arrayElementType).getPrimitive().equals(Primitive.CHAR))) {
+			this.texts.add("imul eax, 4\t\t\t; Multiply the array dimension by byte size");
+		}
 		this.texts.add("add eax, 4\t\t\t; Extra space to store array length");
 		this.texts.add("call __malloc\t\t; Malloc space for the array");
 		this.texts.add("pop ebx\t\t\t\t; Pop array dimension");
@@ -699,15 +713,22 @@ public class CodeGenerator extends SemanticsVisitor {
 
 	private void generateArrayAccess(ArrayAccess arrayAccess) throws Exception {
 		boolean originDereferenceSetting = this.dereferenceVariable;
+
 		this.dereferenceVariable = true;
 		arrayAccess.getExpression().accept(this);
 		this.texts.add("push eax\t\t\t; Push array address to stack first");
-		this.dereferenceVariable = originDereferenceSetting;
 
 		arrayAccess.getIndex().accept(this);
 		this.texts.add("pop edx");
 		this.texts.add("add edx, 4\t\t\t; Shift for array length");
+
+		Type arrayElementType = arrayAccess.arrayType.getType();
+		if (!(arrayElementType instanceof PrimitiveType && ((PrimitiveType) arrayElementType).getPrimitive().equals(Primitive.CHAR))) {
+			this.texts.add("imul eax, 4\t\t\t; Multiply the array index by byte size");
+		}
 		this.texts.add("add edx, eax\t\t; Shift to index eax");
+
+		this.dereferenceVariable = originDereferenceSetting;
 		if (this.dereferenceVariable) {
 			this.texts.add("mov eax, [edx]\t\t; Dereference the array element");
 		} else {
