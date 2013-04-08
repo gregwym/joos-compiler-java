@@ -508,7 +508,7 @@ public class CodeGenerator extends SemanticsVisitor {
 		} else {
 			this.texts.add("mov edx, [eax]\t; Dereference for the address of VTable");
 		}
-		this.texts.add("call [edx + " + Integer.toString(methodNode.getIndex() * 4) + "]\t; Call " + methodInvoke.fullyQualifiedName);
+		this.texts.add("call [edx + " + Integer.toString(methodNode.getIndex() * 4 + 4) + "]\t; Call " + methodInvoke.fullyQualifiedName);
 
 
 
@@ -576,6 +576,7 @@ public class CodeGenerator extends SemanticsVisitor {
 		if (operator.equals(InfixOperator.INSTANCEOF)) {
 			// TODO instanceof
 			Expression operand = operands.get(0);
+			System.out.println("operand"+operand);
 			Type rhsType = infixExpr.getRHS();
 			// if(infixExpr.getOperands().get(0) instanceof SimpleName){
 			// SimpleName instanceObj =

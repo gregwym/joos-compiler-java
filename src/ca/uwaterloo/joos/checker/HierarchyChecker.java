@@ -111,7 +111,7 @@ public class HierarchyChecker extends SemanticsVisitor {
 			//System.out.println("hierachyStack"+ hierachyStack);
 			classHierachyChain.put(node, hierachyStack);
 			node.setHierarchyTableIndex(HierarchyChecker.classIndex);
-			System.out.println(node+"index:"+ HierarchyChecker.getTotalClassNum());
+			//System.out.println(node+"index:"+ HierarchyChecker.getTotalClassNum());
 			HierarchyChecker.classIndex++;
 		}
 
