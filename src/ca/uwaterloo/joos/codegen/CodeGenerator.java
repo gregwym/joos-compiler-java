@@ -49,7 +49,10 @@ import ca.uwaterloo.joos.ast.statement.ForStatement;
 import ca.uwaterloo.joos.ast.statement.IfStatement;
 import ca.uwaterloo.joos.ast.statement.ReturnStatement;
 import ca.uwaterloo.joos.ast.statement.WhileStatement;
+import ca.uwaterloo.joos.ast.type.PrimitiveType;
 import ca.uwaterloo.joos.ast.type.ReferenceType;
+import ca.uwaterloo.joos.ast.type.Type;
+import ca.uwaterloo.joos.ast.type.PrimitiveType.Primitive;
 import ca.uwaterloo.joos.symboltable.BlockScope;
 import ca.uwaterloo.joos.symboltable.Scope;
 import ca.uwaterloo.joos.symboltable.SemanticsVisitor;
@@ -191,7 +194,7 @@ public class CodeGenerator extends SemanticsVisitor {
 					this.texts.add("mov ebx, [ebp + 8]\t\t\t;Current Object");
 					this.texts.add("add ebx, 4\t\t\t;First space reserved");
 					for (FieldDeclaration fd : fds) {
-						if (fd.getInitial() != null){
+						if (fd.getInitial() != null) {
 							this.texts.add("push ebx\t\t\t;Push address of field");
 							fd.getInitial().accept(this);
 							this.texts.add("pop ebx\t\t\t;get LHS");
@@ -569,25 +572,34 @@ public class CodeGenerator extends SemanticsVisitor {
 
 	private void generateInfixExpression(InfixExpression infixExpr) throws Exception {
 		InfixOperator operator = infixExpr.getOperator();
+		List<Expression> operands = infixExpr.getOperands();
+		int comparisonCount = this.comparisonCount;
+		this.comparisonCount++;
+		
 		// Instance of
 		if (operator.equals(InfixOperator.INSTANCEOF)) {
 			// TODO instanceof
 			return;
 		}
 
-		List<Expression> operands = infixExpr.getOperands();
-		// Generate code for the second operand and push to the stack
-		operands.get(1).accept(this);
-		this.texts.add("push eax\t\t\t; Push second operand value");
+		if (operator.equals(InfixOperator.AND) || operator.equals(InfixOperator.OR)) {
+			operands.get(0).accept(this);
+		} else {
+			// Generate code for the second operand and push to the stack
+			operands.get(1).accept(this);
+			this.texts.add("push eax\t\t\t; Push second operand value");
 
-		// Generate code for the first operand and result stay in eax
-		operands.get(0).accept(this);
-		this.texts.add("pop edx\t\t\t\t; Pop second operand value to edx");
+			// Generate code for the first operand and result stay in eax
+			operands.get(0).accept(this);
+			this.texts.add("pop edx\t\t\t\t; Pop second operand value to edx");
+		}
 
 		switch (operator) {
 		case AND:
-			// TODO: lazy and
-			this.texts.add("or eax, edx");
+			this.texts.add("cmp eax, " + BOOLEAN_FALSE);
+			this.texts.add("je " + "__COMPARISON_FALSE_" + comparisonCount + "\t; If Lazy AND reach false, skip second operands");
+			operands.get(1).accept(this);
+			this.texts.add("__COMPARISON_FALSE_" + comparisonCount + ":");
 			break;
 		case BAND:
 			this.texts.add("and eax, edx");
@@ -603,7 +615,6 @@ public class CodeGenerator extends SemanticsVisitor {
 			this.texts.add("__COMPARISON_TRUE_" + comparisonCount + ":");
 			this.texts.add("mov eax, " + BOOLEAN_TRUE);
 			this.texts.add("__COMPARISON_FALSE_" + comparisonCount + ":");
-			this.comparisonCount++;
 			break;
 		case GEQ:
 			this.texts.add("cmp eax, edx");
@@ -613,7 +624,6 @@ public class CodeGenerator extends SemanticsVisitor {
 			this.texts.add("__COMPARISON_TRUE_" + comparisonCount + ":");
 			this.texts.add("mov eax, " + BOOLEAN_TRUE);
 			this.texts.add("__COMPARISON_FALSE_" + comparisonCount + ":");
-			this.comparisonCount++;
 			break;
 		case GT:
 			this.texts.add("cmp eax, edx");
@@ -623,7 +633,6 @@ public class CodeGenerator extends SemanticsVisitor {
 			this.texts.add("__COMPARISON_TRUE_" + comparisonCount + ":");
 			this.texts.add("mov eax, " + BOOLEAN_TRUE);
 			this.texts.add("__COMPARISON_FALSE_" + comparisonCount + ":");
-			this.comparisonCount++;
 			break;
 		case LEQ:
 			this.texts.add("cmp eax, edx");
@@ -633,7 +642,6 @@ public class CodeGenerator extends SemanticsVisitor {
 			this.texts.add("__COMPARISON_TRUE_" + comparisonCount + ":");
 			this.texts.add("mov eax, " + BOOLEAN_TRUE);
 			this.texts.add("__COMPARISON_FALSE_" + comparisonCount + ":");
-			this.comparisonCount++;
 			break;
 		case LT:
 			this.texts.add("cmp eax, edx");
@@ -643,17 +651,25 @@ public class CodeGenerator extends SemanticsVisitor {
 			this.texts.add("__COMPARISON_TRUE_" + comparisonCount + ":");
 			this.texts.add("mov eax, " + BOOLEAN_TRUE);
 			this.texts.add("__COMPARISON_FALSE_" + comparisonCount + ":");
-			this.comparisonCount++;
 			break;
 		case MINUS:
 			// eax = first operand - second operand
 			this.texts.add("sub eax, edx");
 			break;
 		case NEQ:
+			this.texts.add("cmp eax, edx");
+			this.texts.add("jne " + "__COMPARISON_TRUE_" + comparisonCount);
+			this.texts.add("mov eax, " + BOOLEAN_FALSE);
+			this.texts.add("jmp " + "__COMPARISON_FALSE_" + comparisonCount);
+			this.texts.add("__COMPARISON_TRUE_" + comparisonCount + ":");
+			this.texts.add("mov eax, " + BOOLEAN_TRUE);
+			this.texts.add("__COMPARISON_FALSE_" + comparisonCount + ":");
 			break;
 		case OR:
-			// TODO: lazy or
-			this.texts.add("and eax, edx");
+			this.texts.add("cmp eax, " + BOOLEAN_FALSE);
+			this.texts.add("jne " + "__COMPARISON_TRUE_" + comparisonCount + "\t; If Lazy OR reach true, skip second operands");
+			operands.get(1).accept(this);
+			this.texts.add("__COMPARISON_TRUE_" + comparisonCount + ":");
 			break;
 		case PERCENT:
 			// eax = first operand % second operand
@@ -688,9 +704,12 @@ public class CodeGenerator extends SemanticsVisitor {
 	}
 
 	private void generateArrayCreate(ArrayCreate arrayCreate) throws Exception {
+		Type arrayElementType = arrayCreate.getType().getType();
 		arrayCreate.getDimension().accept(this);
 		this.texts.add("push eax\t\t\t; Push array dimension to stack");
-		this.texts.add("imul eax, 4\t\t\t; Multiply the array dimension by byte size");
+		if (!(arrayElementType instanceof PrimitiveType && ((PrimitiveType) arrayElementType).getPrimitive().equals(Primitive.CHAR))) {
+			this.texts.add("imul eax, 4\t\t\t; Multiply the array dimension by byte size");
+		}
 		this.texts.add("add eax, 4\t\t\t; Extra space to store array length");
 		this.texts.add("call __malloc\t\t; Malloc space for the array");
 		this.texts.add("pop ebx\t\t\t\t; Pop array dimension");
@@ -699,15 +718,22 @@ public class CodeGenerator extends SemanticsVisitor {
 
 	private void generateArrayAccess(ArrayAccess arrayAccess) throws Exception {
 		boolean originDereferenceSetting = this.dereferenceVariable;
+
 		this.dereferenceVariable = true;
 		arrayAccess.getExpression().accept(this);
 		this.texts.add("push eax\t\t\t; Push array address to stack first");
-		this.dereferenceVariable = originDereferenceSetting;
 
 		arrayAccess.getIndex().accept(this);
 		this.texts.add("pop edx");
 		this.texts.add("add edx, 4\t\t\t; Shift for array length");
+
+		Type arrayElementType = arrayAccess.arrayType.getType();
+		if (!(arrayElementType instanceof PrimitiveType && ((PrimitiveType) arrayElementType).getPrimitive().equals(Primitive.CHAR))) {
+			this.texts.add("imul eax, 4\t\t\t; Multiply the array index by byte size");
+		}
 		this.texts.add("add edx, eax\t\t; Shift to index eax");
+
+		this.dereferenceVariable = originDereferenceSetting;
 		if (this.dereferenceVariable) {
 			this.texts.add("mov eax, [edx]\t\t; Dereference the array element");
 		} else {
@@ -823,6 +849,7 @@ public class CodeGenerator extends SemanticsVisitor {
 		this.texts.add("push eax\t\t\t; Push LHS to stack");
 		assignExpr.getExpression().accept(this);
 		this.texts.add("pop ebx");
+		// TODO: Assignment to char array should use `al`
 		this.texts.add("mov [ebx], eax");
 		this.texts.add("");
 	}
@@ -873,11 +900,13 @@ public class CodeGenerator extends SemanticsVisitor {
 
 		this.texts.add("__IF_STATEMENT_" + conditionCount + ":");
 		ifStatement.getIfStatement().accept(this);
+		this.texts.add("jmp __IF_END_" + conditionCount);
 
 		this.texts.add("__ELSE_STATEMENT_" + conditionCount + ":");
 		if (ifStatement.getElseStatement() != null) {
 			ifStatement.getElseStatement().accept(this);
 		}
+		this.texts.add("__IF_END_" + conditionCount + ":");
 	}
 
 	private void generateStaticFieldDeclaration(FieldDeclaration decl) throws Exception {

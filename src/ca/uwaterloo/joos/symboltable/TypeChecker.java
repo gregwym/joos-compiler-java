@@ -376,6 +376,7 @@ public class TypeChecker extends SemanticsVisitor {
 			if (!(arrayType instanceof ArrayType) && !indexType.getFullyQualifiedName().equals("INT")) {
 				throw new Exception("Accessing array, but got type " + arrayType.getFullyQualifiedName());
 			}
+			((ArrayAccess) node).arrayType = (ArrayType) arrayType;
 			this.pushType(((ArrayType) arrayType).getType());
 		} else if (node instanceof ArrayCreate) {
 			Type dimType = this.popType();
