@@ -13,8 +13,6 @@ import java.util.Stack;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.google.common.io.Files;
-
 import ca.uwaterloo.joos.Main;
 import ca.uwaterloo.joos.ast.ASTNode;
 import ca.uwaterloo.joos.ast.ASTNode.ChildTypeUnmatchException;
@@ -45,9 +43,11 @@ import ca.uwaterloo.joos.ast.expr.name.QualifiedName;
 import ca.uwaterloo.joos.ast.expr.name.SimpleName;
 import ca.uwaterloo.joos.ast.expr.primary.ArrayAccess;
 import ca.uwaterloo.joos.ast.expr.primary.ArrayCreate;
+import ca.uwaterloo.joos.ast.expr.primary.FieldAccess;
 import ca.uwaterloo.joos.ast.expr.primary.LiteralPrimary;
 import ca.uwaterloo.joos.ast.expr.primary.LiteralPrimary.LiteralType;
 import ca.uwaterloo.joos.ast.expr.primary.Primary;
+import ca.uwaterloo.joos.ast.expr.primary.ThisPrimary;
 import ca.uwaterloo.joos.ast.statement.Block;
 import ca.uwaterloo.joos.ast.statement.ForStatement;
 import ca.uwaterloo.joos.ast.statement.IfStatement;
@@ -65,6 +65,8 @@ import ca.uwaterloo.joos.symboltable.SemanticsVisitor;
 import ca.uwaterloo.joos.symboltable.SymbolTable;
 import ca.uwaterloo.joos.symboltable.TableEntry;
 import ca.uwaterloo.joos.symboltable.TypeScope;
+
+import com.google.common.io.Files;
 
 public class CodeGenerator extends SemanticsVisitor {
 	public static final Logger logger = Main.getLogger(CodeGenerator.class);
@@ -87,6 +89,7 @@ public class CodeGenerator extends SemanticsVisitor {
 	private Integer loopCount = 0;
 	private Integer conditionCount = 0;
 	private Boolean dereferenceVariable = true;
+	private Boolean referenceCurrentObject = true;
 
 	private Set<Class<?>> complexNodes = null;
 
@@ -113,6 +116,8 @@ public class CodeGenerator extends SemanticsVisitor {
 		this.comparisonCount = 0;
 		this.loopCount = 0;
 		this.dereferenceVariable = true;
+		this.referenceCurrentObject = true;
+		
 		// Place the runtime.s externs
 		this.externs.add("__malloc");
 		this.externs.add("__debexit");
@@ -230,6 +235,9 @@ public class CodeGenerator extends SemanticsVisitor {
 		} else if (node instanceof ArrayAccess) {
 			this.generateArrayAccess((ArrayAccess) node);
 			return false;
+		} else if (node instanceof ThisPrimary) {
+			this.texts.add("mov eax, [ebp + 8]\t; Current object");
+			return false;
 		} else if (node instanceof LiteralPrimary) {
 			this.generateLiteral((LiteralPrimary) node);
 			return false;
@@ -255,6 +263,9 @@ public class CodeGenerator extends SemanticsVisitor {
 			if (((FieldDeclaration) node).getModifiers().containModifier(Modifier.STATIC)) {
 				this.generateStaticFieldDeclaration((FieldDeclaration) node);
 			}
+			return false;
+		} else if (node instanceof FieldAccess) {
+			this.generateFieldAccess((FieldAccess) node);
 			return false;
 		} else if (node instanceof MethodDeclaration) {
 			Block body = ((MethodDeclaration) node).getBody();
@@ -408,6 +419,10 @@ public class CodeGenerator extends SemanticsVisitor {
 
 	private void generateVariableAccess(Name name) throws Exception {
 		int i = 0;
+		
+		if (name instanceof Name && this.referenceCurrentObject) {
+			this.texts.add("mov eax, [ebp + 8]\t; Current object");
+		}
 
 		if (name instanceof SimpleName) {
 			TableEntry entry = ((SimpleName) name).getOriginalDeclaration();
@@ -419,15 +434,11 @@ public class CodeGenerator extends SemanticsVisitor {
 					throw new Exception("Unknown field " + field);
 				}
 			} else if (this.dereferenceVariable) {
-				this.texts.add("mov eax, [ebp + 8]\t; Current object");
 				this.generateVariableDereference(entry);
 			} else {
-				this.texts.add("mov eax, [ebp + 8]\t; Current object");
 				this.generateVariableAddress(entry);
 			}
 		} else if (name instanceof QualifiedName) {
-			this.texts.add("mov eax, [ebp + 8]\t; Current object");
-
 			TableEntry entry = ((QualifiedName) name).getOriginalDeclaration();
 			if (entry.getNode() instanceof VariableDeclaration) {
 				this.generateVariableDereference(entry);
@@ -973,6 +984,13 @@ public class CodeGenerator extends SemanticsVisitor {
 			ifStatement.getElseStatement().accept(this);
 		}
 		this.texts.add("__IF_END_" + conditionCount + ":");
+	}
+	
+	private void generateFieldAccess(FieldAccess fieldAccess) throws Exception {
+		fieldAccess.getPrimary().accept(this);
+		this.referenceCurrentObject = false;
+		fieldAccess.getName().accept(this);
+		this.referenceCurrentObject = true;
 	}
 
 	private void generateStaticFieldDeclaration(FieldDeclaration decl) throws Exception {
