@@ -900,11 +900,13 @@ public class CodeGenerator extends SemanticsVisitor {
 
 		this.texts.add("__IF_STATEMENT_" + conditionCount + ":");
 		ifStatement.getIfStatement().accept(this);
+		this.texts.add("jmp __IF_END_" + conditionCount);
 
 		this.texts.add("__ELSE_STATEMENT_" + conditionCount + ":");
 		if (ifStatement.getElseStatement() != null) {
 			ifStatement.getElseStatement().accept(this);
 		}
+		this.texts.add("__IF_END_" + conditionCount + ":");
 	}
 
 	private void generateStaticFieldDeclaration(FieldDeclaration decl) throws Exception {
