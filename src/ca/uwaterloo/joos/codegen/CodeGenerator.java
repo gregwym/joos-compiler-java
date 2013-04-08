@@ -510,11 +510,6 @@ public class CodeGenerator extends SemanticsVisitor {
 		}
 		this.texts.add("call [edx + " + Integer.toString(methodNode.getIndex() * 4) + "]\t; Call " + methodInvoke.fullyQualifiedName);
 
-		this.texts.add("mov edx, " + methodBlock.getParentTypeScope().getName() + "_VTABLE");
-		this.texts.add("call [edx + " + Integer.toString(methodNode.getIndex() * 4) + "]\t;call method label from vtable");
-
-		this.texts.add("mov edx, " + methodBlock.getParentTypeScope().getName() + "_VTABLE");
-		this.texts.add("call [edx + " + Integer.toString(methodNode.getIndex() * 4 + 4) + "]\t;call method label from vtable");
 
 
 		// Pop THIS from stack
@@ -550,9 +545,6 @@ public class CodeGenerator extends SemanticsVisitor {
 		this.addVtable(typeScope.getName());
 		this.texts.add("mov ebx, " + typeScope.getName() + "_VTABLE");
 		this.texts.add("mov [eax], ebx");
-
-//		this.addVtable(typeScope.getName());
-//		this.texts.add("mov [eax], " + typeScope.getName() + "_VTABLE");
 
 
 		// Invoke the constructor
