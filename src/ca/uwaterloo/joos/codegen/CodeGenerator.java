@@ -567,6 +567,46 @@ public class CodeGenerator extends SemanticsVisitor {
 		this.texts.add("");
 	}
 
+	private void generateValueToString(Type exprType) throws Exception {
+		if (exprType instanceof PrimitiveType) {
+			this.texts.add("push eax\t\t\t; Push the primitive as perameter #1");
+			this.texts.add("push eax\t\t\t; Push something as a fake THIS");
+			this.texts.add("Call java.lang.String.valueOf_" + exprType.getFullyQualifiedName() + "__");
+		} else if (exprType instanceof ReferenceType) {
+			this.texts.add("push eax\t\t\t; Push the reference variable address as THIS");
+			this.texts.add("mov eax, [eax]\t; Obtain VTable address");
+			this.texts.add("add eax, 8\t\t; Shift to the index of toString");
+			this.texts.add("mov eax, [eax]\t; Dereference address of toString");
+			this.texts.add("Call eax");
+		}
+	}
+
+	private void generateStringConcat(Expression op1, Expression op2) throws Exception {
+		Type op1Type = op1.exprType;
+		Type op2Type = op2.exprType;
+
+		// op1 at EAX, op2 at EDX
+		this.texts.add("push edx\t\t\t; Push op2 to stack first");
+		if (!op1Type.getFullyQualifiedName().equals("java.lang.String")) {
+			this.generateValueToString(op1Type);
+		}
+		this.texts.add("pop edx\t\t\t\t; Pop op2");
+		this.texts.add("push eax\t\t\t; Push op1 String to stack");
+
+		// op1 String on stack, op2 at EDX
+		if (!op1Type.getFullyQualifiedName().equals("java.lang.String")) {
+			this.texts.add("mov eax, edx");
+			this.generateValueToString(op2Type);
+		}
+		this.texts.add("pop eax\t\t\t\t; Pop op1 String");
+
+		// op1 String at EAX, op2 String at EDX. Invoke
+		// java.lang.String.concat(java.lang.String) now.
+		this.texts.add("push edx");
+		this.texts.add("push eax");
+		this.texts.add("Call java.lang.String.concat_java.lang.String__");
+	}
+
 	private void generateInfixExpression(InfixExpression infixExpr) throws Exception {
 		InfixOperator operator = infixExpr.getOperator();
 		List<Expression> operands = infixExpr.getOperands();
@@ -714,7 +754,11 @@ public class CodeGenerator extends SemanticsVisitor {
 			break;
 		case STAR:
 			// eax = first operand * second operand
-			this.texts.add("imul eax, edx");
+			if (operands.get(0).exprType.getFullyQualifiedName().equals("java.lang.String") || operands.get(1).exprType.getFullyQualifiedName().equals("java.lang.String")) {
+				this.generateStringConcat(operands.get(0), operands.get(1));
+			} else {
+				this.texts.add("imul eax, edx");
+			}
 			break;
 		default:
 			throw new Exception("Unkown infix operator type " + operator);
