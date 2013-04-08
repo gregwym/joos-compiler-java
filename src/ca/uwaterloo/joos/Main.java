@@ -186,6 +186,7 @@ public class Main {
 		}
 		generator.writeStaticInit();
 		generator.generateSubtypeTable();
+		generator.copyNullAsm();
 		logger.info("Code Generated");
 	}
 	

@@ -684,6 +684,10 @@ public class TypeChecker extends SemanticsVisitor {
 			}
 			
 			this.pushType(new ReferenceType("__VOID__", node));
+		} else if (node instanceof Expression) {
+			Type exprType = this.popType();
+			((Expression) node).exprType = exprType;
+			this.pushType(exprType);
 		}
 
 		if (node instanceof FieldDeclaration || node instanceof Block) {
