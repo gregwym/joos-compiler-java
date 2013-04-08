@@ -32,11 +32,16 @@ public class HierarchyChecker extends SemanticsVisitor {
 	private static LinkedHashMap<TypeDeclaration, Stack<TypeScope>> classHierachyChain = new LinkedHashMap<TypeDeclaration, Stack<TypeScope>>();
 	private static int classIndex = 0;
 	public static Map<TypeDeclaration, Stack<TypeScope>> getClassHierachyChain() {
-		Map<TypeDeclaration, Stack<TypeScope>> ret = new HashMap<TypeDeclaration, Stack<TypeScope>>();
-		ret.putAll(classHierachyChain);
+		Map<TypeDeclaration, Stack<TypeScope>> ret = new HashMap<TypeDeclaration, Stack<TypeScope>>(classHierachyChain);
 		return ret;
 	}
-
+	public static LinkedHashMap<TypeDeclaration, Stack<TypeScope>> getLinkedClassHierachyChain() {
+		LinkedHashMap<TypeDeclaration, Stack<TypeScope>> ret = new LinkedHashMap<TypeDeclaration, Stack<TypeScope>>(classHierachyChain);
+		return ret;
+	}
+	public static int getTotalClassNum() {
+		return HierarchyChecker.classIndex;
+	}
 	public HierarchyChecker(SymbolTable table) {
 		super(table);
 	}
@@ -94,7 +99,8 @@ public class HierarchyChecker extends SemanticsVisitor {
 			checkSuperCycle();
 			checkOverRide(node);
 			checkAbstractClass();
-			System.out.println(node+"index:"+node.getHierarchyTableIndex());
+			//System.out.println(node+"index:"+node.getHierarchyTableIndex());
+			//System.out.println("classHierachyChain:"+classHierachyChain);
 		}
 
 	}
@@ -104,6 +110,7 @@ public class HierarchyChecker extends SemanticsVisitor {
 		Stack<TypeScope> hierachyStack2 = new Stack<TypeScope>();
 		hierachyStack2.addAll(hierachyStack);
 		if (!classHierachyChain.containsKey(node)) {
+			//System.out.println("hierachyStack"+ hierachyStack);
 			classHierachyChain.put(node, hierachyStack);
 			node.setHierarchyTableIndex(HierarchyChecker.classIndex);
 			HierarchyChecker.classIndex++;

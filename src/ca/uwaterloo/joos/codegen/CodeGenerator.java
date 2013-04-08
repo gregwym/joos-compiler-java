@@ -3,9 +3,12 @@ package ca.uwaterloo.joos.codegen;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Stack;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.logging.Level;
@@ -53,6 +56,7 @@ import ca.uwaterloo.joos.ast.type.PrimitiveType;
 import ca.uwaterloo.joos.ast.type.ReferenceType;
 import ca.uwaterloo.joos.ast.type.Type;
 import ca.uwaterloo.joos.ast.type.PrimitiveType.Primitive;
+import ca.uwaterloo.joos.checker.HierarchyChecker;
 import ca.uwaterloo.joos.symboltable.BlockScope;
 import ca.uwaterloo.joos.symboltable.Scope;
 import ca.uwaterloo.joos.symboltable.SemanticsVisitor;
@@ -93,6 +97,7 @@ public class CodeGenerator extends SemanticsVisitor {
 		this.complexNodes.add(PackageDeclaration.class);
 		this.complexNodes.add(SingleImport.class);
 		this.complexNodes.add(OnDemandImport.class);
+
 	}
 
 	private void initialize() {
@@ -106,13 +111,12 @@ public class CodeGenerator extends SemanticsVisitor {
 		this.comparisonCount = 0;
 		this.loopCount = 0;
 		this.dereferenceVariable = true;
-
 		// Place the runtime.s externs
 		this.externs.add("__malloc");
 		this.externs.add("__debexit");
 		this.externs.add("__exception");
 		this.externs.add("NATIVEjava.io.OutputStream.nativeWrite");
-
+		this.externs.add("SubtypeTable");
 		this.texts.add("");
 		this.texts.add("section .text");
 		this.texts.add("");
@@ -303,6 +307,7 @@ public class CodeGenerator extends SemanticsVisitor {
 		} else if (node instanceof TypeDeclaration) {
 			this.texts.add("global " + this.getCurrentScope().getName() + "_VTABLE");
 			this.texts.add(this.getCurrentScope().getName() + "_VTABLE:");
+			this.texts.add("dd " + ((TypeDeclaration) node).getHierarchyTableIndex());
 			// TODO: append vtable contents
 			for (Entry<Integer, Scope> entry : ((TypeDeclaration) node).getSignatures().entrySet()) {
 				Scope methodScope = entry.getValue();
@@ -498,12 +503,20 @@ public class CodeGenerator extends SemanticsVisitor {
 		// Invoke the method
 		BlockScope methodBlock = this.table.getBlock(methodInvoke.fullyQualifiedName);
 		BodyDeclaration methodNode = (BodyDeclaration) methodBlock.getReferenceNode();
+
 		if (methodNode.getModifiers().containModifier(Modifier.STATIC)) {
 			this.texts.add("mov edx, " + methodBlock.getParentTypeScope().getName() + "_VTABLE");
 		} else {
 			this.texts.add("mov edx, [eax]\t; Dereference for the address of VTable");
 		}
 		this.texts.add("call [edx + " + Integer.toString(methodNode.getIndex() * 4) + "]\t; Call " + methodInvoke.fullyQualifiedName);
+
+		this.texts.add("mov edx, " + methodBlock.getParentTypeScope().getName() + "_VTABLE");
+		this.texts.add("call [edx + " + Integer.toString(methodNode.getIndex() * 4) + "]\t;call method label from vtable");
+
+		this.texts.add("mov edx, " + methodBlock.getParentTypeScope().getName() + "_VTABLE");
+		this.texts.add("call [edx + " + Integer.toString(methodNode.getIndex() * 4+4) + "]\t;call method label from vtable");
+
 
 		// Pop THIS from stack
 		this.texts.add("pop edx\t\t\t\t; Pop THIS");
@@ -953,4 +966,52 @@ public class CodeGenerator extends SemanticsVisitor {
 		asmWriter.close();
 
 	}
+
+	public void generateSubtypeTable() throws Exception {
+		LinkedHashMap<TypeDeclaration, Stack<TypeScope>> classHierachyChain = HierarchyChecker.getLinkedClassHierachyChain();
+		
+		asmFile = new File("./output/subtypeTable.s");
+		this.asmFile.createNewFile();
+		BufferedWriter asmWriter = new BufferedWriter(new FileWriter(this.asmFile));
+		this.texts = new ArrayList<String>();
+		this.texts.add("global SubtypeTable\n");
+		this.texts.add("SubtypeTable:\n");
+
+		int classNum = HierarchyChecker.getTotalClassNum();
+		boolean[] subtypeArr = new boolean[classNum * classNum];
+		int i = 0;
+		for (Entry<TypeDeclaration, Stack<TypeScope>> entry : classHierachyChain.entrySet()) {
+
+			// entry.
+			Stack<TypeScope> classScopes = entry.getValue();
+			
+			if (!classScopes.empty()) {
+				TypeScope classScope = classScopes.pop();
+				if (classScope.getReferenceNode() instanceof TypeDeclaration) {
+					int index = ((TypeDeclaration) classScope.getReferenceNode()).getHierarchyTableIndex();
+					subtypeArr[i * classNum + index] = true;
+				}
+
+			}
+			i++;
+			
+
+		}
+		for (i = 0; i < subtypeArr.length; i++) {
+			if (subtypeArr[i]) {
+				this.texts.add("dd 0xffffffff");
+			} else {
+				this.texts.add("dd 0x0");
+			}
+
+		}
+		for (String line : this.texts) {
+			
+			asmWriter.write(line);
+			asmWriter.newLine();
+
+		}
+		asmWriter.close();
+	}
+
 }

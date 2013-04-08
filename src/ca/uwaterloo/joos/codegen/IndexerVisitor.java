@@ -8,20 +8,17 @@ import java.util.Stack;
 
 import ca.uwaterloo.joos.ast.ASTNode;
 import ca.uwaterloo.joos.ast.Modifiers.Modifier;
-import ca.uwaterloo.joos.ast.decl.BodyDeclaration;
-import ca.uwaterloo.joos.ast.decl.ClassDeclaration;
 import ca.uwaterloo.joos.ast.decl.FieldDeclaration;
 import ca.uwaterloo.joos.ast.decl.LocalVariableDeclaration;
 import ca.uwaterloo.joos.ast.decl.MethodDeclaration;
 import ca.uwaterloo.joos.ast.decl.ParameterDeclaration;
 import ca.uwaterloo.joos.ast.decl.TypeDeclaration;
 import ca.uwaterloo.joos.ast.statement.Block;
-import ca.uwaterloo.joos.checker.HierarchyChecker;
 import ca.uwaterloo.joos.symboltable.Scope;
 import ca.uwaterloo.joos.symboltable.SemanticsVisitor;
 import ca.uwaterloo.joos.symboltable.SymbolTable;
 import ca.uwaterloo.joos.symboltable.TypeScope;
-
+import ca.uwaterloo.joos.checker.*;
 public class IndexerVisitor extends SemanticsVisitor{
 	int methods = 0;
 	int fields = 1;
@@ -29,13 +26,17 @@ public class IndexerVisitor extends SemanticsVisitor{
 	private int parameters = 2;
 	public static ArrayList<FieldDeclaration> StaticFields = new ArrayList<FieldDeclaration>();
 	HashMap<String, Integer> countList = new HashMap<String, Integer>();
-	Map<TypeDeclaration, Stack<TypeScope>> HierarchyChain = HierarchyChecker.getClassHierachyChain();
+	Map<TypeDeclaration, Stack<TypeScope>> HierarchyChain = new HashMap<TypeDeclaration, Stack<TypeScope>>(HierarchyChecker.getClassHierachyChain());
+	
+
 	static ArrayList<String> checkedType = new ArrayList<String>();
 	Map<Integer, Scope> methodList = new HashMap<Integer, Scope>();
 	
 	
 	public IndexerVisitor(SymbolTable table) {
 		super(table);
+		
+		//HierarchyChain.putAll();
 	}
 
 	@Override
