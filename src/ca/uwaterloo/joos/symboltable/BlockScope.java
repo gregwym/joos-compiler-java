@@ -8,6 +8,7 @@ import ca.uwaterloo.joos.ast.ASTNode;
 import ca.uwaterloo.joos.ast.decl.VariableDeclaration;
 import ca.uwaterloo.joos.ast.expr.name.Name;
 import ca.uwaterloo.joos.ast.expr.name.SimpleName;
+import ca.uwaterloo.joos.ast.statement.ForStatement;
 import ca.uwaterloo.joos.symboltable.SymbolTable.SymbolTableException;
 import ch.lambdaj.Lambda;
 
@@ -28,7 +29,8 @@ public class BlockScope extends Scope {
 
 	public void addVariableDecl(VariableDeclaration var) throws Exception {
 		String name = this.nameForDecl(var);
-		if(this.getLocalVariable(var.getName().getName()) != null) {
+		TableEntry te = this.getLocalVariable(var.getName().getName());
+		if(te != null && !(te.getNode().getParent() instanceof ForStatement)){
 			throw new SymbolTableException("Duplicate Variable Declaration of " + name);
 		}
 		
