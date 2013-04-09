@@ -601,20 +601,16 @@ public class CodeGenerator extends SemanticsVisitor {
 		Type op2Type = op2.exprType;
 
 		// op1 at EAX, op2 at EDX
-		if (!op1Type.getFullyQualifiedName().equals("java.lang.String")) {
-			this.texts.add("push edx\t\t\t; Push op2 to stack first");
-			this.generateValueToString(op1Type);
-			this.texts.add("pop edx\t\t\t\t; Pop op2");
-		}
+		this.texts.add("push edx\t\t\t; Push op2 to stack first");
+		this.generateValueToString(op1Type);
+		this.texts.add("pop edx\t\t\t\t; Pop op2");
 
 		// op1 String on stack, op2 at EDX
-		if (!op2Type.getFullyQualifiedName().equals("java.lang.String")) {
-			this.texts.add("push eax\t\t\t; Push op1 String to stack");
-			this.texts.add("mov eax, edx");
-			this.generateValueToString(op2Type);
-			this.texts.add("mov edx, eax");
-			this.texts.add("pop eax\t\t\t\t; Pop op1 String");
-		}
+		this.texts.add("push eax\t\t\t; Push op1 String to stack");
+		this.texts.add("mov eax, edx");
+		this.generateValueToString(op2Type);
+		this.texts.add("mov edx, eax");
+		this.texts.add("pop eax\t\t\t\t; Pop op1 String");
 
 		// op1 String at EAX, op2 String at EDX. Invoke
 		// java.lang.String.concat(java.lang.String) now.
