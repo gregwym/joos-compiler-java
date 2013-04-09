@@ -427,7 +427,7 @@ public class CodeGenerator extends SemanticsVisitor {
 			if (entry == null) {
 				String field = ((SimpleName) name).getName();
 				if (field.equals("length")) {
-					this.texts.add("mov eax, [eax]\t\t; Fetch array length");
+					this.texts.add("mov eax, [eax + 4]\t\t; Fetch array length");
 				} else {
 					throw new Exception("Unknown field " + field);
 				}
@@ -456,7 +456,7 @@ public class CodeGenerator extends SemanticsVisitor {
 			if (components.size() - originalDeclarations.size() > 1) {
 				String field = components.get(components.size() - 1);
 				if (field.equals("length")) {
-					this.texts.add("mov eax, [eax]\t\t; Fetch array size");
+					this.texts.add("mov eax, [eax + 4]\t\t; Fetch array size");
 				} else {
 					throw new Exception("Unknown field " + field);
 				}
@@ -586,7 +586,7 @@ public class CodeGenerator extends SemanticsVisitor {
 			this.addExtern(valueOfLabel, "java.lang.String.valueOf(" + exprType.getFullyQualifiedName() + ",)");
 			this.texts.add("pop edx");
 			this.texts.add("pop edx");
-		} else if (exprType instanceof ReferenceType) {
+		} else {
 			this.texts.add("push eax\t\t\t; Push the reference variable address as THIS");
 			this.texts.add("mov eax, [eax]\t; Obtain VTable address");
 			this.texts.add("add eax, 12\t\t; Shift to the index of toString");
@@ -776,12 +776,15 @@ public class CodeGenerator extends SemanticsVisitor {
 
 	private void generateArrayCreate(ArrayCreate arrayCreate) throws Exception {
 		arrayCreate.getDimension().accept(this);
+		this.addVtable("java.lang.Object");
 		this.texts.add("push eax\t\t\t; Push array dimension to stack");
 		this.texts.add("imul eax, 4\t\t\t; Multiply the array dimension by byte size");
-		this.texts.add("add eax, 4\t\t\t; Extra space to store array length");
+		this.texts.add("add eax, 8\t\t\t; Extra space to store Vtable and array length");
 		this.texts.add("call __malloc\t\t; Malloc space for the array");
+		this.texts.add("mov ebx, java.lang.Object_VTABLE");
+		this.texts.add("mov [eax], ebx\t; Save Object VTable");
 		this.texts.add("pop ebx\t\t\t\t; Pop array dimension");
-		this.texts.add("mov [eax], ebx\t\t; Save array dimension to the beginning of array");
+		this.texts.add("mov [eax + 4], ebx\t\t; Save array dimension");
 	}
 
 	private void generateArrayAccess(ArrayAccess arrayAccess) throws Exception {
@@ -793,7 +796,7 @@ public class CodeGenerator extends SemanticsVisitor {
 
 		arrayAccess.getIndex().accept(this);
 		this.texts.add("pop edx");
-		this.texts.add("add edx, 4\t\t\t; Shift for array length");
+		this.texts.add("add edx, 8\t\t\t; Shift for array length");
 
 		this.texts.add("imul eax, 4\t\t\t; Multiply the array index by byte size");
 		this.texts.add("add edx, eax\t\t; Shift to index eax");
@@ -853,9 +856,11 @@ public class CodeGenerator extends SemanticsVisitor {
 			break;
 		case STRINGLIT:
 			this.addVtable("java.lang.String");
+			this.addVtable("java.lang.Object");
 			this.data.add("__STRING_" + this.literalCount + " dd java.lang.String_VTABLE");
 			this.data.add("dd " + "__STRING_LIT_" + this.literalCount);
-			this.data.add("__STRING_LIT_" + this.literalCount + " dd " + (value.length() - 2));
+			this.data.add("__STRING_LIT_" + this.literalCount + " dd java.lang.Object_VTABLE");
+			this.data.add("dd " + (value.length() - 2));
 			for(i = 1; i < value.length() - 1; i++) {
 				this.data.add("dd " + ((int) value.charAt(i)));
 			}
