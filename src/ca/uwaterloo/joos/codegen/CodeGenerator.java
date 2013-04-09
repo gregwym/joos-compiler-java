@@ -601,20 +601,16 @@ public class CodeGenerator extends SemanticsVisitor {
 		Type op2Type = op2.exprType;
 
 		// op1 at EAX, op2 at EDX
-		if (!op1Type.getFullyQualifiedName().equals("java.lang.String")) {
-			this.texts.add("push edx\t\t\t; Push op2 to stack first");
-			this.generateValueToString(op1Type);
-			this.texts.add("pop edx\t\t\t\t; Pop op2");
-		}
+		this.texts.add("push edx\t\t\t; Push op2 to stack first");
+		this.generateValueToString(op1Type);
+		this.texts.add("pop edx\t\t\t\t; Pop op2");
 
 		// op1 String on stack, op2 at EDX
-		if (!op2Type.getFullyQualifiedName().equals("java.lang.String")) {
-			this.texts.add("push eax\t\t\t; Push op1 String to stack");
-			this.texts.add("mov eax, edx");
-			this.generateValueToString(op2Type);
-			this.texts.add("mov edx, eax");
-			this.texts.add("pop eax\t\t\t\t; Pop op1 String");
-		}
+		this.texts.add("push eax\t\t\t; Push op1 String to stack");
+		this.texts.add("mov eax, edx");
+		this.generateValueToString(op2Type);
+		this.texts.add("mov edx, eax");
+		this.texts.add("pop eax\t\t\t\t; Pop op1 String");
 
 		// op1 String at EAX, op2 String at EDX. Invoke
 		// java.lang.String.concat(java.lang.String) now.
@@ -656,13 +652,14 @@ public class CodeGenerator extends SemanticsVisitor {
 		if (operator.equals(InfixOperator.AND) || operator.equals(InfixOperator.OR)) {
 			operands.get(0).accept(this);
 		} else {
-			// Generate code for the second operand and push to the stack
-			operands.get(1).accept(this);
-			this.texts.add("push eax\t\t\t; Push second operand value");
-
-			// Generate code for the first operand and result stay in eax
+			// Generate code for the first operand and push to the stack
 			operands.get(0).accept(this);
-			this.texts.add("pop edx\t\t\t\t; Pop second operand value to edx");
+			this.texts.add("push eax\t\t\t; Push first operand value");
+
+			// Generate code for the second operand and save in edx
+			operands.get(1).accept(this);
+			this.texts.add("mov edx, eax\t\t; Move second operand result to edx");
+			this.texts.add("pop eax\t\t\t\t; Pop first operand value to eax");
 		}
 
 		switch (operator) {
