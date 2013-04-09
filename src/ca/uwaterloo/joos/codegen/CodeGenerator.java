@@ -522,7 +522,7 @@ public class CodeGenerator extends SemanticsVisitor {
 		} else {
 			this.texts.add("mov edx, [eax]\t; Dereference for the address of VTable");
 		}
-		this.texts.add("call [edx + " + (methodNode.getIndex() * 4 + 4) + "]\t; Call " + methodInvoke.fullyQualifiedName);
+		this.texts.add("call [edx + " + (methodNode.getIndex() * 4 + 4) + "]\t; Call " + methodInvoke.fullyQualifiedName + " | " + methodNode);
 
 		// Pop THIS from stack
 		this.texts.add("pop edx\t\t\t\t; Pop THIS");
@@ -957,10 +957,16 @@ public class CodeGenerator extends SemanticsVisitor {
 		Integer loopCount = this.loopCount++;
 		// Init
 		this.texts.add("__LOOP_INIT_" + loopCount + ":");
-		((ASTNode) forStatement.getForInit()).accept(this);
+		if (forStatement.getForInit() != null) {
+			((ASTNode) forStatement.getForInit()).accept(this);
+		}
 
 		this.texts.add("__LOOP_CONDITION_" + loopCount + ":");
-		forStatement.getForCondition().accept(this);
+		if (forStatement.getForCondition() != null) {
+			forStatement.getForCondition().accept(this);
+		} else {
+			this.texts.add("mov eax, " + BOOLEAN_TRUE);
+		}
 		this.texts.add("cmp eax, " + BOOLEAN_FALSE);
 		this.texts.add("je __LOOP_END_" + loopCount);
 
@@ -968,7 +974,9 @@ public class CodeGenerator extends SemanticsVisitor {
 		forStatement.getForStatement().accept(this);
 
 		this.texts.add("__LOOP_UPDATE_" + loopCount + ":");
-		forStatement.getForUpdate().accept(this);
+		if (forStatement.getForUpdate() != null) {
+			forStatement.getForUpdate().accept(this);
+		}
 		this.texts.add("jmp __LOOP_CONDITION_" + loopCount);
 
 		this.texts.add("__LOOP_END_" + loopCount + ":");
@@ -977,7 +985,11 @@ public class CodeGenerator extends SemanticsVisitor {
 	private void generateWhileStatement(WhileStatement whileStatement) throws ChildTypeUnmatchException, Exception {
 		Integer loopCount = this.loopCount++;
 		this.texts.add("__LOOP_CONDITION_" + loopCount + ":");
-		whileStatement.getWhileCondition().accept(this);
+		if(whileStatement.getWhileCondition() != null) {
+			whileStatement.getWhileCondition().accept(this);
+		} else {
+			this.texts.add("mov eax, " + BOOLEAN_TRUE);
+		}
 
 		this.texts.add("cmp eax, " + BOOLEAN_FALSE);
 		this.texts.add("je __LOOP_END_" + loopCount);
@@ -993,6 +1005,11 @@ public class CodeGenerator extends SemanticsVisitor {
 		Integer conditionCount = this.conditionCount++;
 		this.texts.add("__IF_CONDITION_" + conditionCount + ":");
 		ifStatement.getIfCondition().accept(this);
+		if(ifStatement.getIfCondition() != null) {
+			ifStatement.getIfCondition().accept(this);
+		} else {
+			this.texts.add("mov eax, " + BOOLEAN_TRUE);
+		}
 
 		this.texts.add("cmp eax, " + BOOLEAN_FALSE);
 		this.texts.add("je __ELSE_STATEMENT_" + conditionCount);
