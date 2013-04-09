@@ -760,7 +760,13 @@ public class CodeGenerator extends SemanticsVisitor {
 			// eax = first operand / second operand
 			this.texts.add("cmp edx, 0\t\t\t; Check zero divider");
 			this.texts.add("je __exception\t\t; Throw exception");
+			this.texts.add("cmp eax, 0");
+			this.texts.add("jl __DIVISION_LT_ZERO_" + comparisonCount);
 			this.texts.add("mov ebx, 0");
+			this.texts.add("jmp __DIVISION_GE_ZERO_" + comparisonCount);
+			this.texts.add("__DIVISION_LT_ZERO_" + comparisonCount + ":");
+			this.texts.add("mov ebx, 0xffffffff");
+			this.texts.add("__DIVISION_GE_ZERO_" + comparisonCount + ":");
 			this.texts.add("xchg edx, ebx\t\t; Set edx to 0, and ebx to be the divider");
 			this.texts.add("idiv ebx\t\t\t; Divide edx:eax with ebx, quotient will be in eax");
 			break;
