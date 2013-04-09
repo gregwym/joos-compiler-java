@@ -652,13 +652,14 @@ public class CodeGenerator extends SemanticsVisitor {
 		if (operator.equals(InfixOperator.AND) || operator.equals(InfixOperator.OR)) {
 			operands.get(0).accept(this);
 		} else {
-			// Generate code for the second operand and push to the stack
-			operands.get(1).accept(this);
-			this.texts.add("push eax\t\t\t; Push second operand value");
-
-			// Generate code for the first operand and result stay in eax
+			// Generate code for the first operand and push to the stack
 			operands.get(0).accept(this);
-			this.texts.add("pop edx\t\t\t\t; Pop second operand value to edx");
+			this.texts.add("push eax\t\t\t; Push first operand value");
+
+			// Generate code for the second operand and save in edx
+			operands.get(1).accept(this);
+			this.texts.add("mov edx, eax\t\t; Move second operand result to edx");
+			this.texts.add("pop eax\t\t\t\t; Pop first operand value to eax");
 		}
 
 		switch (operator) {
