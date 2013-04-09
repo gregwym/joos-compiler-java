@@ -10,6 +10,7 @@ import ca.uwaterloo.joos.ast.AST.ASTConstructException;
 import ca.uwaterloo.joos.ast.ASTNode;
 import ca.uwaterloo.joos.ast.expr.name.Name;
 import ca.uwaterloo.joos.ast.expr.primary.Primary;
+import ca.uwaterloo.joos.ast.type.Type;
 import ca.uwaterloo.joos.parser.ParseTree.LeafNode;
 import ca.uwaterloo.joos.parser.ParseTree.Node;
 import ca.uwaterloo.joos.parser.ParseTree.TreeNode;
@@ -21,6 +22,8 @@ import ca.uwaterloo.joos.parser.ParseTreeTraverse.Traverser;
  * 
  */
 public abstract class Expression extends ASTNode implements ForInit{
+	
+	public Type exprType = null;
 
 	public Expression(Node node, ASTNode parent) throws Exception {
 		super(node, parent);
