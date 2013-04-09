@@ -766,8 +766,12 @@ public class TypeChecker extends SemanticsVisitor {
 			
 			return new PrimitiveType(Primitive.BOOLEAN);
 		}
-		if (op1Type.equals(op2Type))
+		if (op1Type.equals(op2Type)) {
+			if (op1Type instanceof PrimitiveType && ((PrimitiveType) op1Type).getPrimitive().equals(Primitive.CHAR)) {
+				return new PrimitiveType(Primitive.INT);
+			}
 			return op1Type;
+		}
 
 		// For now ignore ALL operations performed with differing Reference
 		// types.
