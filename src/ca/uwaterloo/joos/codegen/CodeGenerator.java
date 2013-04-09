@@ -115,7 +115,7 @@ public class CodeGenerator extends SemanticsVisitor {
 		this.loopCount = 0;
 		this.dereferenceVariable = true;
 		this.referenceCurrentObject = true;
-		
+
 		// Place the runtime.s externs
 		this.externs.add("__malloc");
 		this.externs.add("__debexit");
@@ -417,7 +417,7 @@ public class CodeGenerator extends SemanticsVisitor {
 
 	private void generateVariableAccess(Name name) throws Exception {
 		int i = 0;
-		
+
 		if (name instanceof Name && this.referenceCurrentObject) {
 			this.texts.add("mov eax, [ebp + 8]\t; Current object");
 		}
@@ -785,6 +785,20 @@ public class CodeGenerator extends SemanticsVisitor {
 		this.texts.add("mov [eax], ebx\t; Save Object VTable");
 		this.texts.add("pop ebx\t\t\t\t; Pop array dimension");
 		this.texts.add("mov [eax + 4], ebx\t\t; Save array dimension");
+
+		if (arrayCreate.getType().getType() instanceof ReferenceType) {
+			this.addExtern("__NULL_LIT_", "");
+			this.texts.add("push eax\t\t\t\t; Save the array address");
+			this.texts.add("add eax, 8");
+			this.texts.add("mov ecx, ebx\t\t; Loop through array dimension");
+			this.texts.add("mov edx, __NULL_LIT_");
+			this.texts.add("__ARRAY_INIT_LOOP_" + this.loopCount + ":");
+			this.texts.add("mov [eax], edx");
+			this.texts.add("add eax, 4");
+			this.texts.add("loop __ARRAY_INIT_LOOP_" + this.loopCount);
+			this.texts.add("pop eax\t\t\t; Restore the array address");
+			this.loopCount++;
+		}
 	}
 
 	private void generateArrayAccess(ArrayAccess arrayAccess) throws Exception {
@@ -861,7 +875,7 @@ public class CodeGenerator extends SemanticsVisitor {
 			this.data.add("dd " + "__STRING_LIT_" + this.literalCount);
 			this.data.add("__STRING_LIT_" + this.literalCount + " dd java.lang.Object_VTABLE");
 			this.data.add("dd " + (value.length() - 2));
-			for(i = 1; i < value.length() - 1; i++) {
+			for (i = 1; i < value.length() - 1; i++) {
 				this.data.add("dd " + ((int) value.charAt(i)));
 			}
 			this.texts.add("mov eax, " + "__STRING_" + this.literalCount);
@@ -981,7 +995,7 @@ public class CodeGenerator extends SemanticsVisitor {
 		}
 		this.texts.add("__IF_END_" + conditionCount + ":");
 	}
-	
+
 	private void generateFieldAccess(FieldAccess fieldAccess) throws Exception {
 		fieldAccess.getPrimary().accept(this);
 		this.referenceCurrentObject = false;
