@@ -1,5 +1,5 @@
 extern java.lang.String_VTABLE
-
+extern java.lang.Object_VTABLE
 
 section .text
 
@@ -53,7 +53,8 @@ section .data
 
 __STRING_0 dd java.lang.String_VTABLE
 dd __STRING_LIT_0
-__STRING_LIT_0 dd 4
+__STRING_LIT_0 dd java.lang.Object_VTABLE
+dd 4
 dd 110
 dd 117
 dd 108
